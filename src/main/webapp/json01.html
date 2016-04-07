@@ -1,0 +1,50 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
+<script type="text/javascript" src="js/jquery.sexytable-1.1.js"></script>
+<script type="text/javascript" src="js/jquery.editable.js"></script>
+<script type="text/javascript" src="js/jquery-ui-1.8.4.custom.min.js"></script>
+<script type="text/javascript" src="js/util.js"></script>
+<link rel="stylesheet" type="text/css" href="css/layout.css" />
+
+	<style type="text/css">
+	.ui-autocomplete-loading { background: white url('images/ui-anim_basic_16x16.gif') right center no-repeat; }
+	</style>
+<script type="text/javascript">
+$(document).ready(function(){
+				$.ajax({
+					url: "port",
+					dataType: "json",
+					data: {
+						search: "n7",
+						searchrequestid: 0
+					},
+					success: function(data) {
+						alert("succes ");//+data.p[0].code);
+						/*response($.map(data.products, function(item) {
+							return {
+								label: item.code,
+								value: item.mark
+							}
+						}))*/
+					},
+					error: function (XMLHttpRequest, textStatus, errorThrown){
+						alert("status: "+textStatus+" httpreq: "+ XMLHttpRequest+"error: "+errorThrown);
+					}
+				});
+});
+</script>
+	<style>
+		.ui-autocomplete-loading { background: url(indicator.gif) no-repeat right; }
+		#city { width: 25em; }
+	</style>
+	
+<title>Insert title here</title>
+</head>
+<body>
+
+
+</body>
+</html>

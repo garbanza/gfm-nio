@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<!-- files and folders -->
+	<entry key="TMP_FOLDER"></entry>
+
+	<!-- Mongo settings -->
+	<entry key="MONGO_DB_HOST"></entry>
+	<entry key="MONGO_DB_PORT"></entry>
+	<entry key="MONGO_USER"></entry>
+	<entry key="MONGO_PASS"></entry>
+	<entry key="SPREADSHEET_DB_FILE"></entry>
+
+	<!-- Printing settings -->
+	<entry key="PRINTER_ONE"></entry>
+	<entry key="PRINTER_TWO"></entry>
+	<entry key="PRINTER_THREE"></entry>
+	<entry key="PRINTER_FOUR"></entry>
+	<entry key="INVOICE_FORM_DESCRIPTOR"></entry>
+
+
+	<!-- Invoicing settings -->
+	<entry key="CERTIFICATE"></entry>
+	<entry key="PRIVATE_KEY"></entry>
+	<entry key="PRIVATE_KEY_PASS"></entry>
+	<entry key="SSL"></entry>
+	<entry key="STORE_ID"></entry>
+	<entry key="INVOICE_SERIAL"></entry>
+
+	<entry key="INVOICE_SENDER_NAME"></entry>
+	<entry key="INVOICE_SENDER_TAX_CODE"></entry>
+	<entry key="INVOICE_SENDER_COUNTRY"></entry>
+	<entry key="INVOICE_SENDER_STATE"></entry>
+	<entry key="INVOICE_SENDER_CITY"></entry>
+	<entry key="INVOICE_SENDER_LOCALITY"></entry>
+	<entry key="INVOICE_SENDER_SUBURB"></entry>
+	<entry key="INVOICE_SENDER_STREET"></entry>
+	<entry key="INVOICE_SENDER_EXTEROR_NUMBER"></entry>
+	<entry key="INVOICE_SENDER_INTERIOR_NUMBER"></entry>
+	<entry key="INVOICE_SENDER_POSTAL_CODE"></entry>
+	<entry key="INVOICE_SENDER_REGIME"></entry>
+	<entry key="INVOICE_CERTIFICATE_AUTHORITY_USER"></entry>
+	<entry key="INVOICE_CERTIFICATE_AUTHORITY_PASS"></entry>
+
+	<!-- TAXING -->
+	<entry key="TAXES_IVA_NAME"></entry>
+	<entry key="TAXES_IVA_VALUE"></entry>
+
+	<!-- MAILING -->
+	<entry key="EMAIL_NOTIFICATIONS"></entry>
+	<entry key="EMAIL_NOTIFICATIONS_PASS"></entry>
+	<entry key="EMAIL_BODY"></entry>
+
+</properties>

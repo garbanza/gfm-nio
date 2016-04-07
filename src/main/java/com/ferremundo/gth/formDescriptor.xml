@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<fm01>
+
+	<measureunit measure="millimeter"></measureunit>
+
+	<invoicearea px="" py="" width="" height=""></invoicearea>
+	<consummerarea px="" py="" width="" height=""></consummerarea>
+	<addressarea px="" py="" width="" height=""></addressarea>
+	<cityarea px="" py="" width="" height=""></cityarea>
+	<countryarea px="" py="" width="" height=""></countryarea>
+	<statearea px="" py="" width="" height=""></statearea>
+	<datearea px="" py="" width="" height=""></datearea>
+	<cparea px="" py="" width="" height=""></cparea>
+	<emailarea px="" py="" width="" height=""></emailarea>
+	<rfcarea px="" py="" width="" height=""></rfcarea>
+	
+	<quantityarea>
+		<qa px="" py="" width="" height=""></qa>
+		<qa px="" py="" width="" height=""></qa>
+		<qa px="" py="" width="" height=""></qa>
+		<qa px="" py="" width="" height=""></qa>
+		<qa px="" py="" width="" height=""></qa>
+		<qa px="" py="" width="" height=""></qa>
+		<qa px="" py="" width="" height=""></qa>
+		<qa px="" py="" width="" height=""></qa>
+		<qa px="" py="" width="" height=""></qa>
+		<qa px="" py="" width="" height=""></qa>
+	</quantityarea>
+	
+	<unitarea>
+		<ua px="" py="" width="" height=""></ua>
+		<ua px="" py="" width="" height=""></ua>
+		<ua px="" py="" width="" height=""></ua>
+		<ua px="" py="" width="" height=""></ua>
+		<ua px="" py="" width="" height=""></ua>
+		<ua px="" py="" width="" height=""></ua>
+		<ua px="" py="" width="" height=""></ua>
+		<ua px="" py="" width="" height=""></ua>
+		<ua px="" py="" width="" height=""></ua>
+		<ua px="" py="" width="" height=""></ua>
+	</unitarea>
+
+	<codearea>
+		<ca px="" py="" width="" height=""></ca>
+		<ca px="" py="" width="" height=""></ca>
+		<ca px="" py="" width="" height=""></ca>
+		<ca px="" py="" width="" height=""></ca>
+		<ca px="" py="" width="" height=""></ca>
+		<ca px="" py="" width="" height=""></ca>
+		<ca px="" py="" width="" height=""></ca>
+		<ca px="" py="" width="" height=""></ca>
+		<ca px="" py="" width="" height=""></ca>
+		<ca px="" py="" width="" height=""></ca>
+	</codearea>
+	
+	<descriptionarea>
+		<da px="" py="" width="" height=""></da>
+		<da px="" py="" width="" height=""></da>
+		<da px="" py="" width="" height=""></da>
+		<da px="" py="" width="" height=""></da>
+		<da px="" py="" width="" height=""></da>
+		<da px="" py="" width="" height=""></da>
+		<da px="" py="" width="" height=""></da>
+		<da px="" py="" width="" height=""></da>
+		<da px="" py="" width="" height=""></da>
+		<da px="" py="" width="" height=""></da>
+	</descriptionarea>
+	
+	<unitpricearea>
+		<upa px="" py="" width="" height=""></upa>
+		<upa px="" py="" width="" height=""></upa>
+		<upa px="" py="" width="" height=""></upa>
+		<upa px="" py="" width="" height=""></upa>
+		<upa px="" py="" width="" height=""></upa>
+		<upa px="" py="" width="" height=""></upa>
+		<upa px="" py="" width="" height=""></upa>
+		<upa px="" py="" width="" height=""></upa>
+		<upa px="" py="" width="" height=""></upa>
+		<upa px="" py="" width="" height=""></upa>
+	</unitpricearea>
+	
+	<totalpricearea>
+		<tpa px="" py="" width="" height=""></tpa>
+		<tpa px="" py="" width="" height=""></tpa>
+		<tpa px="" py="" width="" height=""></tpa>
+		<tpa px="" py="" width="" height=""></tpa>
+		<tpa px="" py="" width="" height=""></tpa>
+		<tpa px="" py="" width="" height=""></tpa>
+		<tpa px="" py="" width="" height=""></tpa>
+		<tpa px="" py="" width="" height=""></tpa>
+		<tpa px="" py="" width="" height=""></tpa>
+		<tpa px="" py="" width="" height=""></tpa>
+	</totalpricearea>
+
+	<telarea px="" py="" width="" height=""></telarea>
+	<subtotalarea px="" py="" width="" height=""></subtotalarea>
+	<taxesarea px="" py="" width="" height=""></taxesarea>
+	<totalarea px="" py="" width="" height=""></totalarea>
+	<totalinwordsarea px="" py="" width="" height=""></totalinwordsarea>
+	
+</fm01>

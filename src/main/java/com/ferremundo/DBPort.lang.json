@@ -1,0 +1,26 @@
+{
+	"NO_TRANSLATION_AVAILABLE":{
+		"en":"no translation available",
+		"es":"traduccion no disponible"},
+	"ACCESS_DENIED":{
+		"en":"access denied",
+		"es":"acceso denegado"},
+	"UNDEFINED_COMMAND":{
+		"en":"undefined command",
+		"es":"comando indefinido"},
+	"INVALID_ARGUMENT":{
+		"en":"invalid argument",
+		"es":"argumento invalido"},
+	"UNSPECIFIED_ARGUMENTS":{
+		"en":"unspecified arguments: '$(0)'",
+		"es":"argumentos no especificados: '$(0)'"},
+	"INVALID_ID":{
+		"en":"invalid ID",
+		"es":"ID invalido"},
+	"PERMISSION_REQUIRED":{
+		"en":"permissions required: ${0}",
+		"es":"permisos requeridos: ${0}"},
+	"EMPTY_LIST":{
+		"en":"empty list",
+		"es":"lista vacia"}
+}

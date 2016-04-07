@@ -1,0 +1,62 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+<script type="text/javascript" src="jquery-1.4.2.min.js"></script>
+<script type="text/javascript" src="js/jquery.caret.1.02.min.js"></script>
+<script type="text/javascript" src="js/jquery.editable.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+	/*(function($) {
+
+		jQuery.fn.editable = function(options) {
+			return this.each(function(){
+				$(this).bind("click focusin",function(){
+					$('#txtarea').blur();
+					var content=$(this).text();
+					var this_=this;
+					//alert(content);
+					var pos=$(this).position();
+					var top=pos.top;
+					var left=pos.left;
+					var height=$(this).height();
+					var width=$(this).width();
+					$(this).after("<textarea tabindex=0"/*(parseFloat($(this).attr('tabindex'))+0)*///+" id='txtarea' style='opacity:1; position:absolute; top:"+top+"px left:"+left+"px; height:0px; width:"+width+"px';>"+content+"</textarea>")
+					/*$('#txtarea').bind('keyup focusin',function(e){
+						var code = (e.keyCode ? e.keyCode : e.which);
+						if(code==27)$(this).blur();
+						var length=$(this_).text().length;
+						//var char_=String.fromCharCode(code);
+						var start=$(this).caret().start;
+						var str=$('#txtarea').val().substring(0,start)+"|"+(start==length?"":$('#txtarea').val().substring(start));
+						$(this_).text(str);
+					}).focus(function(){
+						var length=$(this_).text().length;
+						$(this).caret({start:length,end:length});
+					}).focus();
+					$('#txtarea').blur(function(){$(this_).text($('#txtarea').val());$(this).remove()});
+
+				});
+				
+			});
+		};
+		
+	})(jQuery);
+	*/
+
+	$('.editable').editable();
+	//$('.editable').focus(function(){;});
+});
+</script>
+
+</head>
+<body>
+<input>
+
+<p class='editable' tabindex=0>some editable content</p>
+<p class='editable' tabindex=0>some editable content</p>
+<p class='editable' tabindex=0>some editable content</p>
+<p class='editable' tabindex=0>some editable content</p>
+</body>
+</html>

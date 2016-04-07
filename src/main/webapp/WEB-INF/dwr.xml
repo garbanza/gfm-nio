@@ -1,0 +1,17 @@
+<!DOCTYPE dwr PUBLIC
+    "-//GetAhead Limited//DTD Direct Web Remoting 3.0//EN"
+    "http://getahead.org/dwr/dwr30.dtd">
+
+<dwr>
+  <allow>
+    <create creator="new" javascript="JDate">
+      <param name="class" value="java.util.Date"/>
+    </create>
+    <create creator="script" javascript="OnlineClients">
+     <param name="language" value="beanshell"/>
+      <param name="script"> import com.ferremundo.OnlineClients;
+      return OnlineClients.getInstance();
+      </param>
+    </create>
+  </allow>
+</dwr>

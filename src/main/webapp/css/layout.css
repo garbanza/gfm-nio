@@ -1,0 +1,198 @@
+.box : {
+	background-color : #fff,
+	border-radius : 5px,
+	-webkit-box-shadow : 2px 5px 12px #555,
+	padding : 1%,
+	width : 80%
+}
+.fleft{
+	float:left;	
+}
+
+.rowmatch{
+	background-color: #c2ffbf;
+}
+.highlight{
+	background-color: #fbff8d;
+}
+.odd{
+	background-color: #fff;
+}
+.even{
+	background-color: #f7f7ff;
+}
+
+.editedrow{
+	background-color: #fbff8d;
+}
+
+.disabledrow{
+	background-color: #FFC2C2;
+}
+
+.odd2{
+	background-color: #eaffe6;
+	margin: 0px;
+	border: 0px;
+	padding: 0px;
+}
+.even2{
+	background-color: #daffd4;
+	margin: 0px;
+	border: 0px;
+	padding: 0px;
+}
+.hover{
+	background-color: #bcdfff;
+}
+.hover2{
+	background-color: #c5ffbc;
+}
+#commands{
+	margin: 1px;
+	border: 1px;
+	padding: 1px;
+	background-color: rgb(231,241,255);
+}
+.sexyinput{
+	background-color: rgb(255,255,255);
+	width:100%;
+}
+.bigtotal {
+	margin: 0px;
+	border: 1px;
+	padding: 0px;
+	background-color: rgb(248,255,163);	
+}
+p, div input{
+	margin: 1px;
+	border: 1px;
+	padding: 1px;
+	background-color: transparent;
+}
+/*body{
+	background-image: url("http://images.layouts.fm/5/523/523911.jpeg");
+	background-repeat: no-repeat;
+	background-position: top;
+}*/
+
+#editproduct-1{
+	background-image: url("img/cantidad.jpg");
+	background-repeat: no-repeat;
+}
+#editproduct-2{
+	background-image: url("img/unidad.jpg");
+	background-repeat: no-repeat;
+}
+#editproduct-3{
+	background-image: url("img/descripcion.jpg");
+	background-repeat: no-repeat;
+}
+#editproduct-4{
+	background-image: url("img/codigo.jpg");
+	background-repeat: no-repeat;
+}
+#editproduct-5{
+	background-image: url("img/marca.jpg");
+	background-repeat: no-repeat;
+}
+#editproduct-6{
+	background-image: url("img/$unitario.jpg");
+	background-repeat: no-repeat;
+}
+#editclient-1{
+	background-image: url("img/nombre.jpg");
+	background-repeat: no-repeat;
+}
+#editclient-2{
+	background-image: url("img/tipo.jpg");
+	background-repeat: no-repeat;
+}
+#editclient-3{
+	background-image: url("img/dir.jpg");
+	background-repeat: no-repeat;
+}
+#editclient-4{
+	background-image: url("img/ciudad.jpg");
+	background-repeat: no-repeat;
+}
+#editclient-5{
+	background-image: url("img/estado.jpg");
+	background-repeat: no-repeat;
+}
+#editclient-6{
+	background-image: url("img/cp.jpg");
+	background-repeat: no-repeat;
+}
+#editclient-7{
+	background-image: url("img/rfc.jpg");
+	background-repeat: no-repeat;
+}
+#editclient-8{
+	background-image: url("img/tel.jpg");
+	background-repeat: no-repeat;
+}
+#editclient-9{
+	background-image: url("img/pago.jpg");
+	background-repeat: no-repeat;
+}
+#editclient-0{
+	background-image: url("img/codigo.jpg");
+	background-repeat: no-repeat;
+}
+
+#editclient-10{
+	background-image: url("img/email.jpg");
+	background-repeat: no-repeat;
+}
+
+
+
+
+
+#editagent-1{
+	background-image: url("img/nombre.jpg");
+	background-repeat: no-repeat;
+}
+#editagent-2{
+	background-image: url("img/tipo.jpg");
+	background-repeat: no-repeat;
+}
+#editagent-3{
+	background-image: url("img/dir.jpg");
+	background-repeat: no-repeat;
+}
+#editagent-4{
+	background-image: url("img/ciudad.jpg");
+	background-repeat: no-repeat;
+}
+#editagent-5{
+	background-image: url("img/estado.jpg");
+	background-repeat: no-repeat;
+}
+#editagent-6{
+	background-image: url("img/cp.jpg");
+	background-repeat: no-repeat;
+}
+#editagent-7{
+	background-image: url("img/rfc.jpg");
+	background-repeat: no-repeat;
+}
+#editagent-8{
+	background-image: url("img/tel.jpg");
+	background-repeat: no-repeat;
+}
+#editagent-9{
+	background-image: url("img/pago.jpg");
+	background-repeat: no-repeat;
+}
+#editagent-0{
+	background-image: url("img/codigo.jpg");
+	background-repeat: no-repeat;
+}
+
+#editagent-10{
+	background-image: url("img/email.jpg");
+	background-repeat: no-repeat;
+}
+

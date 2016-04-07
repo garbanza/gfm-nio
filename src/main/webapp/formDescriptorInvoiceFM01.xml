@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<description>
+
+	<measureunit measure="millimeter"></measureunit>
+
+	<invoicearea px="0" py="0" width="215.9" height="168"></invoicearea>
+	<consummerarea px="25" py="130" width="90" height="4"></consummerarea>
+	<addressarea px="10" py="126" width="105" height="4"></addressarea>
+	<cityarea px="10" py="122" width="35" height="4"></cityarea>
+	<statearea px="45" py="122" width="35" height="4"></statearea>
+	<datearea px="145" py="138" width="26" height="4"></datearea>
+	<cparea px="80" py="122" width="35" height="4"></cparea>
+	<rfcarea px="10" py="118" width="50" height="4"></rfcarea>
+	<referencearea px="126" py="126" width="44" height="4"></referencearea>
+	<paymentarea px="126" py="118" width="44" height="4"></paymentarea>
+	<headarea px="25" py="130" width="95" height="18"></headarea>
+	
+	<quantityarea>
+		<qa px="7" py="102" width="13" height="4"></qa>
+		<qa px="7" py="98" width="13" height="4"></qa>
+		<qa px="7" py="94" width="13" height="4"></qa>
+		<qa px="7" py="90" width="13" height="4"></qa>
+		<qa px="7" py="86" width="13" height="4"></qa>
+		<qa px="7" py="82" width="13" height="4"></qa>
+		<qa px="7" py="78" width="13" height="4"></qa>
+		<qa px="7" py="74" width="13" height="4"></qa>
+		<qa px="7" py="70" width="13" height="4"></qa>
+		<qa px="7" py="66" width="13" height="4"></qa>
+		<qa px="7" py="62" width="13" height="4"></qa>
+		<qa px="7" py="58" width="13" height="4"></qa>
+		<qa px="7" py="54" width="13" height="4"></qa>
+		<qa px="7" py="50" width="13" height="4"></qa>
+		<qa px="7" py="46" width="13" height="4"></qa>
+		<qa px="7" py="42" width="13" height="4"></qa>
+		<qa px="7" py="38" width="13" height="4"></qa>
+	</quantityarea>
+	
+	<unitarea>
+		<ua px="20.5" py="102" width="13" height="4"></ua>
+		<ua px="20.5" py="98" width="13" height="4"></ua>
+		<ua px="20.5" py="94" width="13" height="4"></ua>
+		<ua px="20.5" py="90" width="13" height="4"></ua>
+		<ua px="20.5" py="86" width="13" height="4"></ua>
+		<ua px="20.5" py="82" width="13" height="4"></ua>
+		<ua px="20.5" py="78" width="13" height="4"></ua>
+		<ua px="20.5" py="74" width="13" height="4"></ua>
+		<ua px="20.5" py="70" width="13" height="4"></ua>
+		<ua px="20.5" py="66" width="13" height="4"></ua>
+		<ua px="20.5" py="62" width="13" height="4"></ua>
+		<ua px="20.5" py="58" width="13" height="4"></ua>
+		<ua px="20.5" py="54" width="13" height="4"></ua>
+		<ua px="20.5" py="50" width="13" height="4"></ua>
+		<ua px="20.5" py="46" width="13" height="4"></ua>
+		<ua px="20.5" py="42" width="13" height="4"></ua>
+		<ua px="20.5" py="38" width="13" height="4"></ua>
+	</unitarea>
+
+	<codearea>
+		<ca px="34" py="102" width="13" height="4"></ca>
+		<ca px="34" py="98" width="13" height="4"></ca>
+		<ca px="34" py="94" width="13" height="4"></ca>
+		<ca px="34" py="90" width="13" height="4"></ca>
+		<ca px="34" py="86" width="13" height="4"></ca>
+		<ca px="34" py="82" width="13" height="4"></ca>
+		<ca px="34" py="78" width="13" height="4"></ca>
+		<ca px="34" py="74" width="13" height="4"></ca>
+		<ca px="34" py="70" width="13" height="4"></ca>
+		<ca px="34" py="66" width="13" height="4"></ca>
+		<ca px="34" py="62" width="13" height="4"></ca>
+		<ca px="34" py="58" width="13" height="4"></ca>
+		<ca px="34" py="54" width="13" height="4"></ca>
+		<ca px="34" py="50" width="13" height="4"></ca>
+		<ca px="34" py="46" width="13" height="4"></ca>
+		<ca px="34" py="42" width="13" height="4"></ca>
+		<ca px="34" py="38" width="13" height="4"></ca>
+	</codearea>
+	
+	<descriptionarea>
+		<da px="47" py="102" width="79" height="4"></da>
+		<da px="47" py="98" width="79" height="4"></da>
+		<da px="47" py="94" width="79" height="4"></da>
+		<da px="47" py="90" width="79" height="4"></da>
+		<da px="47" py="86" width="79" height="4"></da>
+		<da px="47" py="82" width="79" height="4"></da>
+		<da px="47" py="78" width="79" height="4"></da>
+		<da px="47" py="74" width="79" height="4"></da>
+		<da px="47" py="70" width="79" height="4"></da>
+		<da px="47" py="66" width="79" height="4"></da>
+		<da px="47" py="62" width="79" height="4"></da>
+		<da px="47" py="58" width="79" height="4"></da>
+		<da px="47" py="54" width="79" height="4"></da>
+		<da px="47" py="50" width="79" height="4"></da>
+		<da px="47" py="46" width="79" height="4"></da>
+		<da px="47" py="42" width="79" height="4"></da>
+		<da px="47" py="38" width="79" height="4"></da>
+	</descriptionarea>
+	
+	<unitpricearea>
+		<upa px="126" py="102" width="22" height="4"></upa>
+		<upa px="126" py="98" width="22" height="4"></upa>
+		<upa px="126" py="94" width="22" height="4"></upa>
+		<upa px="126" py="90" width="22" height="4"></upa>
+		<upa px="126" py="86" width="22" height="4"></upa>
+		<upa px="126" py="82" width="22" height="4"></upa>
+		<upa px="126" py="78" width="22" height="4"></upa>
+		<upa px="126" py="74" width="22" height="4"></upa>
+		<upa px="126" py="70" width="22" height="4"></upa>
+		<upa px="126" py="66" width="22" height="4"></upa>
+		<upa px="126" py="62" width="22" height="4"></upa>
+		<upa px="126" py="58" width="22" height="4"></upa>
+		<upa px="126" py="54" width="22" height="4"></upa>
+		<upa px="126" py="50" width="22" height="4"></upa>
+		<upa px="126" py="46" width="22" height="4"></upa>
+		<upa px="126" py="42" width="22" height="4"></upa>
+		<upa px="126" py="38" width="22" height="4"></upa>
+	</unitpricearea>
+	
+	<totalpricearea>
+		<tpa px="149" py="102" width="21" height="4"></tpa>
+		<tpa px="149" py="98" width="21" height="4"></tpa>
+		<tpa px="149" py="94" width="21" height="4"></tpa>
+		<tpa px="149" py="90" width="21" height="4"></tpa>
+		<tpa px="149" py="86" width="21" height="4"></tpa>
+		<tpa px="149" py="82" width="21" height="4"></tpa>
+		<tpa px="149" py="78" width="21" height="4"></tpa>
+		<tpa px="149" py="74" width="21" height="4"></tpa>
+		<tpa px="149" py="70" width="21" height="4"></tpa>
+		<tpa px="149" py="66" width="21" height="4"></tpa>
+		<tpa px="149" py="62" width="21" height="4"></tpa>
+		<tpa px="149" py="58" width="21" height="4"></tpa>
+		<tpa px="149" py="54" width="21" height="4"></tpa>
+		<tpa px="149" py="50" width="21" height="4"></tpa>
+		<tpa px="149" py="46" width="21" height="4"></tpa>
+		<tpa px="149" py="42" width="21" height="4"></tpa>
+		<tpa px="149" py="38" width="21" height="4"></tpa>
+	</totalpricearea>
+
+	<telarea px="70" py="118" width="45" height="4"></telarea>
+	<subtotalarea px="149" py="31" width="21" height="4"></subtotalarea>
+	<taxesarea px="149" py="27" width="21" height="4"></taxesarea>
+	<totalarea px="149" py="23" width="21" height="4"></totalarea>
+	<totalinwordsarea px="10" py="33" width="132" height="4"></totalinwordsarea>
+	
+</description>

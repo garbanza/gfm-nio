@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<!-- files and folders -->
+	<entry key="TMP_FOLDER">/opt/fm/tmp/</entry>
+
+	<!-- Mongo settings -->
+	<entry key="MONGO_DB_HOST">localhost</entry>
+	<entry key="MONGO_DB_PORT">27017</entry>
+	<entry key="MONGO_DB_NAME">globaldb</entry>
+	<entry key="MONGO_USER"></entry>
+	<entry key="MONGO_PASS"></entry>
+	<entry key="SPREADSHEET_DB_FILE">/opt/fm/DB.ods</entry>
+
+	<!-- Printing settings -->
+	<entry key="PRINTER_ONE"></entry>
+	<entry key="PRINTER_TWO"></entry>
+	<entry key="PRINTER_THREE"></entry>
+	<entry key="PRINTER_FOUR"></entry>
+	<entry key="INVOICE_FORM_DESCRIPTOR">/opt/fm/formDescriptorInvoiceFM01.xml</entry>
+
+
+	<!-- Invoicing settings -->
+	<entry key="CERTIFICATE">/opt/fm/auth/CSD01_AAA010101AAA.cer</entry>
+	<entry key="PRIVATE_KEY">/opt/fm/auth/CSD01_AAA010101AAA.key</entry>
+	<entry key="PRIVATE_KEY_PASS">12345678a</entry>
+	<entry key="SSL">/usr/bin/openssl</entry>
+	<entry key="STORE_ID">1</entry>
+	<entry key="INVOICE_SERIAL">CFDI</entry>
+
+	<entry key="INVOICE_SENDER_NAME">MY NAME</entry>
+	<entry key="INVOICE_SENDER_TAX_CODE">MYRFC00000000</entry>
+	<entry key="INVOICE_SENDER_COUNTRY">MEXICO</entry>
+	<entry key="INVOICE_SENDER_STATE">MICHOACAN</entry>
+	<entry key="INVOICE_SENDER_CITY">MORELIA</entry>
+	<entry key="INVOICE_SENDER_LOCALITY">MORELIA</entry>
+	<entry key="INVOICE_SENDER_SUBURB">VENTURA PUENTE</entry>
+	<entry key="INVOICE_SENDER_STREET">STREET</entry>
+	<entry key="INVOICE_SENDER_EXTEROR_NUMBER">1</entry>
+	<entry key="INVOICE_SENDER_INTERIOR_NUMBER">2</entry>
+	<entry key="INVOICE_SENDER_POSTAL_CODE">58180</entry>
+	<entry key="INVOICE_SENDER_REGIME">INTERMEDIO</entry>
+	<entry key="INVOICE_CERTIFICATE_AUTHORITY_USER">MYMAIL@MYPLACE.com</entry>
+	<entry key="INVOICE_CERTIFICATE_AUTHORITY_PASS">MYPASS</entry>
+
+	<!-- TAXING -->
+	<entry key="TAXES_IVA_NAME">IVA</entry>
+	<entry key="TAXES_IVA_VALUE">16.0</entry>
+
+	<!-- MAILING -->
+	<entry key="EMAIL_NOTIFICATIONS">MYMAIL@MYPLACE.com</entry>
+	<entry key="EMAIL_NOTIFICATIONS_PASS">mypass</entry>
+	<entry key="EMAIL_BODY">THANKS! :)</entry>
+
+
+</properties>

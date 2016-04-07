@@ -1,0 +1,48 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<script type="text/javascript" src="jquery-1.4.2.min.js"></script>
+<script type="text/javascript" src="jsc/jquery.sexytable-1.0.js"></script>
+
+<link rel="stylesheet" type="text/css" href="css/layout.css" />
+<script type="text/javascript">
+$(document).ready(function(){
+
+
+
+	$('#table').tableing({row:[{content:'cont1',width:'50%'},{content:'cont2',width:'50%'}],animate:500});
+	for(var i=0;i<10;i++){
+		$('#table').tableing({row:[{content:'row('+i+',1)',width:'50%'},{content:'row('+i+',2)',width:'50%'}],addRow:true,index:'last'});
+	}
+	$('#table').children().hover(function(){$(this).addClass('hover');},function(){$(this).removeClass('hover');})
+	$('#table').children(':odd').addClass('odd');
+	$('#table').children(':even').addClass('even');
+
+	$('#table').children().mousedown(function(e){
+		if(e.which==2){
+			$('#table').tableing({'removeRow':true,'index':this}).tableing({render:true});
+			$('#table').children().removeClass('odd even');
+			$('#table').children(':odd').addClass('odd');
+			$('#table').children(':even').addClass('even');
+		}
+	});
+	
+});
+</script>
+
+<title>Insert title here</title>
+</head>
+<body>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<div id="table" width="800px" style="width: 800px; position: relative"></div>
+
+</body>
+</html>

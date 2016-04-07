@@ -1,0 +1,33 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
+<script type="text/javascript" src="js/jquery.sexytable-1.1.js"></script>
+<script type="text/javascript" src="js/jquery.editable.js"></script>
+<script type="text/javascript" src="js/jquery.ui.core.js"></script>
+<script type="text/javascript" src="js/jquery.ui.widget.js"></script>
+<script type="text/javascript" src="js/jquery.ui.position.js"></script>
+<script type="text/javascript" src="js/jquery.effects.core.js"></script>
+<script type="text/javascript" src="js/jquery.ui.autocomplete.js"></script>
+<script type="text/javascript" src="js/jquery.ui.accordion.js"></script>
+<script type="text/javascript" src="js/jquery.json-2.2.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+	var key_down = $.Event("keyupus"); key_down.keyCode =  $.ui.keyCode.DOWN;
+	$('#inp').bind("keyupus",function(event){
+		alert('down');
+	});
+	$('#pre').bind('keyup',function(event){
+		alert('pre');
+		$('#inp').trigger(key_down);
+	});
+});
+</script>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<input id='inp'/>
+	<input id='pre'/>
+</body>
+</html>
