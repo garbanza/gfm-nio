@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -81,8 +82,11 @@ public class DBPort extends HttpServlet{
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response){
 		try{
+			new Log().entry();
 			int clientReference=new Integer(request.getParameter("clientReference"));
 			OnlineClient onlineClient=OnlineClients.instance().get(clientReference);
+			Log log = new Log(onlineClient);
+			log.entry(request.getParameterMap());
 			String locale=onlineClient.getLocale();
 			response.setCharacterEncoding("utf-8");
 			response.setContentType("application/json");
@@ -123,7 +127,7 @@ public class DBPort extends HttpServlet{
 								AccessPermission.ADMIN,
 								AccessPermission.PRODUCT_READ)),
 								*/
-						new AccessPermission[]{ADMIN,PRODUCT_READ},
+						new AccessPermission[]{ADMIN,PRODUCT_READ,BASIC},
 						new String[]{"searchRequestId","search"},
 						request, response, onlineClient);
 				return;

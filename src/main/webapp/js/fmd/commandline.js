@@ -138,15 +138,15 @@
 			}
 			this.kind="getinvoice";
 		}
-		else if(this.command=='@rc'){
+		else if(this.command=='%rc'){
 			$('#commands').ShowBubblePopup( {innerHtml: 'escribe tu recordatorio'} );
 			this.kind="makerecord";
 		}
-		else if(this.command=='@rr'){
+		else if(this.command=='%rr'){
 			$('#commands').ShowBubblePopup( {innerHtml: '<enter> mostrar recordatorios. <espacio> n mostrar ultimos n recordatorios'} );
 			this.kind="returnrecords";
 		}
-		else if(this.command=='@rb'){
+		else if(this.command=='%rb'){
 			$('#commands').ShowBubblePopup( {innerHtml: 'marcar recordatorio como hecho'} );
 			this.kind="deactivaterecord";
 		}
@@ -215,6 +215,7 @@
 					this.command.indexOf("$")==0){
 				console.log("matches");
 				return;
+				
 			}
 			console.log("matches!");
 			this.quantity=1;

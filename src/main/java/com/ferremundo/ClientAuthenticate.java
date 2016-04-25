@@ -3,7 +3,9 @@ package com.ferremundo;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -20,19 +22,18 @@ public class ClientAuthenticate extends HttpServlet{
 	
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
-		System.out.println("AUTHENTICATING");
+        Log log = new Log();
+        log.entry();
+        Map<String, String[]> paramsMap = new HashMap<String, String[]>(req.getParameterMap());
+        paramsMap.remove("password");
+		log.entry(paramsMap);
 		int clientReference=new Integer(req.getParameter("clientReference"));
-		System.out.println("clientReference:"+clientReference);
 		String password=req.getParameter("password");
 		//System.out.println("password:"+password);
 		String login=req.getParameter("login");
-		System.out.println("lg "+login);
 		boolean lock=new Boolean(req.getParameter("lock"));
-		System.out.println("lk "+lock);
 		String newUserName=req.getParameter("newUserName");
-		System.out.println("nu "+newUserName);
 		String token=req.getParameter("token");
-		System.out.println("tok :"+token);
 		resp.setCharacterEncoding("utf-8");
 		resp.setContentType("application/json");
 		if(login!=null){
@@ -166,7 +167,7 @@ public class ClientAuthenticate extends HttpServlet{
 		for(int i=0;i<size;i++){
 			AccessPermission permission=permissions.get(i);
 			boolean matches=false;
-			for(int j=0;j<csize;j++){	
+			for(int j=0;j<csize;j++){
 				if(permission.equals(clientPermissions.get(j))){
 					matches=true;
 					break;

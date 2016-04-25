@@ -7,4 +7,5 @@ bin
 gradle-app.setting
 gradle
 .gradle
-
+ui
+logs

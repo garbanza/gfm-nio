@@ -24,9 +24,12 @@ public class Port extends HttpServlet{
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
+		new Log().entry();
 		//String sIPAddress = req.getRemoteAddr();
 		int clientReference=new Integer(req.getParameter("clientReference"));
 		OnlineClient onlineClient=OnlineClients.instance().get(clientReference);
+		Log log = new Log(onlineClient);
+		log.entry(req.getParameterMap());
 		if(!(onlineClient.isAuthenticated(req)&&(
 				onlineClient.hasAccess(AccessPermission.PRODUCT_READ)||
 				onlineClient.hasAccess(AccessPermission.CONSUMMER_READ)||
