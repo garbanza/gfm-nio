@@ -11,8 +11,9 @@ import com.mongodb.DBObject;
 
 import mx.nafiux.Rhino;
 
-public class ElectronicInvoiceGenerator {
-	
+public interface ElectronicInvoice {
+	public String envelope(Invoice invoice);
+	public PACResponse submit(String data);
 /* 
 	private Rhino rhino= new Rhino(cerPath, keyPath, keyPass);
 	
@@ -66,7 +67,7 @@ public class ElectronicInvoiceGenerator {
 		rhino.setGenerales(serie, folio, fecha, formaDePago, metodoPago, tipoComprobante, lugarExpedicion, total, subtotal);
 	}
 	
-	public ElectronicInvoiceGenerator(Invoice invoice){
+	public ElectronicInvoice(Invoice invoice){
 		inflateRhino(invoice);
 	}
 	
@@ -80,7 +81,7 @@ public class ElectronicInvoiceGenerator {
 		
 		DBObject dbo=new Mongoi().doFindOne(Mongoi.INVOICES, "{ \"reference\" : \"191517\"}");
 		InvoiceFM01 fm01=new Gson().fromJson(dbo.toString(), InvoiceFM01.class);
-		ElectronicInvoiceGenerator test= new ElectronicInvoiceGenerator(fm01);
+		ElectronicInvoice test= new ElectronicInvoice(fm01);
 		Rhino rhino=test.inflateRhino(fm01);
 		
 		String ret=rhino.timbrarPrueba("", "");
@@ -91,3 +92,4 @@ public class ElectronicInvoiceGenerator {
 */
 
 }
+
