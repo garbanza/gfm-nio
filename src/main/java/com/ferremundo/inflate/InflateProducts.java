@@ -43,7 +43,7 @@ public class InflateProducts extends HttpServlet {
          			String description=fields[3];
          			float unitPrice=Float.parseFloat(fields[4].replace(",","."));
         			int productPriceKind=Integer.parseInt(fields[5]);
-        			Product product=new Product( code,  unitPrice,  unit,  mark, description,  productPriceKind);
+        			Product product=null;//new Product( code,  unitPrice,  unit,  mark, description,  productPriceKind);
         			em.persist(product);
          		}
          	}catch(IOException e){e.printStackTrace();}

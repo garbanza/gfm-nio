@@ -16,6 +16,7 @@ import javax.servlet.http.*;
 
 import com.ferremundo.OnlineClient;
 import com.ferremundo.db.Mongoi;
+import com.ferremundo.util.Util;
 import com.mongodb.DBObject;
 
 public class Port extends HttpServlet{
@@ -41,7 +42,8 @@ public class Port extends HttpServlet{
 		
 		String search=req.getParameter("search");
 		
-		int consummerType=new Integer(req.getParameter("consummerType"));
+		//int consummerType=new Integer(req.getParameter("consummerType"));
+		float consummerDiscount=new Float(req.getParameter("consummerDiscount"));
 		
 		int requestNumber=new Integer(req.getParameter("requestNumber"));
 		
@@ -82,7 +84,7 @@ public class Port extends HttpServlet{
 					}
 					
 					
-					System.out.println("searching for:::'"+decSearch+"'");
+					log.info("searching for:::'"+decSearch+"'");
 					//ProductsStore ps=ProductsStore.instance();
 					
 					//String encoded=URLEncoder.encode(ps.searchToXML(decSearch, 10,searchRequestID),"utf-8");
@@ -90,7 +92,7 @@ public class Port extends HttpServlet{
 					List<DBObject> list=Product.find(patterns,onlineClient,requestNumber);
 					if(requestNumber<onlineClient.getRequestNumber()){
 						resp.getWriter().print("{\"products\" : [ ],\"requestNumber\" : \""+requestNumber+"\"}");
-						System.out.println("request no enviada -> "+requestNumber+"<"+onlineClient.getRequestNumber()+" :"+patterns);
+						log.info("request no enviada -> "+requestNumber+"<"+onlineClient.getRequestNumber()+" :"+patterns);
 						return;
 					}
 					String json="{ \"products\" : [ ";
@@ -98,24 +100,27 @@ public class Port extends HttpServlet{
 						DBObject product=list.get(i);
 						int productPriceKind=new Integer(product.get("productPriceKind").toString());
 						float unitPrice=new Float(product.get("unitPrice").toString());
-						if(consummerType==Client.TYPE_1){
+						float providerPrice =new Float(product.get("providerPrice").toString());
+						float discount= consummerDiscount/100.0f;
+						float finalPrice=Util.round2(unitPrice-(unitPrice-providerPrice)*discount);
+						/*if(consummerDiscount==Client.TYPE_1){
 							//unitPrice=product.getUnitPrice();
 						}
-						else if(consummerType==Client.TYPE_2){
+						else if(consummerDiscount==Client.TYPE_2){
 							if(productPriceKind==Product.KIND_1)unitPrice*=Product.FACTOR_1;
 							else if(productPriceKind==Product.KIND_2)unitPrice*=Product.FACTOR_2;
 						}
-						else if(consummerType==Client.TYPE_3){
+						else if(consummerDiscount==Client.TYPE_3){
 							if(productPriceKind==Product.KIND_1)unitPrice*=Product.FACTOR_3;
 							else if(productPriceKind==Product.KIND_2)unitPrice*=Product.FACTOR_4;
-						}
-						product.put("unitPrice", unitPrice);
+						}*/
+						product.put("unitPrice", finalPrice);
 						json+=product;
 						if(i<list.size()-1)json+=" , ";
 					}
 					json+=" ], \"requestNumber\" : \""+requestNumber+"\"}";
 					//String json=ps.searchToJson(decSearch.replaceAll("undefined", ""), consummertype,30);
-					System.out.println("consummerType -> "+consummerType);
+					System.out.println("consummerType -> "+consummerDiscount);
 					System.out.println(json);
 					resp.getWriter().print(json);//"{\"p\":[{\"code\":\"0\"}]}");
 				}

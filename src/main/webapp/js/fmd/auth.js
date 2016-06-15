@@ -82,7 +82,7 @@ $.capsule([
 	       			message:"addConsummer"
 	       		},
 	    	   html:function(){
-	    		   return "<div id='$(id)' class=$(blockdiv)>"+
+	    		   return "<div id='$(id)' class=$(blockdiv)>"+"$(message)"+
 	    		   "<br>Nombre:		<input id='consummer'/>"+
 		   			"<br>Tipo:			<input id='consummerType' value='1'/>"+
 		   			"<br>Calle:			<input id='address'/>"+
@@ -185,7 +185,7 @@ passin=function(dats){
 	var $form=$('body').inPassin({id:passid, success:dats.success, message: dats.message});
 	var $password=$form.find('#password');
 	$password.focus();
-	$password.bind('keyup',function(event){
+	$password.bind('keydown',function(event){
 		if(event.keyCode==27&dats.escape){
 			$form.remove();
 			return;
@@ -249,7 +249,7 @@ registerShopmanIn=function(){
 	var regid='registerShopmanID'+$.capsule.randomString(1,15,'aA0');
 	var $reg=$('body').inRegisterShopmanIn({id:regid, message:"registrar usuario"});
 	$reg.find('#newUserName').focus();
-	$reg.find('input').bind('keyup',function(event){
+	$reg.find('input').bind('keydown',function(event){
 		if(event.keyCode==27){
 			$reg.remove();
 			return;
@@ -289,15 +289,17 @@ registerShopmanIn=function(){
 };
 addConsummerIn=function(where){
 	var addid='addConsummerInID'+$.capsule.randomString(1,15,'aA0');
-	var $add=$('body').inAddConsummerIn({id:addid, message:"agregar cliente"});
+	var $add=$('body').inAddConsummerIn({id:addid, message:where});
+	$('#commands').val('');
 	$add.find('#consummer').focus();
 	$add.find('input').bind('keydown',function(event){
 		if(event.keyCode==27){
 			var stay=confirm("abandonar formulario?");
 			if(!stay){
-				$('#commands').empty().focus();
+				//$('#commands').focus();
 				return;
 			}
+			$('#commands').focus();
 			$add.remove();
 			return;
 		}
@@ -410,7 +412,7 @@ addConsummerIn=function(where){
 				}
 				//$('#editclient').dialog('close');
 				$add.remove();
-				$('#commands').empty().focus();
+				$('#commands').focus();
 			},
 			error: function(jqXHR, textStatus, errorThrown){
 				alert("el sistema dice: "+textStatus+" - "+errorThrown+" - "+jqXHR.responseText);

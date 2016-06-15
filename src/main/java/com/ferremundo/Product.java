@@ -19,6 +19,7 @@ import org.json.JSONObject;
 
 import com.ferremundo.OnlineClient;
 import com.ferremundo.db.Mongoi;
+import com.ferremundo.util.Util;
 import com.google.common.collect.Iterators;
 import com.ibm.icu.text.DecimalFormat;
 import com.mongodb.DBCursor;
@@ -66,8 +67,11 @@ public class Product implements Serializable {
     private float missed;
     
 	@Basic
+	@Deprecated
     private int productPriceKind;
     
+	@Basic
+	private float providerPrice;
 	@Basic
     private int calls;
 
@@ -75,6 +79,8 @@ public class Product implements Serializable {
 	private boolean edited=false;
 	
 	private boolean firstTimeInventored;
+
+	private float providerOffer;
 	
 	public static final int KIND_1=1;
 	public static final int KIND_2=2;
@@ -90,16 +96,19 @@ public class Product implements Serializable {
 		this.unit =json.getString("unit");
 		this.mark=json.getString("mark");
 		this.description = json.getString("description");
-		this.productPriceKind=(int)json.getDouble("productpricekind");
+		this.providerPrice=(int)json.getDouble("providerPrice");
 	}
 	
-	public Product(String code, float unitPrice, String unit, String mark,String description, int productPriceKind) {
+	public Product(String code, float unitPrice, String unit, String mark,String description, float providerPrice, float providerOffer) {
 		this.code=code;
 		this.unitPrice = unitPrice;
 		this.unit = unit;
 		this.mark=mark;
 		this.description = description;
-		this.productPriceKind=productPriceKind;
+		this.providerPrice=providerPrice;
+		this.providerOffer=providerOffer;
+		String hashStr=code+" "+unit+" "+mark+" "+description;
+		this.hash=MD5.get(hashStr);
 	    stored=0;
 	    collecting=0;
 	    sending=0;
@@ -109,7 +118,7 @@ public class Product implements Serializable {
 	}
 	
 	public Product cloneL1(){
-		Product product= new Product(code, unitPrice, unit, mark, description, productPriceKind);
+		Product product= new Product(code, unitPrice, unit, mark, description, providerPrice, providerOffer);
 		product.id=id;
 		return product;
 	}
@@ -131,7 +140,7 @@ public class Product implements Serializable {
 		return big.floatValue();
 	}
 	
-	public Float getUnitPrice(int consummerType) {
+	public Float getUnitPrice(float consummerDiscount) {
 		DBObject product=new Mongoi().doFindOne(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\" }");
 		//String hash=this.getHash();
 		//String oHash=product.get("hash").toString();
@@ -140,19 +149,22 @@ public class Product implements Serializable {
 		//Product product=ProductsStore.getByKey(key);
 		//int productPriceKind=new Integer(product.get("productPriceKind").toString());
 		float unitPrice=new Float(product.get("unitPrice").toString());
-		if(consummerType==Client.TYPE_1){
+		float providerPrice =new Float(product.get("providerPrice").toString());
+		float discount= consummerDiscount/100.0f;
+		float finalPrice=Util.round2(unitPrice*(1-discount)-providerPrice*discount);
+		/*if(consummerDiscount==Client.TYPE_1){
 			//unitPrice=product.getUnitPrice();
 		}
-		else if(consummerType==Client.TYPE_2){
+		else if(consummerDiscount==Client.TYPE_2){
 			if(productPriceKind==Product.KIND_1)unitPrice*=Product.FACTOR_1;
 			else if(productPriceKind==Product.KIND_2)unitPrice*=Product.FACTOR_2;
 		}
-		else if(consummerType==Client.TYPE_3){
+		else if(consummerDiscount==Client.TYPE_3){
 			if(productPriceKind==Product.KIND_1)unitPrice*=Product.FACTOR_3;
 			else if(productPriceKind==Product.KIND_2)unitPrice*=Product.FACTOR_4;
-		}
-		//if()
-		return roundTo6(unitPrice);
+		}*/
+
+		return finalPrice;
 	}
 
 	public void setUnitPrice(float unitPrice) {
@@ -240,6 +252,22 @@ public class Product implements Serializable {
 		this.productPriceKind = productPriceKind;
 	}
 	
+	public float getProviderPrice() {
+		return providerPrice;
+	}
+
+	public void setProviderPrice(float providerPrice) {
+		this.providerPrice = providerPrice;
+	}
+	
+	public float getProviderOffer() {
+		return providerOffer;
+	}
+
+	public void setProviderOffer(float providerOffer) {
+		this.providerOffer = providerOffer;
+	}
+	
 	public void addCall(int calls) {
 		this.calls++;
 	}
@@ -259,8 +287,11 @@ public class Product implements Serializable {
 	
 
 	public String getHash() {
-		String str=code+" "+unit+" "+mark+" "+description;
-		return MD5.get(str);
+		if (hash==null){
+			String str=code+" "+unit+" "+mark+" "+description;
+			return MD5.get(str);
+		}
+		return hash;
 	}
 	public void setHash(String hash) {
 		this.hash = hash;
@@ -272,11 +303,13 @@ public class Product implements Serializable {
 	public String toJsonL1(){
 		return "{ "+
 		"\"id\" : \""+getId()+"\", "+
+		"\"hash\" : \""+getHash()+"\", "+
 		"\"code\" : \""+getCode()+"\", "+
 		"\"unit\" : \""+getUnit()+"\", "+
 		"\"mark\" : \""+getMark()+"\", "+
 		"\"unitprice\" : \""+getUnitPrice()+"\", "+
-		"\"productpricekind\" : \""+getProductPriceKind()+"\", "+
+		"\"providerPrice\" : \""+getProviderPrice()+"\", "+
+		"\"providerOffer\" : \""+getProviderOffer()+"\", "+
 		"\"description\" : \""+getDescription()+"\" "+
 		"}";
 
@@ -290,6 +323,8 @@ public class Product implements Serializable {
 	}
 	
 	public static List<DBObject> find(String[] patterns, OnlineClient onlineClient, int requestNumber){
+		Log log = new Log(onlineClient);
+		log.entry(patterns);
 		DBCursor c1=new Mongoi().doFindThisThen(Mongoi.MATCHES,Mongoi.PRODUCTS, new String[]{"code"}, new String[]{"description","mark"},patterns);
 		if(!isLastSearch(onlineClient, requestNumber))return null;
 		DBCursor c2=new Mongoi().doFindThisThen(Mongoi.STARTS,Mongoi.PRODUCTS, new String[]{"code"}, new String[]{"description","mark"},patterns);
@@ -310,6 +345,7 @@ public class Product implements Serializable {
 			}
 		}
 		if(!isLastSearch(onlineClient, requestNumber))return null;
+		log.exit(lst);
 		return lst;
 	}
 	
