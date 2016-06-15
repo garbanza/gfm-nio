@@ -68,9 +68,9 @@ public class Log {
 	private static void initLogger(){
 		if (loggerContext==null) {
 			LoggerContext loggerContext = (org.apache.logging.log4j.core.LoggerContext) LogManager.getContext(false);
-			File file = new File(GSettings.get("LOGGER_CONTEXT"));
+			File file = new File(GSettings.getPathTo("LOGGER_CONTEXT"));
 			// this will force a reconfiguration 
-			ThreadContext.put("log-path", GSettings.get("LOGGING_PATH"));
+			ThreadContext.put("log-path", GSettings.getPathTo("LOGGING_PATH"));
 			loggerContext.setConfigLocation(file.toURI());
 		}
 	}

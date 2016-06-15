@@ -11,15 +11,18 @@ import java.util.Properties;
 public class GSettings extends Properties{
 
 	private static GSettings gSettings=null;
-	private static Properties properties;//=new Properties();
-	private static String folderBase="/opt/fm";//TODO unharcode here
+	private static String folderBase=System.getProperty("user.home")+File.separator+".fm";//"/opt/fm";//TODO unharcode here
 	/**
 	 * 
 	 */
-	public GSettings(){
-		if(properties==null){
+	private GSettings(){
+		if(gSettings==null){
+			if(System.getProperty("FM_HOME")!=null){
+				folderBase=System.getProperty("FM_HOME")+File.separator;
+			}
+
 			String path=
-					folderBase+File.separator+
+					folderBase+
 					//this.getClass().getName().replace(".",File.separator)+
 					this.getClass().getName()+
 					".xml";
@@ -39,7 +42,13 @@ public class GSettings extends Properties{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			properties=this;
+			
+			if(new Boolean(System.getProperty("TEST"))==true){
+				this.setProperty("TEST", "true");
+			}
+			this.setProperty("FM_HOME", folderBase);
+			
+			
 		}
 	}
 	
@@ -62,7 +71,10 @@ public class GSettings extends Properties{
 	}
 	
 	public String getKey(String key){
-		return properties.getProperty(key);
+		if(gSettings==null){
+			gSettings=new GSettings();
+		}
+		return gSettings.getProperty(key);
 	}
 	
 	public static String get(String key){
@@ -70,6 +82,20 @@ public class GSettings extends Properties{
 			gSettings=new GSettings();
 		}
 		return gSettings.getKey(key);
+	}
+	public static String getHome(){
+		if(gSettings==null){
+			gSettings=new GSettings();
+		}
+		return folderBase;
+	}
+	
+	public static String getPathTo(String key){
+		if(gSettings==null){
+			gSettings=new GSettings();
+		}
+		return getHome()+gSettings.getKey(key)+File.separator;
+		
 	}
 	
 }

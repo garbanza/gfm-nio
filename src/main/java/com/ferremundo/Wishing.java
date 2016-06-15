@@ -30,6 +30,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
@@ -335,55 +336,72 @@ public class Wishing extends HttpServlet {
 						// ElectronicInvoiceGenerator test= new
 						// ElectronicInvoiceGenerator(fm01);
 						// Rhino rhino=test.inflateRhino(fm01);
-
-						String cfdiResponse = RhinoGen.gen(invoice);
+						//String signed=ElectronicInvoiceFactory.gen(invoice);
+						ElectronicInvoice electronicInvoice=new Profact(invoice);
+						boolean production=!new Boolean(GSettings.get("TEST"));
+						PACResponse pacResponse=electronicInvoice.submit(production);
+						
+						//String cfdiResponse = RhinoGen.gen(invoice);
 						// ElectronicInvoiceGenerator generator=new
 						// ElectronicInvoiceGenerator(fm01);
 						// String cfdiResponse=generator.create();
 						// System.out.println("response from server
 						// "+cfdiResponse);
-						DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+						
+						/*DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 						DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 						Document doc = dBuilder.parse(new ByteArrayInputStream(cfdiResponse.getBytes()));
 						NodeList nlist = doc.getElementsByTagName("codigo");
-
-						if (nlist.item(0).getTextContent().equals("0")) {
-							String xml = doc.getElementsByTagName("xmlretorno").item(0).getTextContent();
-							String pdfUrl = doc.getElementsByTagName("urlpdf").item(0).getTextContent();
-							String xmlUrl = doc.getElementsByTagName("urlxml").item(0).getTextContent();
-							InvoiceElectronicVersion electronicVersion = new InvoiceElectronicVersion(
-									StringEscapeUtils.unescapeXml(xml), "", xmlUrl, "", pdfUrl);
+						*/
+						if (pacResponse.isSuccess()) {
+							String xml = pacResponse.getInvoice();
+							String reference=invoice.getReference();
+							ElectronicInvoiceFactory.saveCFDI(xml, reference);
+							ElectronicInvoiceFactory.genQRCode(reference);
+							ElectronicInvoiceFactory.genHTML(reference);
+							ElectronicInvoiceFactory.genPDF(reference);
+							
+							org.jsoup.nodes.Document document=null;
+							try {
+								document = Jsoup.parse(new File(xml),"utf-8");
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							String total=document.select("cfdi|Comprobante").get(0).attr("total");
+							//String pdfUrl = doc.getElementsByTagName("urlpdf").item(0).getTextContent();
+							//String xmlUrl = doc.getElementsByTagName("urlxml").item(0).getTextContent();
+							/*InvoiceElectronicVersion electronicVersion = new InvoiceElectronicVersion(
+									StringEscapeUtils.unescapeXml(xml), "", xmlUrl, "", pdfUrl);*/
 							// TODO HARDCODED HERE
-							String pdf = GSettings.get("TMP_FOLDER") + invoice.getReference() + ".pdf";
-							JGet.download(pdfUrl, pdf);
-							JGet.stringTofile(StringEscapeUtils.unescapeXml(xml),
-									GSettings.get("TMP_FOLDER") + invoice.getReference() + ".xml");
+							String pdf = GSettings.getPathTo("TMP_FOLDER") + reference + ".pdf";
+
 							new Mongoi().doUpdate(Mongoi.INVOICES,
-									"{ \"reference\" : \"" + invoice.getReference() + "\" }",
-									"{ \"electronicVersion\" : " + new Gson().toJson(electronicVersion) + " }");
+									"{ \"reference\" : \"" + reference + "\" }",
+									"{ \"electronicVersion\" : {\"xml\" : " + xml + "} }");
 							new Mongoi().doUpdate(Mongoi.INVOICES,
-									"{ \"reference\" : \"" + invoice.getReference() + "\" }",
+									"{ \"reference\" : \"" + reference + "\" }",
 									"{ \"hasElectronicVersion\" : true }");
 							// TODO has parse de mails please
 							if (!invoice.getClient().getEmail().equals("")) {
 								HotmailSend.send(
-										"factura " + GSettings.get("INVOICE_SERIAL") + " " + invoice.getReference()
-												+ " $" + ((double) Math.round(invoice.getTotal() * 100000) / 100000),
-										"FERREMUNDO AGRADECE SU PREFERENCIA", invoice.getClient().getEmail().split(" "),
-										new String[] { GSettings.get("TMP_FOLDER") + invoice.getReference() + ".xml",
-												GSettings.get("TMP_FOLDER") + invoice.getReference() + ".pdf" },
-										new String[] { invoice.getReference() + ".xml",
-												invoice.getReference() + ".pdf" });
+										"factura " + GSettings.get("INVOICE_SERIAL") + " " + reference
+												+ " $" + total,
+										GSettings.get("INVOICE_GREETINGS"), invoice.getClient().getEmail().split(" "),
+										new String[] { GSettings.getPathTo("TMP_FOLDER") + reference + ".xml",
+												GSettings.getPathTo("TMP_FOLDER") + reference + ".pdf" },
+										new String[] { reference + ".xml",
+												reference + ".pdf" });
 							}
 							if (!invoice.getAgent().getEmail().equals("")) {
 								HotmailSend.send(
-										"factura " + invoice.getReference() + " $"
-												+ ((double) Math.round(invoice.getTotal() * 100000) / 100000),
-										"FERREMUNDO AGRADECE SU PREFERENCIA", invoice.getAgent().getEmail().split(" "),
-										new String[] { GSettings.get("TMP_FOLDER") + invoice.getReference() + ".xml",
-												GSettings.get("TMP_FOLDER") + invoice.getReference() + ".pdf" },
-										new String[] { invoice.getReference() + ".xml",
-												invoice.getReference() + ".pdf" });
+										"factura " + GSettings.get("INVOICE_SERIAL") + " " + reference
+										+ " $" + total,
+												GSettings.get("INVOICE_GREETINGS"), invoice.getAgent().getEmail().split(" "),
+										new String[] { GSettings.getPathTo("TMP_FOLDER") + reference + ".xml",
+												GSettings.getPathTo("TMP_FOLDER") + reference + ".pdf" },
+										new String[] { reference + ".xml",
+												reference + ".pdf" });
 							}
 							// TODO print this electronic representation to
 							// lazer or whatever
@@ -404,8 +422,8 @@ public class Wishing extends HttpServlet {
 						} else {
 							// TODO has que esta piñates te diga el mensage
 							String serverMessage = "ERROR - El servidor de facturacion dijo: codigo "
-									+ nlist.item(0).getTextContent() + " - mensaje "
-									+ doc.getElementsByTagName("mensaje").item(0).getTextContent();
+									+ pacResponse.getResponseCode() + " - mensaje "
+									+ pacResponse.getMessage();
 							System.out.println(serverMessage);
 							response.sendError(response.SC_SERVICE_UNAVAILABLE, serverMessage);
 							response.getWriter().print("{\"failed\":\"true\", \"message\": \"" + serverMessage + "\"}");
@@ -431,7 +449,7 @@ public class Wishing extends HttpServlet {
 					try {
 						// Create file
 						// HARD CODED HERE, write to *pdf.csv
-						String path = GSettings.get("TMP_FOLDER");
+						String path = GSettings.getPathTo("TMP_FOLDER");
 						path += invoice.getReference() + ".pdf.csv";
 						csv = path;
 						FileWriter fstream = new FileWriter(path);
@@ -457,7 +475,7 @@ public class Wishing extends HttpServlet {
 					String[] paths = new String[invoices.length + 1];
 					String[] fileNames = new String[invoices.length + 1];
 					for (int i = 0; i < invoices.length; i++) {
-						String pathname = GSettings.get("TMP_FOLDER") + invoices[i].getReference() + "." + i;
+						String pathname = GSettings.getPathTo("TMP_FOLDER") + invoices[i].getReference() + "." + i;
 						File pdf = new PDF(invoices[i], pathname).make();
 						// System.out.println("invoices["+i+"]:
 						// "+invoices[i].toJson());

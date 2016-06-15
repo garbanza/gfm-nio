@@ -87,7 +87,7 @@ public class Updater extends HttpServlet{
 		String response="";
 		
 		
-		File file = new File(GSettings.get("SPREADSHEET_DB_FILE"));//"/home/dios/FERREMUNDO/BD/BASE.ods");
+		File file = new File(GSettings.getPathTo("SPREADSHEET_DB_FILE"));
 		Sheet sheet=null;
 		try {
 			sheet = SpreadSheet.createFromFile(file).getSheet(new Integer(0));

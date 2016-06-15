@@ -12,8 +12,7 @@ import com.mongodb.DBObject;
 import mx.nafiux.Rhino;
 
 public interface ElectronicInvoice {
-	public String envelope(Invoice invoice);
-	public PACResponse submit(String data);
+	public PACResponse submit(boolean production);
 /* 
 	private Rhino rhino= new Rhino(cerPath, keyPath, keyPass);
 	

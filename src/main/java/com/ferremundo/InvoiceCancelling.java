@@ -103,7 +103,7 @@ public class InvoiceCancelling extends HttpServlet{
 								new Mongoi().doUpdate(Mongoi.INVOICES, "{ \"reference\" : \""+invoiceREF+"\"}", "{ \"electronicVersion.active\" : false }");
 								JGet.stringTofile(
 										StringEscapeUtils.unescapeXml(xml),
-										GSettings.get("TMP_FOLDER")+invoice.getReference()+"-CANCELADO.xml");
+										GSettings.getPathTo("TMP_FOLDER")+invoice.getReference()+"-CANCELADO.xml");
 								if(!invoice.getClient().getEmail().equals("")){
 									HotmailSend.send(
 										"factura CANCELADA "+invoice.getReference(),
