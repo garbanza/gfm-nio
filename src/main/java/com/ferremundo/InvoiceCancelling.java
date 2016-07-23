@@ -18,8 +18,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import mx.nafiux.Rhino;
-
 import com.ferremundo.InvoiceLog.LogKind;
 import com.ferremundo.db.Inventory;
 import com.ferremundo.db.Mongoi;
@@ -68,7 +66,9 @@ public class InvoiceCancelling extends HttpServlet{
 					invoice=new Gson().fromJson(oInvoice.toString(), InvoiceFM01.class);
 					if(invoice.attemptToLog(LogKind.CANCEL).isAllowed()){
 						if(invoice.hasElectronicVersion()){
-							DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();  
+							ElectronicInvoice ei=new Profact(invoice);
+							PACResponse pacResponse=ei.cancel(!new Boolean(GSettings.get("TEST")));
+							/*DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();  
 						    DocumentBuilder builder=null;
 						    Document document=null;
 						    try  
@@ -94,11 +94,14 @@ public class InvoiceCancelling extends HttpServlet{
 									g.getKey("INVOICE_CERTIFICATE_AUTHORITY_PASS"),
 									g.getKey("INVOICE_SENDER_TAX_CODE"),
 									uuid);
+							
 							document = builder.parse(new ByteArrayInputStream(cancel.getBytes()));
 							NodeList nlist=document.getElementsByTagName("codigo");
 							System.out.println("CANCEL RESPONSE: "+cancel);
-							if(nlist.item(0).getTextContent().equals("0")||nlist.item(0).getTextContent().equals("-5")){
-								String xml=document.getElementsByTagName("xmlretorno").item(0).getTextContent();
+							*/
+							
+							if(pacResponse.isSuccess()){
+								String xml=pacResponse.getContent();//document.getElementsByTagName("xmlretorno").item(0).getTextContent();
 								new Mongoi().doUpdate(Mongoi.INVOICES, "{ \"reference\" : \""+invoiceREF+"\"}", "{ \"electronicVersion.cancelXml\" : \""+StringEscapeUtils.unescapeXml(xml)+"\"}");
 								new Mongoi().doUpdate(Mongoi.INVOICES, "{ \"reference\" : \""+invoiceREF+"\"}", "{ \"electronicVersion.active\" : false }");
 								JGet.stringTofile(
@@ -107,7 +110,7 @@ public class InvoiceCancelling extends HttpServlet{
 								if(!invoice.getClient().getEmail().equals("")){
 									HotmailSend.send(
 										"factura CANCELADA "+invoice.getReference(),
-										"la factura con folio fiscal \n"+uuid+"\nha sido cancelada.\n"+GSettings.get("EMAIL_BODY"),
+										"la factura \n"+invoiceREF+"\nha sido cancelada.\n"+GSettings.get("EMAIL_BODY"),
 										invoice.getClient().getEmail().split(" ")/*,
 										new String[]{
 											GSettings.get("TMP_FOLDER")+invoice.getReference()+"-CANCELADO.xml"},
@@ -119,7 +122,7 @@ public class InvoiceCancelling extends HttpServlet{
 								if(!invoice.getAgent().getEmail().equals("")){
 									HotmailSend.send(
 											"factura CANCELADA "+invoice.getReference(),
-											"la factura con folio fiscal \n"+uuid+"\nha sido cancelada.\n"+GSettings.get("EMAIL_BODY"),
+											"la factura\n"+invoiceREF+"\nha sido cancelada.\n"+GSettings.get("EMAIL_BODY"),
 											invoice.getAgent().getEmail().split(" ")/*,
 											new String[]{
 												GSettings.get("TMP_FOLDER")+invoice.getReference()+"-CANCELADO.xml"},
@@ -131,7 +134,7 @@ public class InvoiceCancelling extends HttpServlet{
 							}
 							else{
 								response.setStatus( HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-								response.getWriter().write("ERROR: "+document.getElementsByTagName("mensaje").item(0).getTextContent());
+								response.getWriter().write("ERROR: "+pacResponse.getResponseCode()+" - "+pacResponse.getMessage());//document.getElementsByTagName("mensaje").item(0).getTextContent());
 								return;
 							}
 						}

@@ -36,9 +36,19 @@ public class Log {
 	}
 	
 	public Log(){
-		login="logger";
-		reference=-1;
-		StackTraceElement traceElement=Thread.currentThread().getStackTrace()[2];//index];
+		Integer clientReference=ClientReference.get();
+		if(clientReference!=null){
+			OnlineClient ol=OnlineClients.instance().get(clientReference);
+			if(ol!=null&&ol.getShopman()!=null){
+				login=ol.getShopman().getLogin();
+				reference=ol.getClientReference();
+			}
+		}
+		else {
+			login="logger";
+			reference=-1;
+		}
+		StackTraceElement traceElement=Thread.currentThread().getStackTrace()[2];
 		className=traceElement.getClassName();
 		methodName=traceElement.getMethodName();
 		initLogger();
@@ -48,7 +58,7 @@ public class Log {
 	public Log(String name){
 		login=name;
 		reference=-1;
-		StackTraceElement traceElement=Thread.currentThread().getStackTrace()[2];//index];
+		StackTraceElement traceElement=Thread.currentThread().getStackTrace()[2];
 		className=traceElement.getClassName();
 		methodName=traceElement.getMethodName();
 		initLogger();
@@ -106,14 +116,29 @@ public class Log {
 	public void error(String msg){
 		logger.error(className+"-"+methodName+"\t[user:"+login+"."+reference+"]\t"+ msg);
 	}
+	public void error(Object... os){
+		String oss= new Gson().toJson(os);
+		logger.error(className+"-"+methodName+"\t[user:"+login+"."+reference+"]\tobject("+ oss +")");
+	}
 	public void fatal(String msg){
 		logger.fatal(className+"-"+methodName+"\t[user:"+login+"."+reference+"]\t"+ msg);
 	}
 	public void log(Level level, String msg){
 		logger.log(level,className+"-"+methodName+"\t[user:"+login+"."+reference+"]\t"+ msg);
 	}
-	public void trace(String msg){
-		logger.trace(className+"-"+methodName+"\t[user:"+login+"."+reference+"]\t"+ msg);
+	public void trace(String msg, Throwable t){
+		logger.trace(className+"-"+methodName+"\t[user:"+login+"."+reference+"]\t"+ msg+" - "+t.toString());
+		for (StackTraceElement element : t.getStackTrace()){
+			logger.trace(className+"-"+methodName+"\t[user:"+login+"."+reference+"]\t"+ element);
+		 }
+		//logger.trace(className+"-"+methodName+"\t[user:"+login+"."+reference+"]\t"+ msg);
+	}
+	public void trace(Throwable t){
+		logger.trace(className+"-"+methodName+"\t[user:"+login+"."+reference+"]\t"+ t.toString());
+		for (StackTraceElement element : t.getStackTrace()){
+			logger.trace(className+"-"+methodName+"\t[user:"+login+"."+reference+"]\t"+ element);
+		 }
+		//logger.trace(className+"-"+methodName+"\t[user:"+login+"."+reference+"]\t"+ msg);
 	}
 	public void warn(String msg){
 		logger.warn(className+"-"+methodName+"\t[user:"+login+"."+reference+"]\t"+ msg);

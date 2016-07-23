@@ -22,13 +22,16 @@ public class ClientAuthenticate extends HttpServlet{
 	
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
-        Log log = new Log();
+		int clientReference=new Integer(req.getParameter("clientReference"));
+		ClientReference.set(clientReference);
+		Log log = new Log();
         log.entry();
         Map<String, String[]> paramsMap = new HashMap<String, String[]>(req.getParameterMap());
         paramsMap.remove("password");
-		log.entry(paramsMap);
-		int clientReference=new Integer(req.getParameter("clientReference"));
+        log.entry(paramsMap);
+		ClientReference.set(clientReference);
 		String password=req.getParameter("password");
+		
 		//System.out.println("password:"+password);
 		String login=req.getParameter("login");
 		boolean lock=new Boolean(req.getParameter("lock"));
@@ -39,6 +42,7 @@ public class ClientAuthenticate extends HttpServlet{
 		if(login!=null){
 			
 			DBObject dbshopman=new Mongoi().doFindOne(Mongoi.SHOPMANS, "{ \"login\" : \""+login+"\" }");
+			log.object(dbshopman,password);
 			if(dbshopman!=null&&password!=null){
 				if(dbshopman.get("password").toString().equals(MD5.get(password))&&
 						dbshopman.get("login").toString().equals(login)){
@@ -113,6 +117,7 @@ public class ClientAuthenticate extends HttpServlet{
 		}
 		else if(lock){
 			OnlineClient onlineClient=OnlineClients.instance().get(clientReference);
+			log.object("onlineClient",onlineClient);
 			if(!token.equals(onlineClient.getToken())){
 				//HttpServletResponse.SC_UNAUTHORIZED
 				resp.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
@@ -156,6 +161,8 @@ public class ClientAuthenticate extends HttpServlet{
 	}
 	
 	public static boolean hasAccess(OnlineClient onlineClient, List<AccessPermission> permissions){
+		Log log=new Log();
+		log.entry(onlineClient,permissions);
 		int size=permissions.size();
 		List<AccessPermission> clientPermissions=onlineClient.getShopman().getPermissions();
 		int csize=clientPermissions.size();

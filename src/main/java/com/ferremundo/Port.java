@@ -43,7 +43,9 @@ public class Port extends HttpServlet{
 		String search=req.getParameter("search");
 		
 		//int consummerType=new Integer(req.getParameter("consummerType"));
-		float consummerDiscount=new Float(req.getParameter("consummerDiscount"));
+		String consummerDiscountS=req.getParameter("consummerDiscount");
+		float consummerDiscount=0;
+		if(consummerDiscountS!=null)consummerDiscount=new Float(consummerDiscountS);
 		
 		int requestNumber=new Integer(req.getParameter("requestNumber"));
 		
@@ -98,6 +100,7 @@ public class Port extends HttpServlet{
 					String json="{ \"products\" : [ ";
 					for(int i=0;i<list.size();i++){
 						DBObject product=list.get(i);
+						log.object("product",i,product);
 						int productPriceKind=new Integer(product.get("productPriceKind").toString());
 						float unitPrice=new Float(product.get("unitPrice").toString());
 						float providerPrice =new Float(product.get("providerPrice").toString());

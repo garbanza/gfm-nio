@@ -6,6 +6,7 @@ import java.util.List;
 
 public enum AccessPermission {
 	ADMIN,
+	ROOT,
 	BASIC,
 	AGENT,
 	

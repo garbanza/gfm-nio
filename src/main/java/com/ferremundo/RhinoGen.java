@@ -1,5 +1,5 @@
 package com.ferremundo;
-
+/* DEPRECATED
 import java.util.Date;
 import java.util.List;
 
@@ -85,4 +85,4 @@ public class RhinoGen {
 		System.out.println(dbo);
 		System.out.println(resp);
 	}
-}
+}*/

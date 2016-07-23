@@ -11,7 +11,7 @@ import java.util.Properties;
 public class GSettings extends Properties{
 
 	private static GSettings gSettings=null;
-	private static String folderBase=System.getProperty("user.home")+File.separator+".fm";//"/opt/fm";//TODO unharcode here
+	private static String folderBase=System.getProperty("user.home")+File.separator+".fm"+File.separator;
 	/**
 	 * 
 	 */
@@ -94,7 +94,10 @@ public class GSettings extends Properties{
 		if(gSettings==null){
 			gSettings=new GSettings();
 		}
-		return getHome()+gSettings.getKey(key)+File.separator;
+		String path=getHome()+gSettings.getKey(key);
+		File file=new File(path);
+		if(file.isDirectory())return path+file.separator;
+		return path;
 		
 	}
 	

@@ -29,16 +29,17 @@ public class AuthFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
-        Log log = new Log();
-		log.entry(req.getParameterMap());
     	HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
+        String ref=request.getParameter("cr");
+        ClientReference.set(new Integer(ref));
+        Log log = new Log();
+		log.entry(req.getParameterMap());
         HttpSession session = request.getSession(false);
         System.out.println("authfilter");
         //System.out.println(new Gson().toJson(request));
         OnlineClients clients= OnlineClients.instance();
         OnlineClient onlineClient=null;
-        String ref=request.getParameter("cr");
         int clientReference;
         if(Utils.isInteger(ref)){
         	clientReference=Integer.parseInt(ref);
@@ -49,6 +50,7 @@ public class AuthFilter implements Filter {
         }
        	//String ipAddres=request.getRemoteAddr();
        	onlineClient=clients.get(clientReference);
+       	log.object("onlineClient is:",onlineClient);
        	req.setAttribute("back",request.getParameter("back"));
        	req.setAttribute("token",onlineClient.getToken());
        	req.setAttribute("clientReference",clientReference);

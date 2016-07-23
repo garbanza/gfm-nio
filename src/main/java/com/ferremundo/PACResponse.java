@@ -4,13 +4,13 @@ public class PACResponse {
 
 	private boolean success;
 	private String message;
-	private String invoice;
+	private String content;
 	private String responseCode;
 	
-	public PACResponse(boolean success, String message, String invoice, String responseCode) {
+	public PACResponse(boolean success, String message, String content, String responseCode) {
 		this.success = success;
 		this.message = message;
-		this.invoice = invoice;
+		this.content = content;
 		this.responseCode=responseCode;
 	}
 
@@ -26,8 +26,8 @@ public class PACResponse {
 		return message;
 	}
 
-	public String getInvoice() {
-		return invoice;
+	public String getContent() {
+		return content;
 	}	
 	
 }

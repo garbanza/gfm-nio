@@ -71,6 +71,8 @@ public class Product implements Serializable {
     private int productPriceKind;
     
 	@Basic
+	private float incrementPercent;
+	@Basic
 	private float providerPrice;
 	@Basic
     private int calls;
@@ -99,7 +101,7 @@ public class Product implements Serializable {
 		this.providerPrice=(int)json.getDouble("providerPrice");
 	}
 	
-	public Product(String code, float unitPrice, String unit, String mark,String description, float providerPrice, float providerOffer) {
+	public Product(String code, float unitPrice, String unit, String mark,String description, float providerPrice, float providerOffer,float incrementPercent) {
 		this.code=code;
 		this.unitPrice = unitPrice;
 		this.unit = unit;
@@ -107,6 +109,7 @@ public class Product implements Serializable {
 		this.description = description;
 		this.providerPrice=providerPrice;
 		this.providerOffer=providerOffer;
+		this.incrementPercent=incrementPercent;
 		String hashStr=code+" "+unit+" "+mark+" "+description;
 		this.hash=MD5.get(hashStr);
 	    stored=0;
@@ -118,7 +121,7 @@ public class Product implements Serializable {
 	}
 	
 	public Product cloneL1(){
-		Product product= new Product(code, unitPrice, unit, mark, description, providerPrice, providerOffer);
+		Product product= new Product(code, unitPrice, unit, mark, description, providerPrice, providerOffer,incrementPercent);
 		product.id=id;
 		return product;
 	}

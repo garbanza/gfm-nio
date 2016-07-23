@@ -12,14 +12,14 @@
 <script type="text/javascript" src="js/jquery.capsule.js"></script>
 
 <script type="text/javascript" src="js/jquery.sexytable-1.1.js"></script>
-<script type="text/javascript" src="js/jquery.editable.js"></script>
 
 <script type="text/javascript" src="js/jquery-ui-1.9.0.custom.min.js"></script>
 <script type="text/javascript" src="js/jquery-ui-1.8.4.custom.min.js"></script>
 <script type="text/javascript" src="js/jquery.ui.autocomplete.event.js"></script>
 
 <script type="text/javascript" src="js/jquery.json-2.2.js"></script>
-<script type="text/javascript" src="js/jquery.editable.js"></script>
+<!--script type="text/javascript" src="js/jquery.editable.js"></script-->
+<script type="text/javascript" src="js/jquery.victorjonsson.editable.js"></script>
 <script type="text/javascript" src="js/jquery.caret.1.02.min.js"></script>
 
 <script type="text/javascript" src="js/cps/SysAuth.js"></script>
@@ -299,7 +299,8 @@
 																	consummerType : client ? client.consummerType
 																			: 1,
 																	token : TOKEN,
-																	clientReference : CLIENT_REFERENCE
+																	clientReference : CLIENT_REFERENCE,
+																	consummerDiscount : $('#consummerDiscount').val()
 																},
 																success : function(
 																		data) {
@@ -413,6 +414,11 @@
 													$('#commands').val('');
 													return;
 												}
+												if ($('#paymentMethod').val() == '' || $('#paymentWay').val() == '') {
+													alert("metodo de pago y/o forma de pago indefinido.");
+													$('#commands').val('');
+													return;
+												}
 												//alert(" kind "+commandline.kind+" argsL "+commandline.args.length);
 												if (commandline.args.length >= 0
 														&& productsLog.length > 0) {
@@ -441,13 +447,16 @@
 																			.toJSON(seller)),
 																	agent : encodeURIComponent($
 																			.toJSON(agent)),
-																	destiny : encodeURIComponent($
-																			.toJSON(destiny)),
+																	destiny : encodeURIComponent("{\"address\" : \""+$('#destiny').val()+"\"}"),
 																	args : encodeURIComponent(commandline.args
 																			.join(" ")),
 																	token : TOKEN,
 																	command : commandline.command,
-																	clientReference : CLIENT_REFERENCE
+																	clientReference : CLIENT_REFERENCE,
+																	paymentMethod: $('#paymentMethod').val(),
+																	paymentWay: $('#paymentWay').val(),
+																	documentType: $('#documentType').val()
+																	
 																},
 																success : function(
 																		data) {
@@ -701,7 +710,7 @@
 															});
 												}
 											} else if (commandline.kind == 'discount') {
-												if (commandline.args.length >= 1
+												/*if (commandline.args.length >= 1
 														&& commandline.args[0]
 																.charAt(commandline.args[0].length - 1) == ',') {
 													alert("discounting "
@@ -720,7 +729,10 @@
 														//productsLog[j].quantity=$('.quantity').eq(j).val();
 													}
 													$('#commands').val('');
-												}
+												}*/
+												$('#consummerDiscount').val(parseFloat(commandline.args[0]));
+												$('#commands').val('');
+												applyDiscount();
 
 											} else if (commandline.kind == 'getinvoice') {
 												if (commandline.args.length >= 1) {
@@ -1248,6 +1260,9 @@
 															+ "-"
 															+ SHOPMAN.login
 												});
+											} else if (commandline.kind == 'paymentmethod') {
+												$('#commands').val('');
+												$("#paymentMethod").val(commandline.args.join(" "));
 											}
 
 										});
@@ -1599,12 +1614,31 @@
 			a cliente+abono</button>
 		<button type="button" onclick="new fillCommandLine('$fa');">factura
 			a agente+abono</button>
+		Forma de pago<input id="paymentWay" value="Pago en una sola exhibición" onfocus="(function(t){t.select()})(this)"/>
+		Método de pago
+		<select id="paymentMethodSelect" onchange="(function(th){var t=$(th).val(),pm=$('#paymentMethod').val();if(t!='')$('#paymentMethod').val(pm!=''?(pm+', '+t):t)})(this)">
+  			<option value=""></option>
+  			<option value="01">01 Efectivo</option>
+  			<option value="02">02 Cheque nominativo</option>
+  			<option value="03">03 Transferencia electrónica de fondos</option>
+  			<option value="04">04 Tarjeta de Crédito</option>
+  			<option value="05">05 Monedero Electrónico</option>
+  			<option value="06">06 Dinero electrónico</option>
+  			<option value="08">08 Vales de despensa</option>
+  			<option value="28">28 Tarjeta de Débito</option>
+  			<option value="29">29 Tarjeta de Servicio</option>
+  			<option value="99">99 Otros</option>
+		</select>
+		<input id="paymentMethod" value="" onfocus="(function(t){t.select()})(this)"/>
+		Destino<input id="destiny" value="Mostrador" onfocus="(function(t){t.select()})(this)"/>
+		desc<input id="consummerDiscount" value="0" onfocus="(function(t){t.select()})(this)" onchange="(function(){applyDiscount()})()"/>
+		tipo de comprobante<input id="documentType" value="ingreso" onfocus="(function(t){t.select()})(this)"/>
 		<p class="g-total2">$0</p>
 		<p class="g-area-to-print">0 - 0 hojas</p>
 		<div id="editproduct">
 			<input id="editproduct-1" /> <input id="editproduct-2" /> <input
-				id="editproduct-3" /> <input id="editproduct-4" /> <input
-				id="editproduct-5" /> <input id="editproduct-6" />
+				id="editproduct-3" /> <input id="editproduct-4"/> <input
+				id="editproduct-5" /> <input id="editproduct-6"/>
 		</div>
 
 	</div>

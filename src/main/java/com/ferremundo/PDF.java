@@ -63,7 +63,7 @@ public class PDF {
 	public PDF(Invoice invoice,String out){
 		InputStream stream=null;
 		try{
-			stream=new FileInputStream(new File(GSettings.get("INVOICE_FORM_DESCRIPTOR")));
+			stream=new FileInputStream(new File(GSettings.getPathTo("INVOICE_FORM_DESCRIPTOR")));
 		}catch(FileNotFoundException e){e.printStackTrace();}
 		form=new InvoiceFormFM01(stream);
 		this.invoice=invoice;

@@ -82,8 +82,10 @@ public class DBPort extends HttpServlet{
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response){
 		try{
-			new Log().entry();
+			
 			int clientReference=new Integer(request.getParameter("clientReference"));
+			ClientReference.set(clientReference);
+			new Log().entry();
 			OnlineClient onlineClient=OnlineClients.instance().get(clientReference);
 			Log log = new Log(onlineClient);
 			log.entry(request.getParameterMap());

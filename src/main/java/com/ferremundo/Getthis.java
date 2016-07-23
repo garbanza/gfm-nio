@@ -14,6 +14,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.ferremundo.db.Mongoi;
+import com.ferremundo.util.Util;
 import com.mongodb.DBObject;
 
 public class Getthis extends HttpServlet{
@@ -45,18 +46,21 @@ public class Getthis extends HttpServlet{
 			
 			
 			String list=req.getParameter("list");
-			String clientCode=req.getParameter("code");
+			//String clientCode=req.getParameter("code");
 			String ct=req.getParameter("consummerType");
 			Integer consummerType=null;
 			if(ct!=null)consummerType=new Integer(ct);
-			System.out.println("list: "+URLDecoder.decode(list,"utf-8")+" code: "+clientCode);
+			String consummerDiscountS=req.getParameter("consummerDiscount");
+			float consummerDiscount=0;
+			if(consummerDiscountS!=null)consummerDiscount=new Float(consummerDiscountS);
+			//System.out.println("list: "+URLDecoder.decode(list,"utf-8")+" code: "+clientCode);
 			try{
-				if(null!=list&&null!=clientCode){
+				if(null!=list/*&&null!=clientCode*/){
 					String decList=URLDecoder.decode(list,"utf-8");
-					String decCode=URLDecoder.decode(clientCode,"utf-8");
-					System.out.println(decList+"\n"+decCode);
+					//String decCode=URLDecoder.decode(clientCode,"utf-8");
+					//System.out.println(decList+"\n"+decCode);
 					//Client client=ClientsStore.instance().getClientByCode(decCode);
-					if(consummerType==null)consummerType=new Integer(new Mongoi().doFindOne(Mongoi.CLIENTS, "{ \"code\": \""+clientCode+"\"}").get("consummerType").toString());
+					//if(consummerType==null)consummerType=new Integer(new Mongoi().doFindOne(Mongoi.CLIENTS, "{ \"code\": \""+clientCode+"\"}").get("consummerType").toString());
 					//int consummerType=client.getConsummerType();
 					JSONArray jsa= new JSONArray(decList);
 					int length=jsa.length();
@@ -73,7 +77,10 @@ public class Getthis extends HttpServlet{
 							//Product product=ProductsStore.getByKey(key);
 							int productPriceKind=new Integer(product.get("productPriceKind").toString());
 							float unitPrice=new Float(product.get("unitPrice").toString());
-							if(consummerType==Client.TYPE_1){
+							float providerPrice =new Float(product.get("providerPrice").toString());
+							float discount= consummerDiscount/100.0f;
+							float finalPrice=Util.round2(unitPrice-(unitPrice-providerPrice)*discount);
+							/*if(consummerType==Client.TYPE_1){
 								//unitPrice=product.getUnitPrice();
 							}
 							else if(consummerType==Client.TYPE_2){
@@ -83,8 +90,8 @@ public class Getthis extends HttpServlet{
 							else if(consummerType==Client.TYPE_3){
 								if(productPriceKind==Product.KIND_1)unitPrice*=Product.FACTOR_3;
 								else if(productPriceKind==Product.KIND_2)unitPrice*=Product.FACTOR_4;
-							}
-							product.put("unitPrice", unitPrice);
+							}*/
+							product.put("unitPrice", finalPrice);
 							json+=product+(i==length-1?"":",");
 						}
 					}

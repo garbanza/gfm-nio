@@ -35,7 +35,8 @@ autocomplete=function(input){
 						clientReference: CLIENT_REFERENCE,
 						commandkind: commandline.kind,
 						consummerType: client?client.consummerType:1,
-						token : TOKEN
+						token : TOKEN,
+						consummerDiscount : $('#consummerDiscount').val()
 					},
 					success: function(data) {
 						if(REQUEST_NUMBER!=data.requestNumber){
@@ -190,7 +191,8 @@ autocomplete=function(input){
 								list:encodeURIComponent(jsonsrt),
 								code:code,
 								token : TOKEN,
-		    					clientReference: CLIENT_REFERENCE
+		    					clientReference: CLIENT_REFERENCE,
+		    					consummerDiscount : $('#consummerDiscount').val()
 							},
 							dataType: "json",
 							error: function(jqXHR, textStatus, errorThrown){
@@ -261,7 +263,8 @@ autocomplete=function(input){
 							"<div class='product-attr' style='width:60%; position:absolute; top:0%; left:10%;word-wrap: break-word;'>"+description+"</div>"+
 							"<div class='product-attr' style='width:10%; position:absolute; top:0%; left:70%;word-wrap: break-word;'>"+mark+"</div>"+
 							"<div class='product-attr' style='width:10%; position:absolute; top:0%; left:80%;word-wrap: break-word;'>"+p[i].unit+"</div>"+
-							"<div class='product-attr' style='width:10%; position:absolute; top:0%; left:90%;word-wrap: break-word;'>"+p[i].unitPrice+"</div></div>"
+							"<div class='product-attr' style='width:10%; position:absolute; top:0%; left:90%;word-wrap: break-word;'>"+p[i].unitPrice+"</div>"+
+							"<div class='product-attr' style='width:10%; position:absolute; top:0%; left:95%;word-wrap: break-word;'>"+p[i].stored+"</div></div>"
 					).addClass(i%2==0?"even":"odd");
 					var H=0;
 					$('.product-attr',this).each(function(){H<$(this).height()?H=$(this).height():0;});

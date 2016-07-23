@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.persistence.Basic;
 import javax.persistence.EntityManager;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -116,10 +117,12 @@ public class Updater extends HttpServlet{
 				String code=sheet.getCellAt("B"+i).getTextValue().replaceAll("^\\s+|\\s+$", "").toUpperCase();
 				String unit=sheet.getCellAt("C"+i).getTextValue().replaceAll("^\\s+|\\s+$", "").toUpperCase();
 				String description=sheet.getCellAt("D"+i).getTextValue().replaceAll("^\\s+|\\s+$", "").toUpperCase();
-				float unitPrice=new Float(sheet.getCellAt("E"+i).getTextValue());
-				float providerPrice=new Float(sheet.getCellAt("F"+i).getTextValue());
+				
+				float providerPrice=new Float(sheet.getCellAt("E"+i).getTextValue());
+				float incrementPercentage=new Float(sheet.getCellAt("F"+i).getTextValue());
 				float providerOffer=new Float(sheet.getCellAt("G"+i).getTextValue());
-				Product product= new Product(code, unitPrice, unit, mark,description, providerPrice,providerOffer);
+				float unitPrice=new Float(sheet.getCellAt("H"+i).getTextValue());
+				Product product= new Product(code, unitPrice, unit, mark,description, providerPrice,providerOffer,incrementPercentage);
 				
 				//String pstr=code+" "+unit+" "+mark+" "+description;
 				//String hash=product.getHash();//MD5.get(pstr);
@@ -156,12 +159,13 @@ public class Updater extends HttpServlet{
 					}*/
 				}
 				else {
-					log.info("product of code exists "+code);
+					log.object("product of code exists "+code,obj);
 					float oldPrice=new Float(obj.get("unitPrice").toString());
 					Object providerPriceO=obj.get("providerPrice");
 					float oldProviderPrice= providerPriceO==null?-1:new Float(providerPriceO.toString());
 					Object oldProviderOfferO=obj.get("providerOffer");
 					float oldProviderOffer= oldProviderOfferO==null?-1:new Float(oldProviderOfferO.toString());
+					log.object("unit-price",oldPrice,"vs",unitPrice);
 					if(oldPrice!=unitPrice){
 						new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"unitPrice\" : "+unitPrice+" }");
 						new Mongoi().doPush(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"priceHistory\" : {\"unitPrice\" : "+oldPrice+", \"deprecatedDate\" : "+new Date().getTime()+", \"updater\" : \""+onlineClient.getShopman().getLogin()+"\" }}");
@@ -188,7 +192,7 @@ public class Updater extends HttpServlet{
 			i++;
 			
 		}
-		response+="total products checked -> "+(i-1)+"\n";
+		response+="total products checked -> "+(i-2)+"\n";
 		return response;
 		/*EntityManager em=EMF.get(EMF.UNIT_PRODUCT).createEntityManager();
 		em.getTransaction().begin();

@@ -207,6 +207,10 @@
 			$('#commands').ShowBubblePopup( {innerHtml: 'add user'} );
 			this.kind="adduser";
 		}
+		else if(this.command=='@mp'){
+			$('#commands').ShowBubblePopup( {innerHtml: 'método de pago'} );
+			this.kind="paymentmethod";
+		}
 		else {
 			$('#commands').HideBubblePopup();
 			if(this.command.indexOf("@")==0||

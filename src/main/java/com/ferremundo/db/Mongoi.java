@@ -27,6 +27,7 @@ import com.ferremundo.Client;
 import com.ferremundo.Invoice;
 import com.ferremundo.InvoiceFM01;
 import com.ferremundo.InvoiceItem;
+import com.ferremundo.Log;
 import com.ferremundo.MD5;
 import com.ferremundo.Product;
 import com.ferremundo.stt.GSettings;
@@ -300,12 +301,16 @@ public class Mongoi {
 		return new Integer(st);
 	}
 	public float doIncrement(String where, String matches, String field, float amount){
+		Log log = new Log();
+		log.entry(where,matches,field,amount);
 		DBCollection collection = db.getCollection(where);
 		String js="{ \"$inc\" : { \""+field+"\" : "+amount+" } }";
 		DBObject dbObject=(DBObject)JSON.parse(js);
 		DBObject dbObject2=(DBObject)JSON.parse(matches);
 		//WriteResult wr=collection.update(dbObject2,dbObject);
-		String st=collection.findAndModify(dbObject2,dbObject).get(field).toString();
+		DBObject r=collection.findAndModify(dbObject2,dbObject);
+		log.object("result",r);
+		String st=r.get(field).toString();
 		return new Float(st);
 	}
 	

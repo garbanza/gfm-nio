@@ -1,129 +1,64 @@
-/**
- * CancelaCFDIAckResponse.java
- *
- * This file was auto-generated from WSDL
- * by the Apache Axis 1.4 Apr 22, 2006 (06:55:48 PDT) WSDL2Java emitter.
- */
 
 package com.profact;
 
-public class CancelaCFDIAckResponse  implements java.io.Serializable {
-    private java.lang.Object[] cancelaCFDIAckResult;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
-    public CancelaCFDIAckResponse() {
-    }
 
-    public CancelaCFDIAckResponse(
-           java.lang.Object[] cancelaCFDIAckResult) {
-           this.cancelaCFDIAckResult = cancelaCFDIAckResult;
-    }
+/**
+ * <p>Java class for anonymous complex type.
+ * 
+ * <p>The following schema fragment specifies the expected content contained within this class.
+ * 
+ * <pre>
+ * &lt;complexType>
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element name="CancelaCFDIAckResult" type="{http://localhost/}ArrayOfAnyType" minOccurs="0"/>
+ *       &lt;/sequence>
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
+ * </pre>
+ * 
+ * 
+ */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "", propOrder = {
+    "cancelaCFDIAckResult"
+})
+@XmlRootElement(name = "CancelaCFDIAckResponse")
+public class CancelaCFDIAckResponse {
 
+    @XmlElement(name = "CancelaCFDIAckResult")
+    protected ArrayOfAnyType cancelaCFDIAckResult;
 
     /**
-     * Gets the cancelaCFDIAckResult value for this CancelaCFDIAckResponse.
+     * Gets the value of the cancelaCFDIAckResult property.
      * 
-     * @return cancelaCFDIAckResult
+     * @return
+     *     possible object is
+     *     {@link ArrayOfAnyType }
+     *     
      */
-    public java.lang.Object[] getCancelaCFDIAckResult() {
+    public ArrayOfAnyType getCancelaCFDIAckResult() {
         return cancelaCFDIAckResult;
     }
 
-
     /**
-     * Sets the cancelaCFDIAckResult value for this CancelaCFDIAckResponse.
+     * Sets the value of the cancelaCFDIAckResult property.
      * 
-     * @param cancelaCFDIAckResult
+     * @param value
+     *     allowed object is
+     *     {@link ArrayOfAnyType }
+     *     
      */
-    public void setCancelaCFDIAckResult(java.lang.Object[] cancelaCFDIAckResult) {
-        this.cancelaCFDIAckResult = cancelaCFDIAckResult;
-    }
-
-    private java.lang.Object __equalsCalc = null;
-    public synchronized boolean equals(java.lang.Object obj) {
-        if (!(obj instanceof CancelaCFDIAckResponse)) return false;
-        CancelaCFDIAckResponse other = (CancelaCFDIAckResponse) obj;
-        if (obj == null) return false;
-        if (this == obj) return true;
-        if (__equalsCalc != null) {
-            return (__equalsCalc == obj);
-        }
-        __equalsCalc = obj;
-        boolean _equals;
-        _equals = true && 
-            ((this.cancelaCFDIAckResult==null && other.getCancelaCFDIAckResult()==null) || 
-             (this.cancelaCFDIAckResult!=null &&
-              java.util.Arrays.equals(this.cancelaCFDIAckResult, other.getCancelaCFDIAckResult())));
-        __equalsCalc = null;
-        return _equals;
-    }
-
-    private boolean __hashCodeCalc = false;
-    public synchronized int hashCode() {
-        if (__hashCodeCalc) {
-            return 0;
-        }
-        __hashCodeCalc = true;
-        int _hashCode = 1;
-        if (getCancelaCFDIAckResult() != null) {
-            for (int i=0;
-                 i<java.lang.reflect.Array.getLength(getCancelaCFDIAckResult());
-                 i++) {
-                java.lang.Object obj = java.lang.reflect.Array.get(getCancelaCFDIAckResult(), i);
-                if (obj != null &&
-                    !obj.getClass().isArray()) {
-                    _hashCode += obj.hashCode();
-                }
-            }
-        }
-        __hashCodeCalc = false;
-        return _hashCode;
-    }
-
-    // Type metadata
-    private static org.apache.axis.description.TypeDesc typeDesc =
-        new org.apache.axis.description.TypeDesc(CancelaCFDIAckResponse.class, true);
-
-    static {
-        typeDesc.setXmlType(new javax.xml.namespace.QName("http://localhost/", ">CancelaCFDIAckResponse"));
-        org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
-        elemField.setFieldName("cancelaCFDIAckResult");
-        elemField.setXmlName(new javax.xml.namespace.QName("http://localhost/", "CancelaCFDIAckResult"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "anyType"));
-        elemField.setMinOccurs(0);
-        elemField.setNillable(false);
-        elemField.setItemQName(new javax.xml.namespace.QName("http://localhost/", "anyType"));
-        typeDesc.addFieldDesc(elemField);
-    }
-
-    /**
-     * Return type metadata object
-     */
-    public static org.apache.axis.description.TypeDesc getTypeDesc() {
-        return typeDesc;
-    }
-
-    /**
-     * Get Custom Serializer
-     */
-    public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
-           javax.xml.namespace.QName _xmlType) {
-        return 
-          new  org.apache.axis.encoding.ser.BeanSerializer(
-            _javaType, _xmlType, typeDesc);
-    }
-
-    /**
-     * Get Custom Deserializer
-     */
-    public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
-           javax.xml.namespace.QName _xmlType) {
-        return 
-          new  org.apache.axis.encoding.ser.BeanDeserializer(
-            _javaType, _xmlType, typeDesc);
+    public void setCancelaCFDIAckResult(ArrayOfAnyType value) {
+        this.cancelaCFDIAckResult = value;
     }
 
 }

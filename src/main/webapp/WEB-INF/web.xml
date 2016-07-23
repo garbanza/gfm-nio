@@ -1,16 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--web-app
-xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xmlns="http://java.sun.com/xml/ns/javaee"
-xmlns:web="http://java.sun.com/xml/ns/javaee"
-xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-version="2.5"-->
-<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns="http://xmlns.jcp.org/xml/ns/javaee"
-	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
-	http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
-	id="gfm-nio"
-	version="3.1">
+<?xml version="1.0" encoding="UTF-8"?><web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="gfm-nio" version="3.1" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
   <filter>
     <filter-name>loginFilter</filter-name>
     <filter-class>com.ferremundo.LoginFilter</filter-class>
@@ -28,7 +16,7 @@ version="2.5"-->
     <url-pattern>/auth</url-pattern>
   </filter-mapping>
   <servlet>
-    <description></description>
+    <description/>
     <display-name>auth</display-name>
     <servlet-name>auth</servlet-name>
     <jsp-file>/WEB-INF/auth.jsp</jsp-file>
@@ -38,7 +26,7 @@ version="2.5"-->
     <url-pattern>/auth</url-pattern>
   </servlet-mapping>
   <servlet>
-    <description></description>
+    <description/>
     <display-name>op</display-name>
     <servlet-name>op</servlet-name>
     <jsp-file>/wi/op.jsp</jsp-file>
@@ -211,11 +199,47 @@ version="2.5"-->
       <param-value>true</param-value>
     </init-param>
   </servlet>
+    <!--servlet>
+        <display-name>Apache-Axis Servlet</display-name>
+        <servlet-name>AxisServlet</servlet-name>
+        <servlet-class>org.apache.axis2.transport.http.AxisServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <display-name>Apache-Axis Admin Servlet Web Admin</display-name>
+        <servlet-name>AxisAdminServlet</servlet-name>
+        <servlet-class>org.apache.axis2.transport.http.AxisAdminServlet</servlet-class>
+        <load-on-startup>100</load-on-startup>
+    </servlet-->
   <servlet-mapping>
     <servlet-name>dwr-invoker</servlet-name>
     <url-pattern>/dwr/*</url-pattern>
   </servlet-mapping>
+    <!--servlet-mapping>
+        <servlet-name>AxisServlet</servlet-name>
+        <url-pattern>/servlet/AxisServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AxisServlet</servlet-name>
+        <url-pattern>*.jws</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AxisServlet</servlet-name>
+        <url-pattern>/services/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AxisAdminServlet</servlet-name>
+        <url-pattern>/axis2-admin/*</url-pattern>
+    </servlet-mapping-->
   <welcome-file-list>
     <welcome-file>wi/init.jsp</welcome-file>
+        <!--welcome-file>/axis2-web/index.jsp</welcome-file-->
   </welcome-file-list>
+    <!--error-page>
+        <error-code>404</error-code>
+        <location>/axis2-web/Error/error404.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>500</error-code>
+        <location>/axis2-web/Error/error500.jsp</location>
+    </error-page-->
 </web-app>

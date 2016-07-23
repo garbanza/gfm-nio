@@ -1,268 +1,170 @@
-/**
- * RegistraEmisor.java
- *
- * This file was auto-generated from WSDL
- * by the Apache Axis 1.4 Apr 22, 2006 (06:55:48 PDT) WSDL2Java emitter.
- */
 
 package com.profact;
 
-public class RegistraEmisor  implements java.io.Serializable {
-    private java.lang.String usuarioIntegrador;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
-    private java.lang.String rfcEmisor;
 
-    private java.lang.String base64Cer;
+/**
+ * <p>Java class for anonymous complex type.
+ * 
+ * <p>The following schema fragment specifies the expected content contained within this class.
+ * 
+ * <pre>
+ * &lt;complexType>
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element name="usuarioIntegrador" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="rfcEmisor" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="base64Cer" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="base64Key" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="contrasena" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *       &lt;/sequence>
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
+ * </pre>
+ * 
+ * 
+ */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "", propOrder = {
+    "usuarioIntegrador",
+    "rfcEmisor",
+    "base64Cer",
+    "base64Key",
+    "contrasena"
+})
+@XmlRootElement(name = "RegistraEmisor")
+public class RegistraEmisor {
 
-    private java.lang.String base64Key;
-
-    private java.lang.String contrasena;
-
-    public RegistraEmisor() {
-    }
-
-    public RegistraEmisor(
-           java.lang.String usuarioIntegrador,
-           java.lang.String rfcEmisor,
-           java.lang.String base64Cer,
-           java.lang.String base64Key,
-           java.lang.String contrasena) {
-           this.usuarioIntegrador = usuarioIntegrador;
-           this.rfcEmisor = rfcEmisor;
-           this.base64Cer = base64Cer;
-           this.base64Key = base64Key;
-           this.contrasena = contrasena;
-    }
-
+    protected String usuarioIntegrador;
+    protected String rfcEmisor;
+    protected String base64Cer;
+    protected String base64Key;
+    protected String contrasena;
 
     /**
-     * Gets the usuarioIntegrador value for this RegistraEmisor.
+     * Gets the value of the usuarioIntegrador property.
      * 
-     * @return usuarioIntegrador
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
-    public java.lang.String getUsuarioIntegrador() {
+    public String getUsuarioIntegrador() {
         return usuarioIntegrador;
     }
 
-
     /**
-     * Sets the usuarioIntegrador value for this RegistraEmisor.
+     * Sets the value of the usuarioIntegrador property.
      * 
-     * @param usuarioIntegrador
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
-    public void setUsuarioIntegrador(java.lang.String usuarioIntegrador) {
-        this.usuarioIntegrador = usuarioIntegrador;
+    public void setUsuarioIntegrador(String value) {
+        this.usuarioIntegrador = value;
     }
 
-
     /**
-     * Gets the rfcEmisor value for this RegistraEmisor.
+     * Gets the value of the rfcEmisor property.
      * 
-     * @return rfcEmisor
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
-    public java.lang.String getRfcEmisor() {
+    public String getRfcEmisor() {
         return rfcEmisor;
     }
 
-
     /**
-     * Sets the rfcEmisor value for this RegistraEmisor.
+     * Sets the value of the rfcEmisor property.
      * 
-     * @param rfcEmisor
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
-    public void setRfcEmisor(java.lang.String rfcEmisor) {
-        this.rfcEmisor = rfcEmisor;
+    public void setRfcEmisor(String value) {
+        this.rfcEmisor = value;
     }
 
-
     /**
-     * Gets the base64Cer value for this RegistraEmisor.
+     * Gets the value of the base64Cer property.
      * 
-     * @return base64Cer
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
-    public java.lang.String getBase64Cer() {
+    public String getBase64Cer() {
         return base64Cer;
     }
 
-
     /**
-     * Sets the base64Cer value for this RegistraEmisor.
+     * Sets the value of the base64Cer property.
      * 
-     * @param base64Cer
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
-    public void setBase64Cer(java.lang.String base64Cer) {
-        this.base64Cer = base64Cer;
+    public void setBase64Cer(String value) {
+        this.base64Cer = value;
     }
 
-
     /**
-     * Gets the base64Key value for this RegistraEmisor.
+     * Gets the value of the base64Key property.
      * 
-     * @return base64Key
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
-    public java.lang.String getBase64Key() {
+    public String getBase64Key() {
         return base64Key;
     }
 
-
     /**
-     * Sets the base64Key value for this RegistraEmisor.
+     * Sets the value of the base64Key property.
      * 
-     * @param base64Key
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
-    public void setBase64Key(java.lang.String base64Key) {
-        this.base64Key = base64Key;
+    public void setBase64Key(String value) {
+        this.base64Key = value;
     }
 
-
     /**
-     * Gets the contrasena value for this RegistraEmisor.
+     * Gets the value of the contrasena property.
      * 
-     * @return contrasena
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
-    public java.lang.String getContrasena() {
+    public String getContrasena() {
         return contrasena;
     }
 
-
     /**
-     * Sets the contrasena value for this RegistraEmisor.
+     * Sets the value of the contrasena property.
      * 
-     * @param contrasena
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
-    public void setContrasena(java.lang.String contrasena) {
-        this.contrasena = contrasena;
-    }
-
-    private java.lang.Object __equalsCalc = null;
-    public synchronized boolean equals(java.lang.Object obj) {
-        if (!(obj instanceof RegistraEmisor)) return false;
-        RegistraEmisor other = (RegistraEmisor) obj;
-        if (obj == null) return false;
-        if (this == obj) return true;
-        if (__equalsCalc != null) {
-            return (__equalsCalc == obj);
-        }
-        __equalsCalc = obj;
-        boolean _equals;
-        _equals = true && 
-            ((this.usuarioIntegrador==null && other.getUsuarioIntegrador()==null) || 
-             (this.usuarioIntegrador!=null &&
-              this.usuarioIntegrador.equals(other.getUsuarioIntegrador()))) &&
-            ((this.rfcEmisor==null && other.getRfcEmisor()==null) || 
-             (this.rfcEmisor!=null &&
-              this.rfcEmisor.equals(other.getRfcEmisor()))) &&
-            ((this.base64Cer==null && other.getBase64Cer()==null) || 
-             (this.base64Cer!=null &&
-              this.base64Cer.equals(other.getBase64Cer()))) &&
-            ((this.base64Key==null && other.getBase64Key()==null) || 
-             (this.base64Key!=null &&
-              this.base64Key.equals(other.getBase64Key()))) &&
-            ((this.contrasena==null && other.getContrasena()==null) || 
-             (this.contrasena!=null &&
-              this.contrasena.equals(other.getContrasena())));
-        __equalsCalc = null;
-        return _equals;
-    }
-
-    private boolean __hashCodeCalc = false;
-    public synchronized int hashCode() {
-        if (__hashCodeCalc) {
-            return 0;
-        }
-        __hashCodeCalc = true;
-        int _hashCode = 1;
-        if (getUsuarioIntegrador() != null) {
-            _hashCode += getUsuarioIntegrador().hashCode();
-        }
-        if (getRfcEmisor() != null) {
-            _hashCode += getRfcEmisor().hashCode();
-        }
-        if (getBase64Cer() != null) {
-            _hashCode += getBase64Cer().hashCode();
-        }
-        if (getBase64Key() != null) {
-            _hashCode += getBase64Key().hashCode();
-        }
-        if (getContrasena() != null) {
-            _hashCode += getContrasena().hashCode();
-        }
-        __hashCodeCalc = false;
-        return _hashCode;
-    }
-
-    // Type metadata
-    private static org.apache.axis.description.TypeDesc typeDesc =
-        new org.apache.axis.description.TypeDesc(RegistraEmisor.class, true);
-
-    static {
-        typeDesc.setXmlType(new javax.xml.namespace.QName("http://localhost/", ">RegistraEmisor"));
-        org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
-        elemField.setFieldName("usuarioIntegrador");
-        elemField.setXmlName(new javax.xml.namespace.QName("http://localhost/", "usuarioIntegrador"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
-        elemField.setMinOccurs(0);
-        elemField.setNillable(false);
-        typeDesc.addFieldDesc(elemField);
-        elemField = new org.apache.axis.description.ElementDesc();
-        elemField.setFieldName("rfcEmisor");
-        elemField.setXmlName(new javax.xml.namespace.QName("http://localhost/", "rfcEmisor"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
-        elemField.setMinOccurs(0);
-        elemField.setNillable(false);
-        typeDesc.addFieldDesc(elemField);
-        elemField = new org.apache.axis.description.ElementDesc();
-        elemField.setFieldName("base64Cer");
-        elemField.setXmlName(new javax.xml.namespace.QName("http://localhost/", "base64Cer"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
-        elemField.setMinOccurs(0);
-        elemField.setNillable(false);
-        typeDesc.addFieldDesc(elemField);
-        elemField = new org.apache.axis.description.ElementDesc();
-        elemField.setFieldName("base64Key");
-        elemField.setXmlName(new javax.xml.namespace.QName("http://localhost/", "base64Key"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
-        elemField.setMinOccurs(0);
-        elemField.setNillable(false);
-        typeDesc.addFieldDesc(elemField);
-        elemField = new org.apache.axis.description.ElementDesc();
-        elemField.setFieldName("contrasena");
-        elemField.setXmlName(new javax.xml.namespace.QName("http://localhost/", "contrasena"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
-        elemField.setMinOccurs(0);
-        elemField.setNillable(false);
-        typeDesc.addFieldDesc(elemField);
-    }
-
-    /**
-     * Return type metadata object
-     */
-    public static org.apache.axis.description.TypeDesc getTypeDesc() {
-        return typeDesc;
-    }
-
-    /**
-     * Get Custom Serializer
-     */
-    public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
-           javax.xml.namespace.QName _xmlType) {
-        return 
-          new  org.apache.axis.encoding.ser.BeanSerializer(
-            _javaType, _xmlType, typeDesc);
-    }
-
-    /**
-     * Get Custom Deserializer
-     */
-    public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
-           javax.xml.namespace.QName _xmlType) {
-        return 
-          new  org.apache.axis.encoding.ser.BeanDeserializer(
-            _javaType, _xmlType, typeDesc);
+    public void setContrasena(String value) {
+        this.contrasena = value;
     }
 
 }

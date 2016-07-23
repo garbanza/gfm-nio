@@ -66,7 +66,13 @@ public class InvoiceFM01 implements Invoice{
 	private InvoiceElectronicVersion electronicVersion;
 	
 	private boolean hasElectronicVersion=false;
-	
+
+	private String paymentMethod;
+
+	private String paymentWay;
+
+	private String documentType;
+
 	@Override
 	public float getAgentPayment() {
 		return agentPayment;
@@ -113,8 +119,11 @@ public class InvoiceFM01 implements Invoice{
 	
 	public InvoiceFM01(Client client, Seller seller, Shopman shopman,
 			List<InvoiceItem> items, InvoiceMetaData metaData,
-			Requester requester, Destiny destiny, Client agent,Float payment) {
+			Requester requester, Destiny destiny, Client agent,Float payment, String paymentMethod, String paymentWay, String documentType) {
 		/**TODO implement commented fields*/
+		Log log=new Log();
+		log.entry(shopman);
+		
 		System.out.println("creating invoice");
 		this.client = client;
 		//this.seller = seller;
@@ -123,11 +132,14 @@ public class InvoiceFM01 implements Invoice{
 		this.items = items;
 		this.metaData = metaData;
 		//this.requester = requester;
-		//this.destiny = destiny;
+		this.destiny = destiny;
 		this.agent=agent;
 		reference=metaData.getReference();
 		//json=toJson();
 		invoiceType=metaData.getInvoiceType();
+		this.paymentMethod=paymentMethod;
+		this.paymentWay=paymentWay;
+		this.documentType=documentType;
 		serial=metaData.getSerial();
 		
 		InvoiceLog created=new InvoiceLog(InvoiceLog.LogKind.CREATED,true,shopman.getLogin());
@@ -296,7 +308,7 @@ public class InvoiceFM01 implements Invoice{
 			List<InvoiceItem> items= this.items.subList(from,to+1);
 			InvoiceMetaData metaData=this.metaData;
 			//if(persist)metaData=new InvoiceMetaData(this.invoiceType, true);
-			invoices[i]=new InvoiceFM01(client, seller, shopman, items, metaData, requester, destiny,agent,0f);
+			invoices[i]=new InvoiceFM01(client, seller, shopman, items, metaData, requester, destiny,agent,0f,paymentMethod,paymentWay,documentType);
 			invoices[i].setPrintedTo(printedTo);
 		}
 		
@@ -724,8 +736,22 @@ public class InvoiceFM01 implements Invoice{
 	public void setHasElectronicVersion(boolean hasElectronicVersion) {
 		this.hasElectronicVersion = hasElectronicVersion;
 	}
+	@Override
+	public String getPaymentMethod() {
+		return paymentMethod;
+	}
+	@Override
+	public String getPaymentWay() {
+		return paymentWay;
+	}
+	@Override
+	public String getDocumentType() {
+		return documentType;
+	}
 	
-	
+	public Destiny getDestiny(){
+		return destiny;
+	}
 	/*
 	public static void main(String[] args) {
 		int M=15,m=4;

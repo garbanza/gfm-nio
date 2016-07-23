@@ -10,7 +10,7 @@
 
 2 start tomcat at 8080 or wherever.
 
-3 go to **http://localhots:8080/gfm-nio/dbport?commandline=dbinit**. This will scafold the db and will create the user/pass root/ready.
+3 go to **http://localhots:8080/gfm-nio/dbport?command=dbinit**. This will scafold the db and will create the user/pass root/ready.
 
 4 go to **http://localhots:8080/gfm-nio/** and authenticate with root/ready.
 

@@ -5,7 +5,7 @@
 build
 bin
 gradle-app.setting
-gradle
-.gradle
+gradle*
+.gradle*
 ui
 logs

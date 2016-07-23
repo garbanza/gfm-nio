@@ -14,10 +14,9 @@ public class Destiny {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Basic private String address="mostrador";
+    @Basic private String address;
     
 	public Destiny(String address) {
-		super();
 		this.address = address;
 	}
     

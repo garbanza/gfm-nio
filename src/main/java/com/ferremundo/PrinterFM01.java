@@ -1,6 +1,9 @@
 package com.ferremundo;
 
 import java.io.File;
+import java.io.IOException;
+
+import com.ferremundo.stt.GSettings;
 
 public class PrinterFM01 implements Printer {
 
@@ -21,22 +24,24 @@ public class PrinterFM01 implements Printer {
 	
 	@Override
 	public boolean print() {
-		//if(where.equals(PRINTER_ONE)){
-			Process p = null;
-			
-			try{
-				System.out.println("lpr -P "+where+ " "+file.getCanonicalPath());
-				p=Runtime.getRuntime().exec("lpr -P "+where+ " "+file.getCanonicalPath());}
-			catch(Exception e){}
-		//s}
-		return false;
-	}
-	
-	public static void main(String[] args) {
-		boolean computerIsAlive=true;
-		while(computerIsAlive){
-			
+		Log log= new Log();
+		log.object(file,where);
+		boolean test=new Boolean(GSettings.get("TEST"));
+		Process p = null;
+		try {
+			log.info("lpr -P "+where+ " "+file.getCanonicalPath());
+		} catch (IOException e1) {
+			log.trace("failed to print",e1);
 		}
+		if(test){
+			return true;
+		}
+		try {
+			p=Runtime.getRuntime().exec("lpr -P "+where+ " "+file.getCanonicalPath());
+		} catch (IOException e) {
+			log.trace("failed to print",e);
+		}
+		return true;
 	}
 	
 }

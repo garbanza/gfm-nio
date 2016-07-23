@@ -347,16 +347,28 @@ addConsummerIn=function(where){
 			alert(msg);
 			return;
 		}
-		client=new Client_(null, consummer, consummerType,
+		var ca;
+		if(where=='clients'){
+			ca=new Client_(null, consummer, consummerType,
 				address, interiorNumber, exteriorNumber,
 				suburb, locality, city, country,
 				state, email, cp, rfc, tel,
 				payment, null, null);
+			client=ca;
+		}
+		else {
+			ca=new Agent_(null, consummer, consummerType,
+				address, interiorNumber, exteriorNumber,
+				suburb, locality, city, country,
+				state, email, cp, rfc, tel,
+				payment, null, null);
+			agent=ca
+		}
 		$.ajax({
 			url: CONTEXT_PATH+"/welcome",
 			type:'POST',
 			data: {
-				client : encodeURIComponent($.toJSON(client)),
+				client : encodeURIComponent($.toJSON(ca)),
 				where:where,
 				token : TOKEN,
 				clientReference: CLIENT_REFERENCE
@@ -365,6 +377,7 @@ addConsummerIn=function(where){
 				//console.log(client.consummer +" creado");
 				console.log("SUCCESS");
 				console.log(data);
+				if(where=='clients'){
 				client=new setClient_(data);
 				var code=data.code;
 				for(var j=0;j<productsLog.length;j++){
@@ -409,6 +422,7 @@ addConsummerIn=function(where){
 							
 						}
 					});
+				}
 				}
 				//$('#editclient').dialog('close');
 				$add.remove();

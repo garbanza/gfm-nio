@@ -9,10 +9,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mongodb.DBObject;
 
-import mx.nafiux.Rhino;
-
 public interface ElectronicInvoice {
 	public PACResponse submit(boolean production);
+	public PACResponse cancel(boolean production);
 /* 
 	private Rhino rhino= new Rhino(cerPath, keyPath, keyPass);
 	

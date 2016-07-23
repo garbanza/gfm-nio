@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -24,7 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import mx.nafiux.Rhino;
+//import mx.nafiux.Rhino;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.json.JSONArray;
@@ -71,17 +72,29 @@ public class Wishing extends HttpServlet {
 	 *      response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) {
-		try {
+		//try {
+			
 			int clientReference = new Integer(request.getParameter("clientReference"));
+			
+			ClientReference.set(clientReference);
 			OnlineClient onlineClient = OnlineClients.instance().get(clientReference);
+			onlineClient.getShopman().setPassword("");
+			Log log=new Log();
+			log.object("onlineClient",onlineClient);
+			log.entry(request.getParameterMap());
 			response.setCharacterEncoding("utf-8");
 			response.setContentType("application/json");
+			Gson gson=new Gson();
 			if (!(onlineClient.isAuthenticated(request) && (onlineClient.hasAccess(AccessPermission.INVOICE_SAMPLE)
 					|| onlineClient.hasAccess(AccessPermission.INVOICE_ORDER)
 					|| onlineClient.hasAccess(AccessPermission.INVOICE_FACTURE)
 					|| onlineClient.hasAccess(AccessPermission.BASIC)
 					|| onlineClient.hasAccess(AccessPermission.ADMIN)))) {
-				response.sendError(response.SC_UNAUTHORIZED, "acceso denegado");
+				try {
+					response.sendError(response.SC_UNAUTHORIZED, "acceso denegado");
+				} catch (IOException e) {
+					log.trace("access denied", e);
+				}
 				return;
 			}
 
@@ -94,19 +107,38 @@ public class Wishing extends HttpServlet {
 			String destinyParam = request.getParameter("destiny");
 			String argsParam = request.getParameter("args");
 			String commandParam = request.getParameter("command");
+			String paymentMethod = request.getParameter("paymentMethod");
+			String paymentWay = request.getParameter("paymentWay");
+			String documentType = request.getParameter("documentType");
 			System.out.println("wishing '" + argsParam + "'");
 			Float payment = 0f;
 			String encoding = "utf-8";
 			if (null != clientParam && null != listParam) {
-				String listJson = URLDecoder.decode(listParam, encoding);
-				String clientJson = URLDecoder.decode(clientParam, encoding);
-				String sellerJson = URLDecoder.decode(sellerParam, encoding);
-				String agentJson = URLDecoder.decode(agentParam, encoding);
-				String requesterJson = URLDecoder.decode(requesterParam, encoding);
-				String shopmanJson = URLDecoder.decode(shopmanParam, encoding);
-				String destinyJson = URLDecoder.decode(destinyParam, encoding);
-				String args = URLDecoder.decode(argsParam, encoding);
-				String command = URLDecoder.decode(commandParam, encoding);
+				String listJson = null;
+				String clientJson = null;
+				String sellerJson = null;
+				String agentJson = null;
+				String requesterJson = null;
+				String shopmanJson = null;
+				
+				String destinyJson = null;
+				String args = null;
+				String command = null;
+				try {
+					listJson = URLDecoder.decode(listParam, encoding);
+				
+					clientJson = URLDecoder.decode(clientParam, encoding);
+					sellerJson = URLDecoder.decode(sellerParam, encoding);
+					agentJson = URLDecoder.decode(agentParam, encoding);
+					requesterJson = URLDecoder.decode(requesterParam, encoding);
+					shopmanJson = URLDecoder.decode(shopmanParam, encoding);
+					
+					destinyJson = URLDecoder.decode(destinyParam, encoding);
+					args = URLDecoder.decode(argsParam, encoding);
+					command = URLDecoder.decode(commandParam, encoding);
+				} catch (UnsupportedEncodingException e1) {
+					log.trace("", e1);
+				}
 				JSONArray jList = null;
 				JSONObject jClient = null;
 				JSONObject jSeller = null;
@@ -118,12 +150,12 @@ public class Wishing extends HttpServlet {
 				Client client = null;
 				Client agent = null;
 				Seller seller = null;
-				Shopman shopman = null;
+				Shopman shopman = onlineClient.getShopman();;
 				Destiny destiny = null;
 				Requester requester = null;
 
 				try {
-
+					
 					jList = new JSONArray(listJson);
 					jClient = new JSONObject(clientJson);
 					jSeller = new JSONObject(sellerJson);
@@ -132,9 +164,10 @@ public class Wishing extends HttpServlet {
 					jShopman = new JSONObject(shopmanJson);
 					jDestiny = new JSONObject(destinyJson);
 
-					seller = new Seller(jSeller);
+					seller = gson.fromJson(sellerJson, Seller.class);//new Seller(jSeller);
 					shopman = onlineClient.getShopman();
-					destiny = new Destiny(jDestiny);
+					log.object("shopman",shopman);
+					destiny = new Gson().fromJson(destinyJson,Destiny.class);
 					requester = new Requester(jRequester);
 					for (int i = jList.length() - 1; i >= 0; i--) {
 						// InvoiceItem item=new
@@ -147,6 +180,7 @@ public class Wishing extends HttpServlet {
 					agent = ClientFactory.create(jAgent);
 					System.out.println(new Gson().toJson(agent));
 				} catch (JSONException e) {
+					log.trace(e);
 				}
 
 				String[] argsspl = null;
@@ -165,7 +199,11 @@ public class Wishing extends HttpServlet {
 						if (!(onlineClient.hasAccess(AccessPermission.INVOICE_FACTURE)
 								|| onlineClient.hasAccess(AccessPermission.BASIC)
 								|| onlineClient.hasAccess(AccessPermission.ADMIN))) {
-							response.sendError(response.SC_UNAUTHORIZED, "acceso denegado");
+							try {
+								response.sendError(response.SC_UNAUTHORIZED, "acceso denegado");
+							} catch (IOException e) {
+								log.trace("", e);
+							}
 							return;
 						}
 						metaData = new InvoiceMetaData(Invoice.INVOICE_TYPE_TAXES_APLY);
@@ -173,7 +211,11 @@ public class Wishing extends HttpServlet {
 						if (!(onlineClient.hasAccess(AccessPermission.INVOICE_SAMPLE)
 								|| onlineClient.hasAccess(AccessPermission.BASIC)
 								|| onlineClient.hasAccess(AccessPermission.ADMIN))) {
-							response.sendError(response.SC_UNAUTHORIZED, "acceso denegado");
+							try {
+								response.sendError(response.SC_UNAUTHORIZED, "acceso denegado");
+							} catch (IOException e) {
+								log.trace("", e);
+							}
 							return;
 						}
 						metaData = new InvoiceMetaData(Invoice.INVOICE_TYPE_SAMPLE);
@@ -182,12 +224,20 @@ public class Wishing extends HttpServlet {
 						if (!(onlineClient.hasAccess(AccessPermission.INVOICE_ORDER)
 								|| onlineClient.hasAccess(AccessPermission.BASIC)
 								|| onlineClient.hasAccess(AccessPermission.ADMIN))) {
-							response.sendError(response.SC_UNAUTHORIZED, "acceso denegado");
+							try {
+								response.sendError(response.SC_UNAUTHORIZED, "acceso denegado");
+							} catch (IOException e) {
+								log.trace("", e);
+							}
 							return;
 						}
 						metaData = new InvoiceMetaData(Invoice.INVOICE_TYPE_ORDER);
 					} else {
-						response.sendError(response.SC_UNAUTHORIZED, "acceso denegado");
+						try {
+							response.sendError(response.SC_UNAUTHORIZED, "acceso denegado");
+						} catch (IOException e) {
+							log.trace("", e);
+						}
 						return;
 					}
 					System.out.println("invoiceType (int): " + metaData.getInvoiceType());
@@ -206,11 +256,18 @@ public class Wishing extends HttpServlet {
 					} else if (command.equals("@oa") || command.equals("@oc")) {
 						payment = 0f;
 					}
-					System.out.println("trying to create invoice");
+					log.info("trying to create invoice:");
+					log.object("shopman",shopman);
 					Invoice invoice = new InvoiceFM01(client, seller, shopman, items, metaData, requester, destiny,
-							agent, payment);
+							agent, payment,paymentMethod,paymentWay,documentType);
+					log.object("invoice",invoice);
 					// System.out.println("invoice: "+invoice.toJson());
-					client.persist(Mongoi.CLIENTS);
+					try{
+						client.persist(Mongoi.CLIENTS);
+					}
+					catch(NullPointerException e){
+						log.trace(e);
+					}
 					agent.persist(Mongoi.AGENTS);
 					String hashC = client.getHash();
 					String hashA = agent.getHash();
@@ -288,8 +345,10 @@ public class Wishing extends HttpServlet {
 						List<InvoiceItem> invoiceItems = invoice.getItems();
 						for (int i = 0; i < invoiceItems.size(); i++) {
 							InvoiceItem item = invoiceItems.get(i);
-							if (Inventory.exists(item) && !item.isDisabled())
+							if (Inventory.exists(item) && !item.isDisabled()){
+								log.object("inventory",item);
 								Inventory.decrementStored(item);
+							}
 						}
 					} else if (command.equals("$oa")) {
 						InvoiceLog paymentLog = new InvoiceLog(InvoiceLog.LogKind.PAYMENT,
@@ -354,7 +413,9 @@ public class Wishing extends HttpServlet {
 						NodeList nlist = doc.getElementsByTagName("codigo");
 						*/
 						if (pacResponse.isSuccess()) {
-							String xml = pacResponse.getInvoice();
+							String xml = pacResponse.getContent();
+							String xmlEscaped=StringEscapeUtils.escapeXml(xml);
+							log.object("xmlEscaped is : ",xmlEscaped);
 							String reference=invoice.getReference();
 							ElectronicInvoiceFactory.saveCFDI(xml, reference);
 							ElectronicInvoiceFactory.genQRCode(reference);
@@ -362,12 +423,8 @@ public class Wishing extends HttpServlet {
 							ElectronicInvoiceFactory.genPDF(reference);
 							
 							org.jsoup.nodes.Document document=null;
-							try {
-								document = Jsoup.parse(new File(xml),"utf-8");
-							} catch (IOException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
+							document = Jsoup.parse(xml);
+							
 							String total=document.select("cfdi|Comprobante").get(0).attr("total");
 							//String pdfUrl = doc.getElementsByTagName("urlpdf").item(0).getTextContent();
 							//String xmlUrl = doc.getElementsByTagName("urlxml").item(0).getTextContent();
@@ -378,16 +435,17 @@ public class Wishing extends HttpServlet {
 
 							new Mongoi().doUpdate(Mongoi.INVOICES,
 									"{ \"reference\" : \"" + reference + "\" }",
-									"{ \"electronicVersion\" : {\"xml\" : " + xml + "} }");
+									"{ \"electronicVersion\" : {\"xml\" : \"" + xmlEscaped + "\"} }");
 							new Mongoi().doUpdate(Mongoi.INVOICES,
 									"{ \"reference\" : \"" + reference + "\" }",
 									"{ \"hasElectronicVersion\" : true }");
+							new PrinterFM01(new File(pdf), GSettings.get("PRINTER_TWO")).print();
 							// TODO has parse de mails please
 							if (!invoice.getClient().getEmail().equals("")) {
 								HotmailSend.send(
 										"factura " + GSettings.get("INVOICE_SERIAL") + " " + reference
 												+ " $" + total,
-										GSettings.get("INVOICE_GREETINGS"), invoice.getClient().getEmail().split(" "),
+										GSettings.get("EMAIL_BODY"), invoice.getClient().getEmail().split(" "),
 										new String[] { GSettings.getPathTo("TMP_FOLDER") + reference + ".xml",
 												GSettings.getPathTo("TMP_FOLDER") + reference + ".pdf" },
 										new String[] { reference + ".xml",
@@ -397,7 +455,7 @@ public class Wishing extends HttpServlet {
 								HotmailSend.send(
 										"factura " + GSettings.get("INVOICE_SERIAL") + " " + reference
 										+ " $" + total,
-												GSettings.get("INVOICE_GREETINGS"), invoice.getAgent().getEmail().split(" "),
+												GSettings.get("EMAIL_BODY"), invoice.getAgent().getEmail().split(" "),
 										new String[] { GSettings.getPathTo("TMP_FOLDER") + reference + ".xml",
 												GSettings.getPathTo("TMP_FOLDER") + reference + ".pdf" },
 										new String[] { reference + ".xml",
@@ -405,8 +463,12 @@ public class Wishing extends HttpServlet {
 							}
 							// TODO print this electronic representation to
 							// lazer or whatever
-							response.getWriter().print("{ \"invoice\" : " + new Gson().toJson(invoice)
-									+ ", \"successResponse\" : \"facturado\"}");
+							try {
+								response.getWriter().print("{ \"invoice\" : " + new Gson().toJson(invoice)
+										+ ", \"successResponse\" : \"facturado\"}");
+							} catch (IOException e) {
+								log.trace("", e);
+							}
 							TheBox.instance().plus(invoice.getTotal());
 							TheBox.instance()
 									.addLog(new TheBoxLog(invoice.getTotal(), paymentLog.getDate(),
@@ -425,8 +487,16 @@ public class Wishing extends HttpServlet {
 									+ pacResponse.getResponseCode() + " - mensaje "
 									+ pacResponse.getMessage();
 							System.out.println(serverMessage);
-							response.sendError(response.SC_SERVICE_UNAVAILABLE, serverMessage);
-							response.getWriter().print("{\"failed\":\"true\", \"message\": \"" + serverMessage + "\"}");
+							try {
+								response.sendError(response.SC_SERVICE_UNAVAILABLE, serverMessage);
+							} catch (IOException e) {
+								log.trace("", e);
+							}
+							try {
+								response.getWriter().print("{\"failed\":\"true\", \"message\": \"" + serverMessage + "\"}");
+							} catch (IOException e) {
+								log.trace("", e);
+							}
 							InvoiceLog cancelLog = new InvoiceLog(LogKind.CANCEL, true,
 									onlineClient.getShopman().getLogin());
 							new Mongoi().doPush(Mongoi.INVOICES,
@@ -440,10 +510,10 @@ public class Wishing extends HttpServlet {
 					}
 
 					if (invoice.getAgentPayment() == 0) {
-						InvoiceLog log = new InvoiceLog(LogKind.AGENT_PAYMENT, 0, onlineClient.getShopman().getLogin());
+						InvoiceLog ilog = new InvoiceLog(LogKind.AGENT_PAYMENT, 0, onlineClient.getShopman().getLogin());
 						new Mongoi().doPush(Mongoi.INVOICES, "{ \"reference\" : \"" + invoice.getReference() + "\"}",
-								"{\"logs\" : " + new Gson().toJson(log) + " }");
-						invoice.getLogs().add(log);
+								"{\"logs\" : " + new Gson().toJson(ilog) + " }");
+						invoice.getLogs().add(ilog);
 					}
 
 					try {
@@ -537,8 +607,12 @@ public class Wishing extends HttpServlet {
 						successResponse = "Se otorgó credito por $" + invoice.getTotal() + " al "
 								+ invoice.getReference();
 					}
-					response.getWriter().print("{ \"invoice\" : " + new Gson().toJson(invoice)
-							+ ", \"successResponse\" : \"" + successResponse + "\"}");
+					try {
+						response.getWriter().print("{ \"invoice\" : " + new Gson().toJson(invoice)
+								+ ", \"successResponse\" : \"" + successResponse + "\"}");
+					} catch (IOException e) {
+						log.trace("", e);
+					}
 
 					System.out.println(new Gson().toJson(onlineClient));
 
@@ -546,12 +620,18 @@ public class Wishing extends HttpServlet {
 				}
 
 			} else {
-				response.getWriter().print("{\"failed\":\"true\"}");
+				try {
+					response.getWriter().print("{\"failed\":\"true\"}");
+				} catch (IOException e) {
+					log.trace("", e);
+				}
 			}
-		} catch (Exception e) {
-			System.out.println("algo salio de la mierda:");
-			e.printStackTrace();
-		}
+		//}catch (Exception e) {
+			//System.out.println("algo salio de la mierda:");
+			//Log log =new Log();
+			//log.error(e);
+			//e.printStackTrace();
+		//}
 	}
 
 	private static Invoice getInvoice(JSONObject client, JSONArray products) {

@@ -14,36 +14,8 @@
 
     dependencies {
         classpath 'com.bmuschko:gradle-tomcat-plugin:2.2.4'
-        classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:3.0.3'
+        //classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:3.0.3'
     }
-}
-
-
-// Apply the java plugin to add support for Java
-apply plugin : 'java'
-apply plugin : 'war'
-apply plugin : 'eclipse-wtp'
-apply plugin: 'com.bmuschko.tomcat-base'
-apply plugin: 'nebula.provided-base'
-
-ext {
-    tomcatStopPort = 8081
-    tomcatStopKey = 'stopKey'
-    
-    
-}
-
-task integrationTomcatRun(type: com.bmuschko.gradle.tomcat.tasks.TomcatRun) {
-    stopPort = tomcatStopPort
-    stopKey = tomcatStopKey
-    daemon = true
-    outputFile = file("logs/tomcat.log")
-    
-    
-}
-task integrationTomcatStop(type: com.bmuschko.gradle.tomcat.tasks.TomcatStop) {
-    stopPort = tomcatStopPort
-    stopKey = tomcatStopKey
 }
 
 // In this section you declare where to find the dependencies of your project
@@ -55,57 +27,89 @@ repositories {
     maven { url "https://jitpack.io" }
 }
 
+// Apply the java plugin to add support for Java
+apply plugin : 'java'
+apply plugin : 'war'
+apply plugin : 'eclipse-wtp'
+apply plugin: 'com.bmuschko.tomcat-base'
+//apply plugin: 'nebula.provided-base'
+
+ext {
+    tomcatStopPort = 8081
+    tomcatStopKey = 'stopKey'
+}
+
+task integrationTomcatRun(type: com.bmuschko.gradle.tomcat.tasks.TomcatRun) {
+    stopPort = tomcatStopPort
+    stopKey = tomcatStopKey
+    daemon = true
+    outputFile = file("logs/tomcat.log")
+}
+task integrationTomcatStop(type: com.bmuschko.gradle.tomcat.tasks.TomcatStop) {
+    stopPort = tomcatStopPort
+    stopKey = tomcatStopKey
+}
+
+
 // In this section you declare the dependencies for your production and test code
 dependencies {
     // The production code uses the SLF4J logging API at compile time
-    compile 'org.slf4j:slf4j-api:1.7.13'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.13'
 
     // Declare the dependency for your favourite test framework you want to use in your tests.
     // TestNG is also supported by the Gradle Test task. Just change the
     // testCompile dependency to testCompile 'org.testng:testng:6.8.1' and add
     // 'test.useTestNG()' to your build script.
-    testCompile 'junit:junit:4.12'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
     
-    compile "com.google.code.gson:gson:2.4"
-	compile "org.mongodb:mongo-java-driver:2.8.0"
-	compile "com.google.collections:google-collections:1.0"
-	compile "org.apache.commons:commons-lang3:3.4"
-	compile "commons-lang:commons-lang:2.6"
-	compile "org.json:json:20090211"
-	compile "com.lowagie:itext:2.0.8"
-	compile "org.jopendocument:jOpenDocument:1.3b1"
-	compile "javax.mail:mail:1.5.0-b01"
-	compile "org.apache.pdfbox:pdfbox-app:1.7.1"
-	compile "org.apache.logging.log4j:log4j-api:2.5"
-	compile "org.apache.logging.log4j:log4j-core:2.5"
+    compile group: 'com.google.code.gson', name: 'gson', version: '2.4'
+	compile group: 'org.mongodb', name: 'mongo-java-driver', version: '2.8.0'
+	compile group: 'com.google.collections', name: 'google-collections', version: '1.0'
+	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
+	compile group: 'commons-lang', name: 'commons-lang', version: '2.6'
+	compile group: 'org.json', name: 'json', version: '20090211'
+	compile group: 'com.lowagie', name: 'itext', version: '2.0.8'
+	compile group: 'org.jopendocument', name: 'jOpenDocument', version: '1.3b1'
+	compile group: 'javax.mail', name: 'mail', version: '1.5.0-b01'
+	compile group: 'org.apache.pdfbox', name: 'pdfbox-app', version: '1.7.1'
+	compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.5'
+	compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.5'
 	
-	compile "junit:junit:4.12"
-	compile "org.mockito:mockito-core:1.10.19"
-	compile "com.fasterxml.jackson.module:jackson-module-jsonSchema:2.6.0"
-	compile "com.github.fge:json-schema-validator:2.2.6"
+	compile group: 'junit', name: 'junit', version: '4.12'
+	compile group: 'org.mockito', name: 'mockito-core', version: '1.10.19'
+	compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-jsonSchema', version: '2.6.0'
+	compile group: 'com.github.fge', name: 'json-schema-validator', version: '2.2.6'
 	
-	compile "mx.bigdata.cfdi:cfdi-base:0.2.5"
-	
-	compile "com.google.guava:guava:12.0.1"
-	compile "org.directwebremoting:dwr:2.0.8"
-	providedCompile "javax.servlet:javax.servlet-api:3.1.0"
-	providedCompile "javax.servlet:jsp-api:2.0"
-	compile "javax.persistence:persistence-api:1.0-rev-1"
+	compile group: 'com.google.guava', name: 'guava', version: '12.0.1'
+	compile group: 'org.directwebremoting', name: 'dwr', version: '2.0.8'
+	providedCompile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
+	providedCompile group: 'javax.servlet', name: 'jsp-api', version: '2.0'
+	compile group: 'javax.persistence', name: 'persistence-api', version: '1.0-rev-1'
 
-	compile 'com.github.kenglxn.QRGen:javase:2.1.0'
+	compile group: 'com.github.kenglxn.QRGen', name: 'javase', version: '2.1.0'
 	
-	compile files('./src/main/webapp/WEB-INF/lib/rhinoOneJar.jar')
+	//compile files('./src/main/webapp/WEB-INF/lib/rhinoOneJar.jar')
 	//compile fileTree(dir: "./src/mai/webapp/WEB-INF/lib", include: '*.jar')
 	
-	//compile files('./src/main/webapp/WEB-INF/lib/rhinoOne.jar')
-	compile "mx.bigdata.cfdi:cfdi-base:0.2.5"
+	//compile files('./src/main/webapp/WEB-INF/lib/rhinoOneJar.jar')
+	compile group: 'mx.bigdata.cfdi', name: 'cfdi-base', version: '0.2.5'
 	
-	//compile "org.apache.axis2:axis2:1.6.2"
-	
-	compile "org.apache.axis:axis:1.4"
-	compile "javax.xml:jaxrpc-api:1.1"
+	compile group: 'org.apache.axis2', name: 'axis2', version: '1.7.3'
+	compile group: 'org.apache.axis2', name: 'axis2-jaxws', version: '1.7.3'
+	compile group: 'org.apache.axis2', name: 'axis2-adb', version: '1.7.3'
+	compile group: 'org.apache.axis2', name: 'axis2-transport-local', version: '1.7.3'
+	//compile group: 'org.apache.axis', name: 'axis', version: '1.4'
+	compile group: 'javax.xml', name: 'jaxrpc-api', version: '1.1'
 	// jsoup HTML parser library @ http://jsoup.org/
-	compile 'org.jsoup:jsoup:1.9.2'
+	compile group: 'org.jsoup', name: 'jsoup', version: '1.9.2'
+	
+	
+	//<!-- https://mvnrepository.com/artifact/org.apache.ws.commons.schema/XmlSchema -->
+	//compile 'org.apache.ws.commons.schema:XmlSchema:1.4.7'
+	//compile 'org.apache.ws.xmlschema:xmlschema-core:2.2.1'
+	
+	//iso relax
+	compile group: 'isorelax', name: 'isorelax', version: '20030108'
 	
 	def tomcatVersion = '7.0.59'
     tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
@@ -113,3 +117,4 @@ dependencies {
            "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
            
 }
+

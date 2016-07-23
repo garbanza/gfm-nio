@@ -581,12 +581,13 @@ function dolog(quantity,unit,description,code,mark,unitPrice){
 		class_:"tableingrow"
 	});
 	var row=$('.tableingrow').get(0);
-	$('.quantity',row).editable();
-	$('.unitPrice',row).editable();
+	$('.quantity, .unitPrice, .description, .unit, .code, .mark',row)
+	.editable({closeOnEnter : true, event : 'click', callback : function() {onLogChange();}});
+	/*$('.unitPrice',row).editable();
 	$('.description',row).editable();
 	$('.unit',row).editable();
 	$('.code',row).editable();
-	$('.mark',row).editable();
+	$('.mark',row).editable(); */
 	
 	$('*',row).bind("contextmenu",function(e) {
     	e.preventDefault();
@@ -666,6 +667,7 @@ function onLogChange(){
 			productsLog[index].unit=$($('.unit',this).get(0)).html();
 			productsLog[index].code=$($('.code',this).get(0)).html().replace(".","")+".";
 			productsLog[index].mark=$($('.mark',this).get(0)).html();
+			productsLog[index].edited=true;
 			$('#log').sexytable({'editedRow':true,'index':this});
 			//onLogChange();
 			//alert("edited");
@@ -705,11 +707,12 @@ var sample=function(){
 };
 resetClient=function(){
 	productsLog=[];
-	new setAgent_(".","agente indefinido",".",".",".",".",".",".",".",".",".",".",".");
-	new setClient_(".","cliente indefinido",".",".",".",".",".",".",".",".",".",".",".");
+	new setAgent_("-1","agente indefinido",".",".",".",".",".",".",".",".",".",".",".");
+	new setClient_("-1","cliente indefinido",".",".",".",".",".",".",".",".",".",".",".");
 	agent=null;
-	client=null;
+	//client=null;
 	$('#log').empty();
+	$('#paymentMethod').val('');
 	onLogChange();
 	$("#commands").val('');
 	$("#commands").focus();
@@ -895,3 +898,54 @@ function typeOf(value) {
     return s;
 };
 
+function applyDiscount(){
+	if(''==$('#consummerDiscount').val())$('#consummerDiscount').val(0)
+	for(var j=0;j<productsLog.length;j++){
+		var jsonsrt="["+$.toJSON(productsLog[j])+"]";
+		$.ajax({
+			index : j,
+			url: "getthis",
+			data: {
+				list:encodeURIComponent(jsonsrt),
+				code:client.code,
+				token : TOKEN,
+				clientReference: CLIENT_REFERENCE,
+				consummerDiscount : $('#consummerDiscount').val()
+			},
+			dataType: "json",
+			error: function(jqXHR, textStatus, errorThrown){
+				alert(textStatus);
+			},
+			type:'POST',
+			success: function(data) {
+				console.log("data");
+				console.log(data);
+				//alert(productsLog[0].quantity+" ->"+this.index);
+				var j=this.index;
+				if(productsLog[j].id!="-1"){
+					//alert(jsonsrt);
+					//$('.quantity').eq(j).text(data[j].quantity);
+					$(".tableingrow").unbind('DOMSubtreeModified');
+					$('.unit').eq(j).html(data[0].unit);
+					$('.description').eq(j).html(data[0].description);
+					$('.code').eq(j).html(data[0].code);
+					$('.mark').eq(j).html(data[0].mark);
+					$('.unitPrice').eq(j).html(data[0].unitPrice);
+					var quantity=productsLog[j].quantity;
+					if(productsLog[j].disabled){
+						productsLog[j]=data[0];
+						productsLog[j].disabled=true;
+					}
+					else productsLog[j]=data[0];
+					productsLog[j].quantity=quantity;
+					onLogChange();
+					//productsLog[j].quantity=$('.quantity').eq(j).val();
+				}
+					
+					//else{alert("code");}
+				
+			}
+		});
+	}
+	
+}

@@ -148,5 +148,10 @@ public interface Invoice {
 	public boolean hasElectronicVersion();
 
 	public void setHasElectronicVersion(boolean hasElectronicVersion);
+	
+	public String getPaymentMethod();
+	public String getPaymentWay();
+	public String getDocumentType();
 
+	public Destiny getDestiny();
 }
