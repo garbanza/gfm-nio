@@ -114,7 +114,7 @@ public class Facturing extends HttpServlet{
 					String pathname=GSettings.getPathTo("TMP_FOLDER")+invoices[i].getReference();
 					File pdf= new PDF(invoices[i], pathname).make();
 					//System.out.println("invoices["+i+"]: "+invoices[i].toJson());
-					new PrinterFM01(pdf, PrinterFM01.PRINTER_ONE).print();
+					new PrinterFM01(pdf, GSettings.get("PRINTER_TWO")).print(new Integer(GSettings.get("PRINTER_TWO_COPIES")));
 					//emis.persist(invoices[i]);
 				}
 			}

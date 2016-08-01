@@ -18,6 +18,7 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
+import com.ferremundo.Log;
 import com.ferremundo.stt.GSettings;
 
 public class HotmailSend {
@@ -30,13 +31,15 @@ public class HotmailSend {
 	}
 	public static boolean send( String subject, String text,String[] recipients, String[] paths, String[] fileNames) {
 		List<String> mails=new LinkedList<String>();
+		Log log=new Log();
 		for(String recipient : recipients){
 			if(new EmailValidator().validate(recipient))mails.add(recipient);
 		}
 		if(mails.size()==0){
-			System.out.println("sin recipients para correo");
+			log.info("sin recipients para correo");
 			return false;
 		}
+		if(!new Boolean(GSettings.get("MAILING")))return true;
 		try {
 			Properties props = new Properties();
 			props.setProperty("mail.smtp.host", "smtp.live.com");

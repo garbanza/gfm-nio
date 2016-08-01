@@ -455,7 +455,8 @@
 																	clientReference : CLIENT_REFERENCE,
 																	paymentMethod: $('#paymentMethod').val(),
 																	paymentWay: $('#paymentWay').val(),
-																	documentType: $('#documentType').val()
+																	documentType: $('#documentType').val(),
+																	accountPaymentNumber:$('#accountPaymentNumber').val()
 																	
 																},
 																success : function(
@@ -1600,20 +1601,20 @@
 		<button type="button" id="lockbutton">lock</button>
 		<button type="button" onclick="new fillCommandLine('@ic');">cotizar
 			a cliente</button>
-		<button type="button" onclick="new fillCommandLine('@ia');">cotizar
-			a agente</button>
+		<!--button type="button" onclick="new fillCommandLine('@ia');">cotizar
+			a agente</button-->
 		<button type="button" onclick="new fillCommandLine('@oc');">credito
 			a cliente</button>
-		<button type="button" onclick="new fillCommandLine('@oa');">credito
-			a agente</button>
+		<!--button type="button" onclick="new fillCommandLine('@oa');">credito
+			a agente</button-->
 		<button type="button" onclick="new fillCommandLine('$oc');">pedido
 			a cliente+abono</button>
-		<button type="button" onclick="new fillCommandLine('$oa');">pedido
-			a agente+abono</button>
+		<!--button type="button" onclick="new fillCommandLine('$oa');">pedido
+			a agente+abono</button-->
 		<button type="button" onclick="new fillCommandLine('$fc');">factura
 			a cliente+abono</button>
-		<button type="button" onclick="new fillCommandLine('$fa');">factura
-			a agente+abono</button>
+		<!--button type="button" onclick="new fillCommandLine('$fa');">factura
+			a agente+abono</button-->
 		Forma de pago<input id="paymentWay" value="Pago en una sola exhibición" onfocus="(function(t){t.select()})(this)"/>
 		Método de pago
 		<select id="paymentMethodSelect" onchange="(function(th){var t=$(th).val(),pm=$('#paymentMethod').val();if(t!='')$('#paymentMethod').val(pm!=''?(pm+', '+t):t)})(this)">
@@ -1630,6 +1631,7 @@
   			<option value="99">99 Otros</option>
 		</select>
 		<input id="paymentMethod" value="" onfocus="(function(t){t.select()})(this)"/>
+		Numero de cuenta<input id="accountPaymentNumber" value="N.A." onfocus="(function(t){t.select()})(this)"/>
 		Destino<input id="destiny" value="Mostrador" onfocus="(function(t){t.select()})(this)"/>
 		desc<input id="consummerDiscount" value="0" onfocus="(function(t){t.select()})(this)" onchange="(function(){applyDiscount()})()"/>
 		tipo de comprobante<input id="documentType" value="ingreso" onfocus="(function(t){t.select()})(this)"/>

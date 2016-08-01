@@ -110,6 +110,7 @@ public class Wishing extends HttpServlet {
 			String paymentMethod = request.getParameter("paymentMethod");
 			String paymentWay = request.getParameter("paymentWay");
 			String documentType = request.getParameter("documentType");
+			String accountPaymentNumber = request.getParameter("accountPaymentNumber");
 			System.out.println("wishing '" + argsParam + "'");
 			Float payment = 0f;
 			String encoding = "utf-8";
@@ -259,7 +260,7 @@ public class Wishing extends HttpServlet {
 					log.info("trying to create invoice:");
 					log.object("shopman",shopman);
 					Invoice invoice = new InvoiceFM01(client, seller, shopman, items, metaData, requester, destiny,
-							agent, payment,paymentMethod,paymentWay,documentType);
+							agent, payment,paymentMethod,paymentWay,documentType,accountPaymentNumber);
 					log.object("invoice",invoice);
 					// System.out.println("invoice: "+invoice.toJson());
 					try{
@@ -439,7 +440,8 @@ public class Wishing extends HttpServlet {
 							new Mongoi().doUpdate(Mongoi.INVOICES,
 									"{ \"reference\" : \"" + reference + "\" }",
 									"{ \"hasElectronicVersion\" : true }");
-							new PrinterFM01(new File(pdf), GSettings.get("PRINTER_TWO")).print();
+							new PrinterFM01(new File(pdf), GSettings.get("PRINTER_TWO")).print(new Integer(GSettings.get("PRINTER_TWO_COPIES")));
+
 							// TODO has parse de mails please
 							if (!invoice.getClient().getEmail().equals("")) {
 								HotmailSend.send(
@@ -550,7 +552,7 @@ public class Wishing extends HttpServlet {
 						// System.out.println("invoices["+i+"]:
 						// "+invoices[i].toJson());
 						// TODO this is printing time
-						new PrinterFM01(pdf, GSettings.get("PRINTER_ONE")).print();
+						new PrinterFM01(pdf, GSettings.get("PRINTER_ONE")).print(new Integer(GSettings.get("PRINTER_ONE_COPIES")));
 						paths[i] = pathname;
 						fileNames[i] = pdf.getName() + ".pdf";
 						// emis.persist(invoices[i]);

@@ -7,15 +7,8 @@ import com.ferremundo.stt.GSettings;
 
 public class PrinterFM01 implements Printer {
 
-	//public static final String PRINTER_ONE="printer";
-	public static final String PRINTER_ONE="ML320-1TURBO";
-	public static final String PRINTER_TWO="Deskjet-1000-J110-series";
-	
 	private File file;
 	private String where;
-	
-	//*TODO unhardcode this shit
-	private static final String directoryToScan="/home/god/.printing-directory";
 	
 	public PrinterFM01(File file,String where) {
 		this.file=file;
@@ -23,24 +16,31 @@ public class PrinterFM01 implements Printer {
 	}
 	
 	@Override
-	public boolean print() {
+	public boolean print(int copies) {
 		Log log= new Log();
 		log.object(file,where);
-		boolean test=new Boolean(GSettings.get("TEST"));
+		boolean printing=new Boolean(GSettings.get("PRINTING"));
 		Process p = null;
+		ProcessBuilder pb;
 		try {
-			log.info("lpr -P "+where+ " "+file.getCanonicalPath());
+			log.info("lpr -P "+where+ " -# "+copies+" "+file.getCanonicalPath());
 		} catch (IOException e1) {
 			log.trace("failed to print",e1);
 		}
-		if(test){
-			return true;
-		}
+		if(!printing)return true;
 		try {
-			p=Runtime.getRuntime().exec("lpr -P "+where+ " "+file.getCanonicalPath());
+			/*pb=new ProcessBuilder(new String[]{"bash","-c",
+					"lpr -P "+where+" -# "+copies+" "+file.getCanonicalPath()});*/
+			p=Runtime.getRuntime().exec(new String[]{"bash","-c",
+					"lpr -P "+where+" -# "+copies+" "+file.getCanonicalPath()
+			});
+			log.info("printing exit code:"+p.waitFor());
 		} catch (IOException e) {
 			log.trace("failed to print",e);
+		} catch (InterruptedException e) {
+			log.trace("failed to print",e);
 		}
+		
 		return true;
 	}
 	

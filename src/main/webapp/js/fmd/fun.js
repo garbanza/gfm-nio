@@ -713,6 +713,7 @@ resetClient=function(){
 	//client=null;
 	$('#log').empty();
 	$('#paymentMethod').val('');
+	$('#accountPaymentNumber').val('N.A.');
 	onLogChange();
 	$("#commands").val('');
 	$("#commands").focus();

@@ -73,7 +73,7 @@ public class ElectronicInvoiceFactory {
 	    comp.setFormaDePago(invoice.getPaymentWay());
 	    comp.setSerie(g.getKey("INVOICE_SERIAL"));
 	    comp.setFolio(invoice.getReference());
-	    
+	    if(invoice.getAccountPaymentNumber()!=null)comp.setNumCtaPago(invoice.getAccountPaymentNumber());
 	    Conceptos cps = of.createComprobanteConceptos();
 	    List<Concepto> list = cps.getConcepto();
 	    float iva=new Float(GSettings.get("TAXES_IVA_VALUE"));

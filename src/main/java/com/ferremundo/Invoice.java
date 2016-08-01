@@ -152,6 +152,6 @@ public interface Invoice {
 	public String getPaymentMethod();
 	public String getPaymentWay();
 	public String getDocumentType();
-
+	public String getAccountPaymentNumber();
 	public Destiny getDestiny();
 }

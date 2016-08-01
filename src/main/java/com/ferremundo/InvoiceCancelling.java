@@ -35,8 +35,15 @@ public class InvoiceCancelling extends HttpServlet{
 	
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response){
+		int clientReference = new Integer(request.getParameter("clientReference"));
+		
+		ClientReference.set(clientReference);
 		try{
-			int clientReference=new Integer(request.getParameter("clientReference"));
+			
+			Log lg= new Log();
+			lg.entry();
+			lg.entry(request.getParameterMap());
+			
 			OnlineClient onlineClient=OnlineClients.instance().get(clientReference);
 			response.setCharacterEncoding("utf-8");
 			response.setContentType("application/json");
@@ -60,11 +67,12 @@ public class InvoiceCancelling extends HttpServlet{
 					oInvoice=new Mongoi().doFindOne(Mongoi.INVOICES, "{ \"reference\" : \""+invoiceREF+"\" }");
 					if(oInvoice==null){
 						response.setStatus( HttpServletResponse.SC_BAD_REQUEST);
-						response.getWriter().write("error: referencia no encontrada '"+argsspl[0]+"'");
+						response.getWriter().write("error : referencia no encontrada '"+argsspl[0]+"'");
 						return;
 					}
 					invoice=new Gson().fromJson(oInvoice.toString(), InvoiceFM01.class);
 					if(invoice.attemptToLog(LogKind.CANCEL).isAllowed()){
+						
 						if(invoice.hasElectronicVersion()){
 							ElectronicInvoice ei=new Profact(invoice);
 							PACResponse pacResponse=ei.cancel(!new Boolean(GSettings.get("TEST")));
@@ -102,20 +110,19 @@ public class InvoiceCancelling extends HttpServlet{
 							
 							if(pacResponse.isSuccess()){
 								String xml=pacResponse.getContent();//document.getElementsByTagName("xmlretorno").item(0).getTextContent();
-								new Mongoi().doUpdate(Mongoi.INVOICES, "{ \"reference\" : \""+invoiceREF+"\"}", "{ \"electronicVersion.cancelXml\" : \""+StringEscapeUtils.unescapeXml(xml)+"\"}");
+								new Mongoi().doUpdate(Mongoi.INVOICES, "{ \"reference\" : \""+invoiceREF+"\"}", "{ \"electronicVersion.cancelXml\" : \""+StringEscapeUtils.escapeXml(xml)+"\"}");
 								new Mongoi().doUpdate(Mongoi.INVOICES, "{ \"reference\" : \""+invoiceREF+"\"}", "{ \"electronicVersion.active\" : false }");
 								JGet.stringTofile(
-										StringEscapeUtils.unescapeXml(xml),
+										xml,
 										GSettings.getPathTo("TMP_FOLDER")+invoice.getReference()+"-CANCELADO.xml");
 								if(!invoice.getClient().getEmail().equals("")){
 									HotmailSend.send(
 										"factura CANCELADA "+invoice.getReference(),
 										"la factura \n"+invoiceREF+"\nha sido cancelada.\n"+GSettings.get("EMAIL_BODY"),
-										invoice.getClient().getEmail().split(" ")/*,
+										invoice.getClient().getEmail().split(" "),
 										new String[]{
-											GSettings.get("TMP_FOLDER")+invoice.getReference()+"-CANCELADO.xml"},
+											GSettings.getPathTo("TMP_FOLDER")+invoice.getReference()+"-CANCELADO.xml"},
 										new String[]{invoice.getReference()+"-CANCELADO.xml"}
-										*/
 										);
 									
 								}
@@ -123,12 +130,10 @@ public class InvoiceCancelling extends HttpServlet{
 									HotmailSend.send(
 											"factura CANCELADA "+invoice.getReference(),
 											"la factura\n"+invoiceREF+"\nha sido cancelada.\n"+GSettings.get("EMAIL_BODY"),
-											invoice.getAgent().getEmail().split(" ")/*,
+											invoice.getAgent().getEmail().split(" "),
 											new String[]{
-												GSettings.get("TMP_FOLDER")+invoice.getReference()+"-CANCELADO.xml"},
+												GSettings.getPathTo("TMP_FOLDER")+invoice.getReference()+"-CANCELADO.xml"},
 											new String[]{invoice.getReference()+"-CANCELADO.xml"}
-											*/
-											
 											);
 								}
 							}

@@ -73,6 +73,7 @@ public class InvoiceFM01 implements Invoice{
 
 	private String documentType;
 
+	private String accountPaymentNumber;
 	@Override
 	public float getAgentPayment() {
 		return agentPayment;
@@ -119,7 +120,7 @@ public class InvoiceFM01 implements Invoice{
 	
 	public InvoiceFM01(Client client, Seller seller, Shopman shopman,
 			List<InvoiceItem> items, InvoiceMetaData metaData,
-			Requester requester, Destiny destiny, Client agent,Float payment, String paymentMethod, String paymentWay, String documentType) {
+			Requester requester, Destiny destiny, Client agent,Float payment, String paymentMethod, String paymentWay, String documentType, String accountPaymentNumber) {
 		/**TODO implement commented fields*/
 		Log log=new Log();
 		log.entry(shopman);
@@ -140,6 +141,7 @@ public class InvoiceFM01 implements Invoice{
 		this.paymentMethod=paymentMethod;
 		this.paymentWay=paymentWay;
 		this.documentType=documentType;
+		this.accountPaymentNumber=accountPaymentNumber;
 		serial=metaData.getSerial();
 		
 		InvoiceLog created=new InvoiceLog(InvoiceLog.LogKind.CREATED,true,shopman.getLogin());
@@ -308,7 +310,7 @@ public class InvoiceFM01 implements Invoice{
 			List<InvoiceItem> items= this.items.subList(from,to+1);
 			InvoiceMetaData metaData=this.metaData;
 			//if(persist)metaData=new InvoiceMetaData(this.invoiceType, true);
-			invoices[i]=new InvoiceFM01(client, seller, shopman, items, metaData, requester, destiny,agent,0f,paymentMethod,paymentWay,documentType);
+			invoices[i]=new InvoiceFM01(client, seller, shopman, items, metaData, requester, destiny,agent,0f,paymentMethod,paymentWay,documentType,accountPaymentNumber);
 			invoices[i].setPrintedTo(printedTo);
 		}
 		
@@ -760,5 +762,9 @@ public class InvoiceFM01 implements Invoice{
 		if(M%m>0)System.out.println((m*(M/m))+"-"+(M-1));
 	}
 	*/
+	@Override
+	public String getAccountPaymentNumber() {
+		return accountPaymentNumber;
+	}
 	
 }

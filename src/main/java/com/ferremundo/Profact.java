@@ -99,7 +99,11 @@ public class Profact implements ElectronicInvoice {
 	}
 
 	private PACResponse cancelTest() {
-		String xml=invoice.getElectronicVersion().getXml();
+		Log log = new Log();
+		log.entry();
+		String xmlEscaped=invoice.getElectronicVersion().getXml();
+		String xml=StringEscapeUtils.unescapeXml(xmlEscaped);
+		log.object("xml", xml);
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();  
 	    DocumentBuilder builder=null;
 	    Document document=null;
@@ -112,6 +116,7 @@ public class Profact implements ElectronicInvoice {
 	    } catch (Exception e) {  
 	        e.printStackTrace();  
 	    }
+		log.object("document", document);
 		Node node=document.getElementsByTagName("tfd:TimbreFiscalDigital").item(0);
 	    Element e=(Element)node;
 	    String uuid=e.getAttribute("UUID");
@@ -140,7 +145,11 @@ public class Profact implements ElectronicInvoice {
 	}
 
 	private PACResponse cancelProduction() {
+		Log log =new Log();
+		log.entry();
+		log.object("cancelling invoice",invoice);
 		String xml=invoice.getElectronicVersion().getXml();
+		
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();  
 	    DocumentBuilder builder=null;
 	    Document document=null;
@@ -177,7 +186,9 @@ public class Profact implements ElectronicInvoice {
 		String message=(String)l.get(2);
 		String code=(int)l.get(1)+"";
 		boolean success=false;
-		return new PACResponse(success, message, content, code);
+		PACResponse pr=new PACResponse(success, message, content, code);
+		log.exit("packpesponse",pr);
+		return pr;
 	}
 
 }
