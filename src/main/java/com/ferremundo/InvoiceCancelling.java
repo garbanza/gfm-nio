@@ -38,12 +38,10 @@ public class InvoiceCancelling extends HttpServlet{
 		int clientReference = new Integer(request.getParameter("clientReference"));
 		
 		ClientReference.set(clientReference);
+		Log lg= new Log();
+		lg.entry();
+		lg.entry(request.getParameterMap());
 		try{
-			
-			Log lg= new Log();
-			lg.entry();
-			lg.entry(request.getParameterMap());
-			
 			OnlineClient onlineClient=OnlineClients.instance().get(clientReference);
 			response.setCharacterEncoding("utf-8");
 			response.setContentType("application/json");
@@ -74,8 +72,8 @@ public class InvoiceCancelling extends HttpServlet{
 					if(invoice.attemptToLog(LogKind.CANCEL).isAllowed()){
 						
 						if(invoice.hasElectronicVersion()){
-							ElectronicInvoice ei=new Profact(invoice);
-							PACResponse pacResponse=ei.cancel(!new Boolean(GSettings.get("TEST")));
+							ElectronicInvoice ei=new Profact();
+							PACResponse pacResponse=ei.cancel(invoice,new Boolean(GSettings.get("TEST")));
 							/*DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();  
 						    DocumentBuilder builder=null;
 						    Document document=null;

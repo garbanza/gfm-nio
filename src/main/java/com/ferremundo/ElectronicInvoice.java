@@ -12,6 +12,7 @@ import com.mongodb.DBObject;
 public interface ElectronicInvoice {
 	public PACResponse submit(boolean production);
 	public PACResponse cancel(boolean production);
+	public PACResponse cancel(Invoice invoice, boolean production);
 /* 
 	private Rhino rhino= new Rhino(cerPath, keyPath, keyPass);
 	

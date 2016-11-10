@@ -28,7 +28,8 @@ public class Profact implements ElectronicInvoice {
 		invoice64=ElectronicInvoiceFactory.genCFDBase64Binary(invoice);
 		this.invoice=invoice;
 	}
-	
+	public Profact() {
+	}
 	@Override
 	public PACResponse submit(boolean production) {
 		if(production)return submitProduction();
@@ -94,6 +95,8 @@ public class Profact implements ElectronicInvoice {
 	}
 	
 	public PACResponse cancel(boolean production){
+		Log log=new Log();
+		log.entry("production?",production);
 		if(production)return cancelProduction();
 		return cancelTest();
 	}
@@ -104,7 +107,7 @@ public class Profact implements ElectronicInvoice {
 		String xmlEscaped=invoice.getElectronicVersion().getXml();
 		String xml=StringEscapeUtils.unescapeXml(xmlEscaped);
 		log.object("xml", xml);
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();  
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 	    DocumentBuilder builder=null;
 	    Document document=null;
 		try  
@@ -189,6 +192,14 @@ public class Profact implements ElectronicInvoice {
 		PACResponse pr=new PACResponse(success, message, content, code);
 		log.exit("packpesponse",pr);
 		return pr;
+	}
+	
+	public PACResponse cancel(Invoice invoice, boolean production){
+		this.invoice=invoice;
+		Log log=new Log();
+		log.entry("production?",production);
+		if(production)return cancelProduction();
+		return cancelTest();
 	}
 
 }

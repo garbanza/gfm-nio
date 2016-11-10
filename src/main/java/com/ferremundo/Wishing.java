@@ -445,7 +445,7 @@ public class Wishing extends HttpServlet {
 							// TODO has parse de mails please
 							if (!invoice.getClient().getEmail().equals("")) {
 								HotmailSend.send(
-										"factura " + GSettings.get("INVOICE_SERIAL") + " " + reference
+										"factura (" +invoice.getDocumentType()+") "+ GSettings.get("INVOICE_SERIAL") + " " + reference
 												+ " $" + total,
 										GSettings.get("EMAIL_BODY"), invoice.getClient().getEmail().split(" "),
 										new String[] { GSettings.getPathTo("TMP_FOLDER") + reference + ".xml",
@@ -455,7 +455,7 @@ public class Wishing extends HttpServlet {
 							}
 							if (!invoice.getAgent().getEmail().equals("")) {
 								HotmailSend.send(
-										"factura " + GSettings.get("INVOICE_SERIAL") + " " + reference
+										"factura (" +invoice.getDocumentType()+") "+ GSettings.get("INVOICE_SERIAL") + " " + reference
 										+ " $" + total,
 												GSettings.get("EMAIL_BODY"), invoice.getAgent().getEmail().split(" "),
 										new String[] { GSettings.getPathTo("TMP_FOLDER") + reference + ".xml",
@@ -548,6 +548,7 @@ public class Wishing extends HttpServlet {
 					String[] fileNames = new String[invoices.length + 1];
 					for (int i = 0; i < invoices.length; i++) {
 						String pathname = GSettings.getPathTo("TMP_FOLDER") + invoices[i].getReference() + "." + i;
+						
 						File pdf = new PDF(invoices[i], pathname).make();
 						// System.out.println("invoices["+i+"]:
 						// "+invoices[i].toJson());
