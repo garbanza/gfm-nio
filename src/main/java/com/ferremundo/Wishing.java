@@ -82,6 +82,7 @@ public class Wishing extends HttpServlet {
 			Log log=new Log();
 			log.object("onlineClient",onlineClient);
 			log.entry(request.getParameterMap());
+			GSettings g=GSettings.instance();
 			response.setCharacterEncoding("utf-8");
 			response.setContentType("application/json");
 			Gson gson=new Gson();
@@ -179,7 +180,7 @@ public class Wishing extends HttpServlet {
 					}
 					client = ClientFactory.create(jClient);
 					agent = ClientFactory.create(jAgent);
-					System.out.println(new Gson().toJson(agent));
+					//System.out.println(new Gson().toJson(agent));
 				} catch (JSONException e) {
 					log.trace(e);
 				}
@@ -188,10 +189,12 @@ public class Wishing extends HttpServlet {
 				if (!args.equals(""))
 					argsspl = args.split(" ");
 				String csv = null;
-				System.out.println("command=" + command);
+				//System.out.println("command=" + command);
 				if (command.equals("@oa") || command.equals("@oc") || command.equals("$fa") || command.equals("$fc")
 						|| command.equals("$oa") || command.equals("$oc") || command.equals("@ia")
-						|| command.equals("@ic")) {
+						|| command.equals("@ic")
+						|| command.equals("@pcot")
+						|| command.equals("@ecot")) {
 					// String printer=argsspl[1];
 					// long re
 
@@ -208,7 +211,8 @@ public class Wishing extends HttpServlet {
 							return;
 						}
 						metaData = new InvoiceMetaData(Invoice.INVOICE_TYPE_TAXES_APLY);
-					} else if (command.equals("@ic") || command.equals("@ia")) {
+					} else if (command.equals("@ic") || command.equals("@ia")||
+							command.equals("@pcot") || command.equals("@ecot")) {
 						if (!(onlineClient.hasAccess(AccessPermission.INVOICE_SAMPLE)
 								|| onlineClient.hasAccess(AccessPermission.BASIC)
 								|| onlineClient.hasAccess(AccessPermission.ADMIN))) {
@@ -293,12 +297,64 @@ public class Wishing extends HttpServlet {
 									? (!client.getTel().equals("") ? (". TEL:" + client.getTel()) : ("")) : (""));
 
 					// *TODO controlar inventario
-					if (command.equals("@ic")) {
+					if (command.equals("@ic")||
+							command.equals("@pcot")||
+							command.equals("@ecot")) {
 						// invoice.getLogs().add(new
 						// InvoiceLog(InvoiceLog.LogKind.CLOSE,true,shopman.getLogin()));
 						invoice.setUpdated(createdLog.getDate());
 						invoice.setPrintedTo(client);
 						invoice.persist();
+						
+						String xml=Utils.GEN_CFD_STRING(invoice);
+						String 	id=invoice.getReference(),
+								tmp=g.getPathTo("TMP_FOLDER"),
+								xsltPath=g.getPathTo("XSLT_SAMPLE"),
+								xmlPath=tmp+id+".xml",
+								htmlPath=tmp+id+".html",
+								pdfPath=tmp+id+".pdf",
+								additionalData=g.getKey("INVOICE_SENDER_ADDITIONAL_DATA");
+						Utils.saveStringToFile(xml, xmlPath);						
+						Utils.XML_TO_HTML(xmlPath, xsltPath, htmlPath, additionalData);
+						Utils.HTML_TO_PDF(htmlPath, pdfPath, "Cotizacion "+id+" - pagina [page]/[topage]", "Los precios actuales estan sujetos a cambios sin previo aviso");
+						
+						org.jsoup.nodes.Document document=null;
+						document = Jsoup.parse(xml);
+						
+						String total=document.select("cfdi|Comprobante").get(0).attr("total");
+						if (command.equals("@ic")||
+								command.equals("@pcot")
+								) {
+							
+							new PrinterFM02(new File(pdfPath), GSettings.get("PRINTER_TWO")).print(new Integer(GSettings.get("PRINTER_TWO_COPIES")));
+						}
+						// TODO has parse de mails please
+						if (!invoice.getClient().getEmail().equals("")) {
+							HotmailSend.send(
+									"Cotización " + GSettings.get("STORE_ID") + " " + id
+											+ " $" + total,
+									GSettings.get("EMAIL_BODY"), invoice.getClient().getEmail().split(" "),
+									new String[] { GSettings.getPathTo("TMP_FOLDER") + id + ".pdf" },
+									new String[] { id + ".pdf" });
+						}
+						if (!invoice.getAgent().getEmail().equals("")) {
+							HotmailSend.send(
+									"Cotización " + GSettings.get("STORE_ID") + " " + id
+									+ " $" + total,
+											GSettings.get("EMAIL_BODY"), invoice.getAgent().getEmail().split(" "),
+											new String[] { GSettings.getPathTo("TMP_FOLDER") + id + ".pdf" },
+											new String[] { id + ".pdf" });
+						}
+						// TODO print this electronic representation to
+						// lazer or whatever
+						try {
+							response.getWriter().print("{ \"invoice\" : " + new Gson().toJson(invoice)
+									+ ", \"successResponse\" : \"Cotizado\"}");
+						} catch (IOException e) {
+							log.trace("", e);
+						}
+						
+						return;
 
 					} else if (command.equals("@ia")) {
 						// invoice.getLogs().add(new
@@ -308,6 +364,8 @@ public class Wishing extends HttpServlet {
 
 						agent.setAditionalReference(adRef);
 						invoice.persist();
+						
+						
 
 					} else if (command.equals("@oc")) {
 						invoice.setUpdated(createdLog.getDate());
@@ -440,7 +498,7 @@ public class Wishing extends HttpServlet {
 							new Mongoi().doUpdate(Mongoi.INVOICES,
 									"{ \"reference\" : \"" + reference + "\" }",
 									"{ \"hasElectronicVersion\" : true }");
-							new PrinterFM01(new File(pdf), GSettings.get("PRINTER_TWO")).print(new Integer(GSettings.get("PRINTER_TWO_COPIES")));
+							new PrinterFM02(new File(pdf), GSettings.get("PRINTER_TWO")).print(new Integer(GSettings.get("PRINTER_TWO_COPIES")));
 
 							// TODO has parse de mails please
 							if (!invoice.getClient().getEmail().equals("")) {
@@ -519,6 +577,9 @@ public class Wishing extends HttpServlet {
 					}
 
 					try {
+						ElectronicInvoice electronicInvoice=new Profact(invoice);
+						boolean production=!new Boolean(GSettings.get("TEST"));
+						
 						// Create file
 						// HARD CODED HERE, write to *pdf.csv
 						String path = GSettings.getPathTo("TMP_FOLDER");

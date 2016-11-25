@@ -74,7 +74,8 @@
 		else if(this.command=='@ic'||this.command=='@ia'||
 				this.command=='@oc'||this.command=='@oa'||
 				this.command=='$fc'||this.command=='$fa'||
-				this.command=='$oc'||this.command=='$oa'){
+				this.command=='$oc'||this.command=='$oa'||
+				this.command=='@ecot'||this.command=='@pcot'){
 			var liq=true;
 			var msg="liquidando documento";
 			if(this.argssize>0){
