@@ -563,10 +563,12 @@ function lock(){
 	
 
 };
-
+var RNDID=0;
 function dolog(quantity,unit,description,code,mark,unitPrice){
 	if(!quantity)quantity=1;
 	if(!unitPrice)unitPrice=0;
+	var rndID1="tableingRNDID"+String((new Date()).getTime()).replace(/\D/gi,'')+(RNDID++);
+	var rndID2="tableingRNDID"+String((new Date()).getTime()).replace(/\D/gi,'')+(RNDID++);
 	$("#log").sexytable({
 		row:[
 				{content: "<div class='quantity'>"+quantity+"</div>", width:5},
@@ -575,7 +577,10 @@ function dolog(quantity,unit,description,code,mark,unitPrice){
 				{content: "<div class='code'>"+code+"</div>", width:10},
 				{content: "<div class='mark'>"+mark+"</div>", width:10},
 				{content: "<div class='unitPrice'>"+unitPrice+"</div>", width:10},
-				{content: "<div class='total'>"+(quantity*unitPrice)+"</div>", width:10}
+				{content: "<div class='total'>"+(quantity*unitPrice)+"</div>", width:10},
+				{content: "<div class='control'><img id='"+
+					rndID1+"' src='img/disable-red.png' height='12' width='12'>"+
+					"<img id='"+rndID2+"' src='img/delete.png' height='12' width='12'></div>", width:5}
 				],
 		animate:0,
 		class_:"tableingrow"
@@ -583,6 +588,24 @@ function dolog(quantity,unit,description,code,mark,unitPrice){
 	var row=$('.tableingrow').get(0);
 	$('.quantity, .unitPrice, .description, .unit, .code, .mark',row)
 	.editable({closeOnEnter : true, event : 'click', callback : function() {onLogChange();}});
+	$("#"+rndID1).click(function(){
+		var index=$('.tableingrow').index(row);
+		if(productsLog[index].disabled){
+			productsLog[index].disabled=false;
+			$('#log').sexytable({'enabledRow':true,'index':row});
+		}
+		else {
+			productsLog[index].disabled=true;
+			$('#log').sexytable({'disabledRow':true,'index':row});
+		}
+		onLogChange();
+	});
+	$("#"+rndID2).click(function(){
+		var index=$('.tableingrow').index(row);
+		productsLog.splice(index,1);
+		$('#log').sexytable({'removeRow':true,'index':row});
+		onLogChange();
+	});
 	/*$('.unitPrice',row).editable();
 	$('.description',row).editable();
 	$('.unit',row).editable();
