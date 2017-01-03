@@ -15,7 +15,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.ferremundo.db.Mongoi;
+import com.ferremundo.stt.GSettings;
 import com.google.gson.Gson;
+import com.mongodb.DBObject;
 
 
 public class LoginFilter implements Filter {
@@ -58,8 +61,78 @@ public class LoginFilter implements Filter {
         	request.setAttribute("back",request.getRequestURI());
         	request.setAttribute("token",onlineClient.getToken());
         	request.setAttribute("clientReference",clientReference);
+        	GSettings g= GSettings.instance();
+        	boolean test=new Boolean(g.getKey("TEST"));
+        	// bypass setting credencials if test
+        	if(test){
+        		String testUser=g.getKey("TEST_USER");
+        		String testUserPassword=g.getKey("TEST_USER_PASSWORD");
+        		if(testUser!=null){
+        			
+        			DBObject dbshopman=new Mongoi().doFindOne(Mongoi.SHOPMANS, "{ \"login\" : \""+testUser+"\" }");
+        			//log.object(dbshopman,password);
+        			if(dbshopman!=null&&testUserPassword!=null){
+        				if(dbshopman.get("password").toString().equals(MD5.get(testUserPassword))&&
+        						dbshopman.get("login").toString().equals(testUser)){
+        					onlineClient=OnlineClients.instance().get(clientReference);
+        					//System.out.println("pass&log passes");
+        					/*if(!token.equals(onlineClient.getToken())){
+        						resp.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
+        						resp.getWriter().write("No autorizado");
+        						System.out.println("token dismatch");
+        						return;
+        					}*/
+        					//System.out.println("token passes");
+        					Shopman shopman=(Shopman)new Gson().fromJson(dbshopman.toString(), Shopman.class);
+        					onlineClient.setShopman(shopman);
+        					onlineClient.setLogged(true);
+        					onlineClient.setLocked(false);
+        					onlineClient.setEaten(true);
+        					
+        					request.setAttribute("token",onlineClient.getToken());
+        					request.setAttribute("clientReference",onlineClient.getClientReference());
+        					request.setAttribute("shopman","{ name:'"+onlineClient.getShopman().getName()+"',login:'"+onlineClient.getShopman().getLogin()+"'}");
+        		        	request.getSession().setMaxInactiveInterval(60*60*8);
+        					
+        		            chain.doFilter(request, response); // Logged-in user found, so just continue request.
+        		            
+        					/*if(onlineClient.isAuthenticated(req)){
+        						//System.out.println("client authenticated passes");
+        						resp.getWriter().print("{ \"authenticated\": "+true+" , \"shopman\" : { \"name\" : \""+shopman.getName()+"\" , \"login\" : \""+shopman.getLogin()+"\" } }");
+        						return;
+        					}
+        					else{
+        						resp.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
+        						resp.getWriter().write("No autorizado pss!=");
+        						System.out.println("is not authenticated");
+        						return;
+        					}*/
+        				}
+        				else{
+        					response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
+        					response.getWriter().write("pass dismatch, Definir correctamente el usuario y password en las variables TEST_USER y TEST_USER_PASSWORD en el archivo de configuracion");
+        					System.out.println("pass dismatch");
+        					return;
+        				}
+        			}
+        			else {
+        				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
+        				response.getWriter().write("No autorizado. Definir correctamente el usuario y password en las variables TEST_USER y TEST_USER_PASSWORD en el archivo de configuracion");
+        				System.out.println("login/password dismatch");
+        				return;
+        			}
+        		}
+        		else {
+    				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
+    				response.getWriter().write("No autorizado, usuario indefinido. Definir correctamente el usuario y password en las variables TEST_USER y TEST_USER_PASSWORD en el archivo de configuracion");
+    				System.out.println("login/password dismatch");
+    				return;
+    			}
+        	}
+        	else{
            	 // No logged-in user found, so redirect to login page.
-            response.sendRedirect(request.getContextPath() + "/auth?back="+URLEncoder.encode(request.getRequestURI(),"UTF-8")+"&cr="+clientReference);
+        		response.sendRedirect(request.getContextPath() + "/auth?back="+URLEncoder.encode(request.getRequestURI(),"UTF-8")+"&cr="+clientReference);
+        	}
         } else {
         	req.setAttribute("token",onlineClient.getToken());
         	req.setAttribute("clientReference",onlineClient.getClientReference());

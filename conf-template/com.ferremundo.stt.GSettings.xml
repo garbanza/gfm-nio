@@ -1,9 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
+	<!-- Production -->
+	<entry key="TEST">true</entry>
+	<entry key="TEST_USER">fixme</entry>
+	<entry key="TEST_USER_PASSWORD">fixme</entry>
+	<entry key="PRINTING">true</entry>
+	<entry key="MAILING">true</entry>
 	<!-- files and folders -->
+	<!-- FM_HOME must be set as environment variable. Defaults to $HOME/.fm -->
+	<!--entry key="FM_HOME">/op/fm</entry-->
 	<entry key="TMP_FOLDER">tmp</entry>
-
+	
+	<!-- logging -->
+	<entry key="LOGGER_CONTEXT">log4j2.xml</entry>
+	<entry key="LOGGING_PATH">logs</entry>
+	
 	<!-- Mongo settings -->
 	<entry key="MONGO_DB_HOST">localhost</entry>
 	<entry key="MONGO_DB_PORT">27017</entry>
@@ -14,11 +26,18 @@
 
 	<!-- Printing settings -->
 	<entry key="PRINTER_ONE"></entry>
+	<entry key="PRINTER_ONE_COPIES">1</entry>
 	<entry key="PRINTER_TWO"></entry>
+	<entry key="PRINTER_TWO_COPIES">1</entry>
 	<entry key="PRINTER_THREE"></entry>
 	<entry key="PRINTER_FOUR"></entry>
 	<entry key="INVOICE_FORM_DESCRIPTOR">formDescriptorInvoiceFM01.xml</entry>
-
+	<entry key="DOCKER_HTMLTOPDF_IMAGE">openlabs/docker-wkhtmltopdf</entry>
+	<entry key="XSLTPROC">xsltproc</entry>
+	<entry key="XSLT">cfdi2html-2.0.xslt</entry>
+	<entry key="XSLT_INVOICE">cfdi2html-invoice-2.0.xslt</entry>
+	<entry key="XSLT_ORDER">cfd2html-order-1.0.xslt</entry>
+	<entry key="XSLT_SAMPLE">cfd2html-sample-1.0.xslt</entry>
 
 	<!-- Invoicing settings -->
 	<entry key="CERTIFICATE">auth/CSD01_AAA010101AAA.cer</entry>
@@ -40,8 +59,13 @@
 	<entry key="INVOICE_SENDER_INTERIOR_NUMBER">2</entry>
 	<entry key="INVOICE_SENDER_POSTAL_CODE">58180</entry>
 	<entry key="INVOICE_SENDER_REGIME">INTERMEDIO</entry>
-	<entry key="INVOICE_CERTIFICATE_AUTHORITY_USER">MYMAIL@MYPLACE.com</entry>
-	<entry key="INVOICE_CERTIFICATE_AUTHORITY_PASS">MYPASS</entry>
+	<entry key="INVOICE_SENDER_REFERENCE">ENTRE CALLE Y CALLE</entry>
+	<entry key="INVOICE_SENDER_ADDITIONAL_DATA">CUENTA BANORTE: 0403345345345. CLAVE INTER: 234234234234 84. email: mail@mail.com</entry>
+	
+	<entry key="INVOICE_CERTIFICATE_AUTHORITY_USER">mvpNUXmQfK8=</entry>
+	<entry key="INVOICE_CERTIFICATE_AUTHORITY_PASS">mvpNUXmQfK8=</entry>
+	<entry key="INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE">http://www.timbracfdipruebas.mx/serviciointegracionpruebas/Timbrado.asmx?WSDL</entry>
+
 
 	<!-- TAXING -->
 	<entry key="TAXES_IVA_NAME">IVA</entry>

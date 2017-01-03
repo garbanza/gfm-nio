@@ -42,7 +42,8 @@ public class DBPort extends HttpServlet{
 	private static final long serialVersionUID = -3780805200111442981L;
 	
 	private boolean dcMatch(String dc, Enum e){
-		return dc.equals(e.toString().replace("_","").toLowerCase());
+		String dc_=dc.replace("_","").toLowerCase();
+		return dc_.equals(e.toString().replace("_","").toLowerCase());
 	}
 	
 	@Override

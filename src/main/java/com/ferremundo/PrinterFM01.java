@@ -17,6 +17,7 @@ public class PrinterFM01 implements Printer {
 	
 	@Override
 	public boolean print(int copies) {
+		
 		Log log= new Log();
 		log.object(file,where);
 		boolean printing=new Boolean(GSettings.get("PRINTING"));
@@ -24,6 +25,7 @@ public class PrinterFM01 implements Printer {
 		ProcessBuilder pb;
 		try {
 			log.info("lpr -P "+where+ " -# "+copies+" "+file.getCanonicalPath());
+			if (copies==0)return true;
 		} catch (IOException e1) {
 			log.trace("failed to print",e1);
 		}
@@ -34,6 +36,7 @@ public class PrinterFM01 implements Printer {
 			p=Runtime.getRuntime().exec(new String[]{"bash","-c",
 					"lpr -P "+where+" -# "+copies+" "+file.getCanonicalPath()
 			});
+			p.waitFor();
 			log.info("printing exit code:"+p.waitFor());
 		} catch (IOException e) {
 			log.trace("failed to print",e);

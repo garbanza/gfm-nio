@@ -5,7 +5,8 @@
   </filter>
   <filter-mapping>
     <filter-name>loginFilter</filter-name>
-    <url-pattern>/wi/*</url-pattern>
+    <url-pattern>/wi/init.jsp</url-pattern>
+    <url-pattern>/op</url-pattern>
   </filter-mapping>
   <filter>
     <filter-name>authFilter</filter-name>
@@ -33,7 +34,7 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>op</servlet-name>
-    <url-pattern>/wi/op</url-pattern>
+    <url-pattern>/op</url-pattern>
   </servlet-mapping>
   <session-config>
     <session-timeout>1</session-timeout>

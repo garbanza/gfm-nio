@@ -571,6 +571,8 @@ function dolog(quantity,unit,description,code,mark,unitPrice){
 	var rndID2="tableingRNDID"+String((new Date()).getTime()).replace(/\D/gi,'')+(RNDID++);
 	$("#log").sexytable({
 		row:[
+				{content: "<div class='control'><img id='"+
+					rndID1+"' src='img/disable-red.png' height='12' width='12'></div>",width:2},
 				{content: "<div class='quantity'>"+quantity+"</div>", width:5},
 				{content: "<div class='unit'>"+unit+"</div>", width:10},
 				{content: "<div class='description'>"+description+"</div>", width:40},
@@ -578,9 +580,8 @@ function dolog(quantity,unit,description,code,mark,unitPrice){
 				{content: "<div class='mark'>"+mark+"</div>", width:10},
 				{content: "<div class='unitPrice'>"+unitPrice+"</div>", width:10},
 				{content: "<div class='total'>"+(quantity*unitPrice)+"</div>", width:10},
-				{content: "<div class='control'><img id='"+
-					rndID1+"' src='img/disable-red.png' height='12' width='12'>"+
-					"<img id='"+rndID2+"' src='img/delete.png' height='12' width='12'></div>", width:5}
+				{content: "<div class='control'>"+
+					"<img id='"+rndID2+"' src='img/delete.png' height='12' width='12'></div>", width:2}
 				],
 		animate:0,
 		class_:"tableingrow"
@@ -735,6 +736,31 @@ resetClient=function(){
 	agent=null;
 	//client=null;
 	$('#log').empty();
+	$("#log").sexytable({
+		row : [ {
+			content : 'cant',
+			width : 5
+		}, {
+			content : 'unidad',
+			width : 10
+		}, {
+			content : 'descripción',
+			width : 40
+		}, {
+			content : 'codigo',
+			width : 10
+		}, {
+			content : 'marca',
+			width : 10
+		}, {
+			content : '$ unit',
+			width : 10
+		}, {
+			content : "<div class='g-total'>total</div>",
+			width : 10
+		} ],
+		animate : 100
+	});
 	$('#paymentMethod').val('');
 	$('#accountPaymentNumber').val('N.A.');
 	onLogChange();

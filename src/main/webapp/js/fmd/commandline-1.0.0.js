@@ -1,13 +1,13 @@
 /** COMMAND LINE FUNCTION*/
-	commandLine=function(){
+	commandLine=function(input){
 		//resetClient();
-		console.log(productsLog);
+		//console.log(productsLog);
 		//TODO quita la dependencia de este popup
 		
-		$('#commands').autocomplete('close');
-		this.value=$('#commands').val().replace(/^\s+|\s+$/g, '')//.replace(/^\s\s*/, '').replace(/\s\s*$/, '');		//value
+		
+		this.value=input.val().replace(/^\s+|\s+$/g, '')//.replace(/^\s\s*/, '').replace(/\s\s*$/, '');		//value
 		//clean
-		//$('#commands').SetBubblePopupOptions({innerHtml:"comandos"});
+		//input.SetBubblePopupOptions({innerHtml:"comandos"});
 		//alert("'"+this.value+"'");
 		
 		var splited=this.value.split(" ");
@@ -34,7 +34,7 @@
 			if(this.argssize>=1)this.getFromDB=true;
 			this.pargs=this.value.match(/[^\s"']+|"([^"]*)"|'([^']*)'/g);
 			this.getFromDB=true;
-			$('#commands').HideBubblePopup();
+			//input.HideBubblePopup();
 		}
 		else if(this.command=='c'){
 			this.kind ='client';
@@ -46,7 +46,7 @@
 			this.pargs=this.value.match(/[^\s"']+|"([^"]*)"|'([^']*)'/g);
 			this.pargs.splice(0,1);
 			this.getFromDB=true;
-			$('#commands').HideBubblePopup();
+			//input.HideBubblePopup();
 		}
 		else if(this.command=='a'){
 			this.kind ='agent';
@@ -59,17 +59,17 @@
 			this.pargs.splice(0,1);
 			*/
 			this.getFromDB=true;
-			$('#commands').HideBubblePopup();
+			//input.HideBubblePopup();
 		}
 		else if(this.command=='ha'){
 			this.kind ='agentstatus';
 			this.getFromDB=true;
-			$('#commands').HideBubblePopup();
+			//input.HideBubblePopup();
 		}
 		else if(this.command=='hc'){
 			this.kind ='clientstatus';
 			this.getFromDB=true;
-			$('#commands').HideBubblePopup();
+			//input.HideBubblePopup();
 		}
 		else if(//this.command=='@ic'||this.command=='@ia'||
 				this.command=='@oc'||this.command=='@oa'||
@@ -87,86 +87,87 @@
 				else{
 					msg="ERROR, cantidad invalida <b>$"+this.args[0]+"</b>";
 					this.kind='undefined';
-					$('#commands').ShowBubblePopup( {innerHtml: msg} );
-					$('#commands').val($('#commands').val().replace(this.args[0],""));
+					//input.ShowBubblePopup( {innerHtml: msg} );
+					input.val(input.val().replace(this.args[0],""));
 					return;
 				}
 				
 			}
-			if(this.command=='@ic')
-				$('#commands').ShowBubblePopup( {innerHtml: 'cotizar a cliente'} );
+			/*if(this.command=='@ic')
+				input.ShowBubblePopup( {innerHtml: 'cotizar a cliente'} );
 			else if(this.command=='@ia')
-				$('#commands').ShowBubblePopup( {innerHtml: 'cotizar a agente'} );
+				input.ShowBubblePopup( {innerHtml: 'cotizar a agente'} );
 			else if(this.command=='$oc')
-				$('#commands').ShowBubblePopup( {innerHtml: 'hacer pedido a cliente '+msg} );
+				input.ShowBubblePopup( {innerHtml: 'hacer pedido a cliente '+msg} );
 			else if(this.command=='$oa')
-				$('#commands').ShowBubblePopup( {innerHtml: 'hacer pedido a agente '+msg} );
+				input.ShowBubblePopup( {innerHtml: 'hacer pedido a agente '+msg} );
 			else if(this.command=='@oc')
-				$('#commands').ShowBubblePopup( {innerHtml: 'dar credito a cliente'} );
+				input.ShowBubblePopup( {innerHtml: 'dar credito a cliente'} );
 			else if(this.command=='@oa')
-				$('#commands').ShowBubblePopup( {innerHtml: 'dar credito a agente'} );
+				input.ShowBubblePopup( {innerHtml: 'dar credito a agente'} );
 			else if(this.command=='$fc')
-				$('#commands').ShowBubblePopup( {innerHtml: 'facturar a cliente '+msg} );
+				input.ShowBubblePopup( {innerHtml: 'facturar a cliente '+msg} );
 			else if(this.command=='$fa')
-				$('#commands').ShowBubblePopup( {innerHtml: 'facturar a agente '+msg} );
+				input.ShowBubblePopup( {innerHtml: 'facturar a agente '+msg} );
+				*/
 			this.kind= 'sample';
 		}
 		else if(this.command=='@p'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'agregar producto'} );
+			//input.ShowBubblePopup( {innerHtml: 'agregar producto'} );
 			this.kind= 'editproduct';
 		}
 		else if(this.command=='@c'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'agregar cliente'} );
+			//input.ShowBubblePopup( {innerHtml: 'agregar cliente'} );
 			this.kind= 'editclient';
 		}
 		else if(this.command=='@a'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'agregar agente'} );
+			//input.ShowBubblePopup( {innerHtml: 'agregar agente'} );
 			this.kind= 'editagent';
 		}
 		else if(this.command=='+f'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'facturar documento <b>'+this.args[0]+'</b>'} );
+			//input.ShowBubblePopup( {innerHtml: 'facturar documento <b>'+this.args[0]+'</b>'} );
 			this.kind="facture";
 		}
 		else if(this.command=='_inventario'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'se inventaríara la lista con los costos<b>'+this.args[0]+'</b>'} );
+			//input.ShowBubblePopup( {innerHtml: 'se inventaríara la lista con los costos<b>'+this.args[0]+'</b>'} );
 			this.kind="facture";
 		}
 		else if(this.command=='@r'||this.command=='@rl'){
 			if(this.command=='@r'){
-				$('#commands').ShowBubblePopup( {innerHtml: 'traer documento <b>'+this.args[0]+'</b>'} );
+				//input.ShowBubblePopup( {innerHtml: 'traer documento <b>'+this.args[0]+'</b>'} );
 			}
 			else{
-				$('#commands').ShowBubblePopup( {innerHtml: 'mostrar estatus de documento <b>'+this.args[0]+'</b>'} );
+				//input.ShowBubblePopup( {innerHtml: 'mostrar estatus de documento <b>'+this.args[0]+'</b>'} );
 			}
 			this.kind="getinvoice";
 		}
 		else if(this.command=='%rc'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'escribe tu recordatorio'} );
+			//input.ShowBubblePopup( {innerHtml: 'escribe tu recordatorio'} );
 			this.kind="makerecord";
 		}
 		else if(this.command=='%rr'){
-			$('#commands').ShowBubblePopup( {innerHtml: '<enter> mostrar recordatorios. <espacio> n mostrar ultimos n recordatorios'} );
+			//input.ShowBubblePopup( {innerHtml: '<enter> mostrar recordatorios. <espacio> n mostrar ultimos n recordatorios'} );
 			this.kind="returnrecords";
 		}
 		else if(this.command=='%rb'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'marcar recordatorio como hecho'} );
+			//input.ShowBubblePopup( {innerHtml: 'marcar recordatorio como hecho'} );
 			this.kind="deactivaterecord";
 		}
 		else if(this.command=='$a'||this.command=='$d'){
-			if(this.command=='$a')
-				$('#commands').ShowBubblePopup( {innerHtml: 'liquidar agente para <b>'+this.args[0]+'</b>'} );
+			if(this.command=='$a');
+				//input.ShowBubblePopup( {innerHtml: 'liquidar agente para <b>'+this.args[0]+'</b>'} );
 			else if(this.command=='$d'){
 				
 				if(this.args[1]){
-					if(isNumber(this.args[1]))
-						$('#commands').ShowBubblePopup( {innerHtml: 'abonar a documento <b>'+this.args[0]+' $'+this.args[1]+'</b>'} );
-					else
-						$('#commands').ShowBubblePopup( {innerHtml: 'ERROR: cantidad invalida'} );
+					if(isNumber(this.args[1]));
+						//input.ShowBubblePopup( {innerHtml: 'abonar a documento <b>'+this.args[0]+' $'+this.args[1]+'</b>'} );
+					else;
+						//input.ShowBubblePopup( {innerHtml: 'ERROR: cantidad invalida'} );
 				}
 				else if(this.args[0]){
-					$('#commands').ShowBubblePopup( {innerHtml: 'liquidar documento <b>'+this.args[0]+'</b>'} );
+					//input.ShowBubblePopup( {innerHtml: 'liquidar documento <b>'+this.args[0]+'</b>'} );
 				}
-				else $('#commands').ShowBubblePopup( {innerHtml: 'liquidar/abonar documento'} );
+				//else input.ShowBubblePopup( {innerHtml: 'liquidar/abonar documento'} );
 			}
 			this.kind="invoicepayment";
 		}
@@ -181,7 +182,7 @@
 			this.kind="discount";
 		}
 		else if(this.command=='@cd'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'cancelar documento <b>'+this.args[0]+'</b>'} );
+			//input.ShowBubblePopup( {innerHtml: 'cancelar documento <b>'+this.args[0]+'</b>'} );
 			this.kind="canceldocument";
 		}
 		else if(this.command=='@s'){
@@ -194,27 +195,27 @@
 			this.kind="testproducts";
 		}
 		else if(this.command=='@j'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'consultar caja'} );
+			//input.ShowBubblePopup( {innerHtml: 'consultar caja'} );
 			this.kind="consultthebox";
 		}
 		else if(this.command=='%ip'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'inventarear productos'} );
+			//input.ShowBubblePopup( {innerHtml: 'inventarear productos'} );
 			this.kind="productinventoryadd";
 		}
 		else if(this.command=='%updateproducts'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'update products'} );
+			//input.ShowBubblePopup( {innerHtml: 'update products'} );
 			this.kind="updateproducts";
 		}
 		else if(this.command=='%adduser'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'add user'} );
+			//input.ShowBubblePopup( {innerHtml: 'add user'} );
 			this.kind="adduser";
 		}
 		else if(this.command=='@mp'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'método de pago'} );
+			//input.ShowBubblePopup( {innerHtml: 'método de pago'} );
 			this.kind="paymentmethod";
 		}
 		else {
-			$('#commands').HideBubblePopup();
+			//input.HideBubblePopup();
 			if(this.command.indexOf("@")==0||
 					this.command.indexOf("%")==0||
 					this.command.indexOf("+")==0||
@@ -223,7 +224,7 @@
 				return;
 				
 			}
-			console.log("matches!");
+			//console.log("matches!");
 			this.quantity=1;
 			this.kind= "retrieve";
 			this.args=this.value.match(/[^\s"']+|"([^"]*)"|'([^']*)'/g);

@@ -224,7 +224,7 @@ lockin=function(){
 		url: CONTEXT_PATH+"/clientauthenticate",
 		dataType: "json",
 		type:'POST',
-		async:false,
+		//async:false,
 		data: {
 				lock: true,
 				token:TOKEN,

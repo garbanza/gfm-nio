@@ -1,0 +1,97 @@
+
+body {
+  /*background: steelblue;*/
+  font-family: "Open Sans", arial;
+  font-size: 2.5mm;
+  word-wrap: break-word;
+}
+p.wrap{
+	word-wrap: break-word;
+}
+
+.qrcode {
+  width: 20%;
+}
+.cert {
+  width: 75%;
+}
+
+table {
+  width: 100%;
+  /*max-width: 600px;*/
+  /*height: 320px;*/
+  border-collapse: collapse;
+  border: 1px solid #c6c6c6;
+  /*margin: 50px auto;*/
+  background: white;
+  border-top-width: 0px;
+  
+  /*table-layout: fixed*/
+}
+
+.smallfont {
+	/*font-size: small;*/
+}
+
+th {
+  background: steelblue;
+  /*height: 54px;*/
+  /*width: 25%;*/
+  font-weight: lighter;
+  text-shadow: 0 1px 0 #38678f;
+  color: white;
+  border: 1px solid #38678f;
+  box-shadow: inset 0px 1px 2px #568ebd;
+  transition: all 0.2s;
+}
+
+.quantity{
+	width: 10%;
+}
+.unit{
+	width: 10%;
+}
+.description{
+	width: 60%;
+}
+.unitPrice{
+	width: 10%;
+}
+.price{
+	width: 10%;
+}
+.emitData {width: 50%;}
+.enterpricelogo {width: 100%;}
+tr {
+  border-bottom: 1px solid #cccccc;
+}
+
+tr:last-child {
+  border-bottom: 0px;
+}
+
+td {
+  border-right: 1px solid #cccccc;
+  padding: 1px;
+  transition: all 0.2s;
+}
+
+span.bold {
+	font-weight: bold;
+}
+
+.tablenoborder {
+  width: 100%;
+  border: 0px
+}
+.totalblank{
+	width: 80%;
+}
+.total{
+	width: 20%;
+}
+
+.due {
+page-break-inside: avoid !important;
+border-top-width: 1px;
+}

@@ -17,7 +17,7 @@
 
 <script type="text/javascript" src="${pageContext.request.contextPath}/js/jquery.capsule.js"></script>
 <script type="text/javascript" src="${pageContext.request.contextPath}/js/fmd/jquery.commandro.js"></script>
-<script type="text/javascript" src="${pageContext.request.contextPath}/js/fmd/jquery.mudata.js"></script>
+<script type="text/javascript" src="${pageContext.request.contextPath}/js/fmd/jquery.mudata-0.9.0.js"></script>
 <script type="text/javascript" src="${pageContext.request.contextPath}/js/fmd/jquery.datam.js"></script>
 
 <script type="text/javascript" src="${pageContext.request.contextPath}/js/fmd/auth.js"></script>
@@ -209,7 +209,7 @@ $(document).ready(function(){
     		$(this.renderTo).find('table > tbody > tr').eq(end).css('background-color','#bad0f7');
     	}*/
 	}).focus();
-	$('html').mudata({name:'data-t',input:'[+]'})
+	$('html').mudata({name:'data-t',input:'[+]atrib1'})
 	//$('html').mudata({name:'t-t-0',input:'[+]'});
 	//$('html').mudata('$test',"test").datatest({'+t1':true}).datatest({':t1':true});
 });

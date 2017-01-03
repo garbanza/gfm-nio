@@ -39,6 +39,7 @@ public class PrinterFM02 implements Printer {
 		} catch (IOException e1) {
 			log.trace("failed to print",e1);
 		}*/
+		if (copies==0)return true;
 		if(!printing)return true;
 		try {
 			PrintService printService=findPrintService(where);

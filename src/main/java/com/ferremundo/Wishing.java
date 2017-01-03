@@ -190,8 +190,8 @@ public class Wishing extends HttpServlet {
 					argsspl = args.split(" ");
 				String csv = null;
 				//System.out.println("command=" + command);
-				if (command.equals("@oa") || command.equals("@oc") || command.equals("$fa") || command.equals("$fc")
-						|| command.equals("$oa") || command.equals("$oc") || command.equals("@ia")
+				if (command.equals("@oc") || command.equals("$ef") || command.equals("$fc")
+						|| command.equals("$oc") 
 						|| command.equals("@ic")
 						|| command.equals("@pcot")
 						|| command.equals("@ecot")) {
@@ -199,7 +199,7 @@ public class Wishing extends HttpServlet {
 					// long re
 
 					InvoiceMetaData metaData = null;
-					if (command.equals("$fc") || command.equals("$fa")) {
+					if (command.equals("$fc") || command.equals("$ef")) {
 						if (!(onlineClient.hasAccess(AccessPermission.INVOICE_FACTURE)
 								|| onlineClient.hasAccess(AccessPermission.BASIC)
 								|| onlineClient.hasAccess(AccessPermission.ADMIN))) {
@@ -224,8 +224,7 @@ public class Wishing extends HttpServlet {
 							return;
 						}
 						metaData = new InvoiceMetaData(Invoice.INVOICE_TYPE_SAMPLE);
-					} else if (command.equals("@oc") || command.equals("$oc") || command.equals("@oa")
-							|| command.equals("$oa")) {
+					} else if (command.equals("@oc") || command.equals("$oc") ) {
 						if (!(onlineClient.hasAccess(AccessPermission.INVOICE_ORDER)
 								|| onlineClient.hasAccess(AccessPermission.BASIC)
 								|| onlineClient.hasAccess(AccessPermission.ADMIN))) {
@@ -247,7 +246,7 @@ public class Wishing extends HttpServlet {
 					}
 					System.out.println("invoiceType (int): " + metaData.getInvoiceType());
 
-					if (command.equals("$fa") || command.equals("$fc") || command.equals("$oa")
+					if (command.equals("$fc") || command.equals("$oa")
 							|| command.equals("$oc")) {
 						if (argsspl != null) {
 							try {
@@ -258,7 +257,7 @@ public class Wishing extends HttpServlet {
 							}
 						} else
 							payment = Float.MAX_VALUE;
-					} else if (command.equals("@oa") || command.equals("@oc")) {
+					} else if (command.equals("@oc")) {
 						payment = 0f;
 					}
 					log.info("trying to create invoice:");
@@ -326,7 +325,7 @@ public class Wishing extends HttpServlet {
 								command.equals("@pcot")
 								) {
 							
-							new PrinterFM02(new File(pdfPath), GSettings.get("PRINTER_TWO")).print(new Integer(GSettings.get("PRINTER_TWO_COPIES")));
+							new PrinterFM01(new File(pdfPath), GSettings.get("PRINTER_TWO")).print(new Integer(GSettings.get("PRINTER_TWO_COPIES")));
 						}
 						// TODO has parse de mails please
 						if (!invoice.getClient().getEmail().equals("")) {
@@ -356,18 +355,7 @@ public class Wishing extends HttpServlet {
 						
 						return;
 
-					} else if (command.equals("@ia")) {
-						// invoice.getLogs().add(new
-						// InvoiceLog(InvoiceLog.LogKind.CLOSE,true,shopman.getLogin()));
-						invoice.setUpdated(createdLog.getDate());
-						invoice.setPrintedTo(agent);
-
-						agent.setAditionalReference(adRef);
-						invoice.persist();
-						
-						
-
-					} else if (command.equals("@oc")) {
+					}else if (command.equals("@oc")) {
 						invoice.setUpdated(createdLog.getDate());
 						invoice.setPrintedTo(client);
 						invoice.persist();
@@ -378,18 +366,7 @@ public class Wishing extends HttpServlet {
 							if (Inventory.exists(item) && !item.isDisabled())
 								Inventory.decrementStored(item);
 						}
-					} else if (command.equals("@oa")) {
-						invoice.setUpdated(createdLog.getDate());
-						agent.setAditionalReference(adRef);
-						invoice.setPrintedTo(agent);
-						invoice.persist();
-						List<InvoiceItem> invoiceItems = invoice.getItems();
-						for (int i = 0; i < invoiceItems.size(); i++) {
-							InvoiceItem item = invoiceItems.get(i);
-							if (Inventory.exists(item) && !item.isDisabled())
-								Inventory.decrementStored(item);
-						}
-					} else if (command.equals("$oc")) {
+					}  else if (command.equals("$oc")) {
 						InvoiceLog paymentLog = new InvoiceLog(InvoiceLog.LogKind.PAYMENT,
 								invoice.getTotal() - invoice.getDebt(), shopman.getLogin());
 						invoice.getLogs().add(paymentLog);
@@ -409,32 +386,16 @@ public class Wishing extends HttpServlet {
 								Inventory.decrementStored(item);
 							}
 						}
-					} else if (command.equals("$oa")) {
-						InvoiceLog paymentLog = new InvoiceLog(InvoiceLog.LogKind.PAYMENT,
-								invoice.getTotal() - invoice.getDebt(), shopman.getLogin());
-						invoice.getLogs().add(paymentLog);
-						invoice.setUpdated(paymentLog.getDate());
-						agent.setAditionalReference(adRef);
-						invoice.setPrintedTo(agent);
-						invoice.persist();
-						TheBox.instance().plus(invoice.getTotal());
-						TheBox.instance()
-								.addLog(new TheBoxLog(invoice.getTotal(), paymentLog.getDate(), invoice.getReference(),
-										LogKind.PAYMENT.toString(), onlineClient.getShopman().getLogin()));
-						List<InvoiceItem> invoiceItems = invoice.getItems();
-						for (int i = 0; i < invoiceItems.size(); i++) {
-							InvoiceItem item = invoiceItems.get(i);
-							if (Inventory.exists(item) && !item.isDisabled())
-								Inventory.decrementStored(item);
-						}
-					} else if (command.equals("$fc") || command.equals("$fa")) {
+					} else if (command.equals("$fc") || command.equals("$ef")) {
 						InvoiceLog paymentLog = new InvoiceLog(InvoiceLog.LogKind.PAYMENT,
 								invoice.getTotal() - invoice.getDebt(), shopman.getLogin());
 						invoice.getLogs().add(new InvoiceLog(InvoiceLog.LogKind.FACTURE, true, shopman.getLogin()));
 						invoice.getLogs().add(paymentLog);
 						invoice.setUpdated(paymentLog.getDate());
-
-						if (command.equals("$fc")) {
+						invoice.setFacturedTo(client);
+						invoice.setPrintedTo(client);
+						invoice.persist();
+						/*if (command.equals("$fc")) {
 							invoice.setFacturedTo(client);
 							invoice.setPrintedTo(client);
 							invoice.persist();
@@ -443,7 +404,7 @@ public class Wishing extends HttpServlet {
 
 							invoice.setPrintedTo(agent);
 							invoice.persist();
-						}
+						}*/
 
 						// DBObject dbo=new Mongoi().doFindOne(Mongoi.INVOICES,
 						// "{ \"reference\" : \""+invoice.getReference()+"\"}");
@@ -498,9 +459,11 @@ public class Wishing extends HttpServlet {
 							new Mongoi().doUpdate(Mongoi.INVOICES,
 									"{ \"reference\" : \"" + reference + "\" }",
 									"{ \"hasElectronicVersion\" : true }");
-							new PrinterFM02(new File(pdf), GSettings.get("PRINTER_TWO")).print(new Integer(GSettings.get("PRINTER_TWO_COPIES")));
-
+							if (command.equals("$ef")) {
+								new PrinterFM01(new File(pdf), GSettings.get("PRINTER_TWO")).print(new Integer(GSettings.get("PRINTER_TWO_COPIES")));
+							}
 							// TODO has parse de mails please
+							
 							if (!invoice.getClient().getEmail().equals("")) {
 								HotmailSend.send(
 										"factura (" +invoice.getDocumentType()+") "+ GSettings.get("INVOICE_SERIAL") + " " + reference

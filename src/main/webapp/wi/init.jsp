@@ -226,31 +226,7 @@
 						//resetClient();
 						///INIT
 
-						$("#log").sexytable({
-							row : [ {
-								content : 'cant',
-								width : 5
-							}, {
-								content : 'unidad',
-								width : 10
-							}, {
-								content : 'descripción',
-								width : 40
-							}, {
-								content : 'codigo',
-								width : 10
-							}, {
-								content : 'marca',
-								width : 10
-							}, {
-								content : '$ unit',
-								width : 10
-							}, {
-								content : "<div class='g-total'>total</div>",
-								width : 10
-							} ],
-							animate : 100
-						});
+						
 						$("#commands").bind(
 								'autocompleteopen',
 								function(event, ui) {
@@ -1599,12 +1575,10 @@
 			};
 		</script>
 		<button type="button" id="lockbutton">lock</button>
-		<button type="button" onclick="new fillCommandLine('@ic');">cotizar
-			a cliente</button>
+		<button type="button" onclick="new fillCommandLine('@pcot');">imprimir cotizacion</button>
 		<!--button type="button" onclick="new fillCommandLine('@ia');">cotizar
 			a agente</button-->
-		<button type="button" onclick="new fillCommandLine('@oc');">credito
-			a cliente</button>
+		<button type="button" onclick="new fillCommandLine('@ecot');">enviar cotizacion</button>
 		<!--button type="button" onclick="new fillCommandLine('@oa');">credito
 			a agente</button-->
 		<button type="button" onclick="new fillCommandLine('$oc');">pedido
@@ -1613,6 +1587,7 @@
 			a agente+abono</button-->
 		<button type="button" onclick="new fillCommandLine('$fc');">factura
 			a cliente+abono</button>
+		<button type="button" onclick="new fillCommandLine('$ef');">enviar factura</button>
 		<!--button type="button" onclick="new fillCommandLine('$fa');">factura
 			a agente+abono</button-->
 		Forma de pago<input id="paymentWay" value="Pago en una sola exhibición" onfocus="(function(t){t.select()})(this)"/>

@@ -68,7 +68,7 @@
             		this.inputValue=val;
             		if(val==""){
             			this.renderTo.empty();
-            			this.hidde();
+            			this.hide();
             			return;
             		}
             		this.source(val);
@@ -89,11 +89,11 @@
             			var data=this_.menu[this_.selectedIndex];
             			this_.handleData([data]);
             			this_.inputValue=data;
-            			this_.hidde();
+            			this_.hide();
             			$(this_.input).val(data);
             		},
             		escape:function(this_){
-            			this_.hidde();
+            			this_.hide();
             			this_.moveTo(-1);
             		},
             		clickmenu:function(this_){
@@ -120,11 +120,11 @@
             		els.eq(end).css(//'background-color','#bad0f7');
             				{'border':'2px','border-style':'outset'});
             	},
-            	hidde:function(){this.renderTo.css('visibility','hidden');},
+            	hide:function(){this.renderTo.css('visibility','hidden');},
             	show:function(){this.renderTo.css('visibility','visible');},
             	selectedIndex:0,
             	moveTo:function(e){
-            		console.log(e);
+            		//console.log(e);
             		var idx1=this.selectedIndex;
             		if(this._typeOf(e)=='number'){
             			this.selectedIndex=e;
@@ -212,7 +212,7 @@
         	.blur(function(event){
         		settings._repeatKeyDown(false);
         		//TODO fix this. timeout added to let on-menu-click to actually happen
-        		window.setTimeout(function(){settings.hidde();},100);
+        		window.setTimeout(function(){settings.hide();},100);
         	});
     	});
     };

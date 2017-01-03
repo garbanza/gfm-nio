@@ -366,7 +366,7 @@ public class ElectronicInvoiceFactory {
 	    Conceptos cps = of.createComprobanteConceptos();
 	    List<Concepto> list = cps.getConcepto();
 	    float iva=new Float(GSettings.get("TAXES_IVA_VALUE"));
-	    MathContext mt=new MathContext(6, RoundingMode.HALF_UP);
+	    MathContext mt=new MathContext(5, RoundingMode.HALF_UP);
 	    BigDecimal subTotal=new BigDecimal(0,mt);
 	    
 	    log.info(subTotal.toPlainString());

@@ -29,29 +29,26 @@ var THEME='c';
 
 <script type="text/javascript"
 	src="${pageContext.request.contextPath}/mb/jquery.mobile.custom.min.js"></script>
-
+<script type="text/javascript"
+	src="${pageContext.request.contextPath}/js/fmd/util.js"></script>
 <script type="text/javascript"
 	src="${pageContext.request.contextPath}/js/jquery.capsule.js"></script>
 <script type="text/javascript"
 	src="${pageContext.request.contextPath}/js/fmd/jquery.commandro.js"></script>
 <script type="text/javascript"
+	src="${pageContext.request.contextPath}/js/fmd/commandline-1.0.0.js"></script>
+<script type="text/javascript"
 	src="${pageContext.request.contextPath}/js/fmd/jquery.mutant.js"></script>
 <script type="text/javascript"
 	src="${pageContext.request.contextPath}/js/fmd/jquery.validateForm.js"></script>
 <script type="text/javascript"
-	src="${pageContext.request.contextPath}/js/fmd/jquery.mutateAttr.js"></script>
+	src="${pageContext.request.contextPath}/js/fmd/jquery.mudata-0.9.0.js"></script>
 <script type="text/javascript"
 	src="${pageContext.request.contextPath}/js/fmd/auth.js"></script>
-<script type="text/javascript"
-	src="${pageContext.request.contextPath}/js/jquery.idle.min.js"></script>
-
 <script type="text/javascript"
 	src="${pageContext.request.contextPath}/js/URLEncode.js"></script>
 <script type="text/javascript"
 	src="${pageContext.request.contextPath}/js/fmd/auth.js"></script>
-<script type="text/javascript"
-	src="${pageContext.request.contextPath}/js/fmd/opcommandline.js"></script>
-
 <script type="text/javascript"
 	src="${pageContext.request.contextPath}/js/jquery.idle.min.js"></script>
 <script type="text/javascript"
@@ -145,6 +142,7 @@ function registering(){
 }
 $(document).ready(function(){
 	//$('#shopmanSession').html(':'+SHOPMAN.name+":"+SHOPMAN.login);
+	//$('[data-role="page"]').css("overflow","hidden");
 	$('.login').html(" - "+SHOPMAN.login+" - ");
 	//IDLE LOCK
 	$( document ).idle({
@@ -209,12 +207,14 @@ $(document).ready(function(){
 				var height=inp[0].offsetHeight;
 				var width=inp[0].offsetWidth;
 				this.renderTo.empty()
-				.css({'background-color':'#fff',top:pos.top+height,left:pos.left,
-					position:'absolute',width:'auto',margin: 0,
+				.css({'background-color':'#fff'/*,top:pos.top+height,left:pos.left,
+					position:'absolute'*/,width:'auto',margin: 0,
 					'min-width':width
 				})
 				.inTABLE(data).css({'min-width':width});
 	    	},
+	    	hide:function(){this.renderTo.toggle(false);},
+	    	show:function(){this.renderTo.toggle(true);},
 	    	htmlMenuElements:function(){return $(this.renderTo).find('tbody>tr');},
 	    	highlight:function(init,end){
 	    		var els=this.htmlMenuElements();
@@ -232,12 +232,15 @@ $(document).ready(function(){
 					rg.find('#unit').val(me[i]['unit']);
 					this_.menu=[me[i]];
 					this_.render(me[i]);
-					this_.hidde();
+					this_.hide();
 					//console.log(me[i]);
 					this_.selectedIndex=0;
 				}*/
 			},
 			source:function(path){
+				var commandl=commandLine($(this.input));
+				console.log("commandl");
+				console.log(commandl);
 				var args=path.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
 				var this_=this;
 				$.ajax({
@@ -268,10 +271,12 @@ $(document).ready(function(){
 	};
 	
 	$('#registerProduct').find('#code').commandro(commandroSearchTemplate({
+		//input:$('#registerProduct').find('#code'),
 		clickable:true,
-		appendTo:'#registerProduct',
+		appendTo:'#registerProductFormResultset',
 		enter:function(this_){
 			var rg=$('#registerProduct');
+				//$(this_.appendTo)
 			var i=this_.selectedIndex;
 			var me=this_.menu;
 			if(me.length<1)return;
@@ -282,7 +287,7 @@ $(document).ready(function(){
 			this_.menu=[me[i]];
 			this_.data={'result':[me[i]]};
 			this_.render({body:[me[i]]});
-			this_.hidde();
+			this_.hide();
 			this_.selectedIndex=0;
 			
 			this_.toUpdate=me[i];
@@ -306,9 +311,9 @@ $(document).ready(function(){
 	.find("[app-id~='form-input']")
 	.each(function(){
     			
-    			var id=$(this).attr(settings.idAttribute);
+    			//var id=$(this).attr(settings.idAttribute);
     			//var this_=this;
-    			console.log(id);
+    			//console.log(id);
     			$(this).keyup(function(){
     				
     			});
@@ -316,16 +321,16 @@ $(document).ready(function(){
 	//$('#registerProduct').find('input').keyup(function(){this.each(function(){this.trigger('change');})});
 	$('#registerProduct').find('#provider').commandro(commandroSearchTemplate({
 		clickable:true,
-		appendTo:'#registerProduct',
+		appendTo:'#registerProductFormResultset',
 		enter:function(this_){
-			var rg=$('#registerProduct');
+			var rg=$(this_.appendTo);
 			var i=this_.selectedIndex;
 			var me=this_.menu;
 			rg.find('#provider').val(me[i]['fullName']);
 			this_.menu=[me[i]];
 			this_.data={'result':[me[i]]};
 			this_.render({body:[me[i]]});
-			this_.hidde();
+			this_.hide();
 			console.log('ENTER');
 			this_.selectedIndex=0;
 		},
@@ -365,7 +370,7 @@ $(document).ready(function(){
 				rg.find('#unit').val(me[i]['unit']);
 				this_.menu=[me[i]];
 				this_.render(me[i]);
-				this_.hidde();
+				this_.hide();
 				//console.log(me[i]);
 				this_.selectedIndex=0;
 			}
@@ -490,9 +495,10 @@ $(document).ready(function(){
 			<div class="ui-content" id="registerProductForm">
 				<p>Cantidad:</p>
 				<input id='quantity' type='number' app-id="form-input">
+				
 				<p>Codigo del producto:</p>
 				<input id='code' app-id="form-input form-goup-1">
-
+				<div id="registerProductFormResultset"></div>
 				<p>Marca:</p>
 				<input id='mark' app-id="form-input form-goup-1">
 				<p>Descripción:</p>
