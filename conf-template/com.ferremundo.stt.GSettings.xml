@@ -62,9 +62,9 @@
 	<entry key="INVOICE_SENDER_REFERENCE">ENTRE CALLE Y CALLE</entry>
 	<entry key="INVOICE_SENDER_ADDITIONAL_DATA">CUENTA BANORTE: 0403345345345. CLAVE INTER: 234234234234 84. email: mail@mail.com</entry>
 	
-	<entry key="INVOICE_CERTIFICATE_AUTHORITY_USER">mvpNUXmQfK8=</entry>
-	<entry key="INVOICE_CERTIFICATE_AUTHORITY_PASS">mvpNUXmQfK8=</entry>
-	<entry key="INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE">http://www.timbracfdipruebas.mx/serviciointegracionpruebas/Timbrado.asmx?WSDL</entry>
+	<entry key="INVOICE_CERTIFICATE_AUTHORITY_USER">euieuieu=</entry>
+	<entry key="INVOICE_CERTIFICATE_AUTHORITY_PASS">ooeioeu</entry>
+	<entry key="INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE">http://service.somewhere</entry>
 
 
 	<!-- TAXING -->

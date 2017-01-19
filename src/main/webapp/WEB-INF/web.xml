@@ -7,6 +7,7 @@
     <filter-name>loginFilter</filter-name>
     <url-pattern>/wi/init.jsp</url-pattern>
     <url-pattern>/op</url-pattern>
+    <url-pattern>/admin</url-pattern>
   </filter-mapping>
   <filter>
     <filter-name>authFilter</filter-name>
@@ -35,6 +36,26 @@
   <servlet-mapping>
     <servlet-name>op</servlet-name>
     <url-pattern>/op</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description/>
+    <display-name>sat</display-name>
+    <servlet-name>sat</servlet-name>
+    <jsp-file>/wi/sat.jsp</jsp-file>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>sat</servlet-name>
+    <url-pattern>/sat</url-pattern>
+  </servlet-mapping>
+    <servlet>
+    <description/>
+    <display-name>admin</display-name>
+    <servlet-name>admin</servlet-name>
+    <jsp-file>/wi/admin.jsp</jsp-file>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>admin</servlet-name>
+    <url-pattern>/admin</url-pattern>
   </servlet-mapping>
   <session-config>
     <session-timeout>1</session-timeout>
