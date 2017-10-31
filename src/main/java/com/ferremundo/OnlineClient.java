@@ -40,6 +40,9 @@ public class OnlineClient {
 		String ipAddress=req.getRemoteAddr();
 		String token=req.getParameter("token");
 		String sessionId=req.getSession().getId();
+		Log log=new Log();
+		log.object(sessionId,this.sessionId);
+		log.object(logged,clientReference==this.clientReference,ipAddress.equals(this.ipAddress),token.equals(this.token),sessionId.equals(this.sessionId),!locked);
 		if(logged&&clientReference==this.clientReference&&
 				ipAddress.equals(this.ipAddress)&&
 				token.equals(this.token)&&

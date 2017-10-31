@@ -42,14 +42,14 @@
 	src="js/jspdf/jspdf.plugin.split_text_to_size.js"></script>
 <script type="text/javascript" src="js/jspdf/jspdf.plugin.from_html.js"></script>
 
-<script type="text/javascript" src="js/jquery.blockUI.js"></script>
+<script type="text/javascript" src="js/fmd/jquery.block-ui.js"></script>
 
 <link rel="stylesheet" type="text/css" href="css/layout.css">
 <link rel="stylesheet" type="text/css"
 	href="css/jquery-ui-1.8.4.cupertino.css" />
 <link rel="stylesheet" type="text/css"
 	href="css/jquery-bubble-popup-v3.css" />
-
+<link rel="stylesheet" type="text/css" href="css/jquery.msg.css">
 <script type="text/javascript">
 	var REQUEST_NUMBER = 0;
 
@@ -251,7 +251,7 @@
 												console.log('key != enter');
 												return;
 											}
-											console.log('key = enter');
+											//console.log('key = enter');
 											//alert(event.which);
 											//$('#commands').SetBubblePopupOptions({innerHtml:"comandos"});
 											$('#commands').HideBubblePopup();
@@ -399,13 +399,13 @@
 												if (commandline.args.length >= 0
 														&& productsLog.length > 0) {
 													//CONFIRM
-
-													$
+													var block1=$.blockUI({content : '<h1><img src="img/wait.gif" /> esperar...</h1>'});
+								
+													/*$
 															.blockUI({
 																message : '<h1><img src="img/wait.gif" /> esperar...</h1>'
-															});
-													$
-															.ajax({
+															});*/
+													$.ajax({
 																type : 'POST',
 																url : 'wishing',
 																data : {
@@ -435,17 +435,17 @@
 																	accountPaymentNumber:$('#accountPaymentNumber').val()
 																	
 																},
-																success : function(
-																		data) {
+																success : function(data) {
 																	resetClient();
-																	$(
-																			'#commands')
-																			.val(
-																					'');
+																	$('#commands').val('');
 																	invoiceInfoLog(data.invoice);
-																	alert(data.successResponse);
-																	$
-																			.unblockUI();
+																	//alert(data.successResponse);
+																	$.blockUI({
+																		node:block1,
+																		content : '<h1>'+data.successResponse+'</h1>',
+																		changeContent:true,
+																		unblockOnAnyKey:true
+																	});
 																},
 																error : function(
 																		jqXHR,
@@ -457,15 +457,20 @@
 																			.log(textStatus);
 																	console
 																			.log(errorThrown);
-																	alert("el sistema dice: "
+																	/*alert("el sistema dice: "
 																			+ textStatus
 																			+ " - "
 																			+ errorThrown
 																			+ " - "
-																			+ jqXHR.responseText);
+																			+ jqXHR.responseText);*/
 
-																	$
-																			.unblockUI();
+																	$.blockUI({
+																		node:block1,
+																		content : textStatus+" - "+errorThrown+" - "+ jqXHR.responseText,
+																		changeContent:true,
+																		unblockOnAnyKey:true
+																	});
+																	
 																},
 																dataType : "json"
 															});
@@ -485,8 +490,11 @@
 															type : 'POST',
 															success : function(
 																	data) {
-																alert('$'
-																		+ data.cash);
+																//alert('$'+ data.cash);
+																$.blockUI({
+																	content : "$"+data.cash,
+																	unblockOnAnyKey:true
+																});
 																$('#commands')
 																		.val('');
 																//window.location="init6.jsp";
@@ -502,12 +510,18 @@
 																		.log(textStatus);
 																console
 																		.log(errorThrown);
-																alert("el sistema dice: "
+																/*alert("el sistema dice: "
 																		+ textStatus
 																		+ " - "
 																		+ errorThrown
 																		+ " - "
 																		+ jqXHR.responseText);
+																*/
+																$.blockUI({
+																	content : textStatus+" - "+errorThrown+" - "+ jqXHR.responseText,
+																	unblockOnAnyKey:true
+																});
+
 															}/*,
 																			dataType:"json",
 																			statusCode: {
@@ -590,9 +604,8 @@
 															+ commandline.args[0]
 															+ " ? "))
 														return;
-													$
-															.blockUI({
-																message : '<h1><img src="img/wait.gif" /> cancelando...</h1>'
+													var block2=$.blockUI({
+																content : '<h1><img src="img/wait.gif" /> cancelando...</h1>'
 															});
 													$
 															.ajax({
@@ -608,22 +621,30 @@
 																},
 																success : function(
 																		data) {
-																	alert(data.message);
-																	$
-																			.unblockUI();
+																	//alert(data.message);
+																	$.blockUI({
+																		node:block2,
+																		content : '<h1>'+data.message+'</h1>',
+																		changeContent:true,
+																		unblockOnAnyKey:true
+																	});
 																},
 																error : function(
 																		jqXHR,
 																		textStatus,
 																		errorThrown) {
-																	alert("el sistema dice: "
+																	/*alert("el sistema dice: "
 																			+ textStatus
 																			+ " - "
 																			+ errorThrown
 																			+ " - "
-																			+ jqXHR.responseText);
-																	$
-																			.unblockUI();
+																			+ jqXHR.responseText);*/
+																	$.blockUI({
+																		node:block2,
+																		content : textStatus+" - "+errorThrown+" - "+ jqXHR.responseText,
+																		changeContent:true,
+																		unblockOnAnyKey:true
+																	});
 																},
 																dataType : "json",
 																type : 'POST'
@@ -713,9 +734,9 @@
 
 											} else if (commandline.kind == 'getinvoice') {
 												if (commandline.args.length >= 1) {
-													$
+													var block3=$
 															.blockUI({
-																message : '<h1><img src="img/wait.gif" /></h1>'
+																content : '<h1><img src="img/wait.gif" /></h1>'
 															});
 													$
 															.ajax({
@@ -730,8 +751,7 @@
 																},
 																success : function(
 																		data) {
-																	$
-																			.unblockUI();
+																	$.unblockUI(block3);
 																	if (commandline.command == '@r') {
 																		var itms = data.items;
 																		for (var i = itms.length - 1; i >= 0; i--) {

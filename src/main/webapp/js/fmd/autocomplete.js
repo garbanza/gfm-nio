@@ -185,7 +185,7 @@ autocomplete=function(input){
 					for(var j=0;j<productsLog.length;j++){
 						var jsonsrt="["+$.toJSON(productsLog[j])+"]";
 						$.ajax({
-							index : j,
+							index : j+0,
 							url: "getthis",
 							data: {
 								list:encodeURIComponent(jsonsrt),
@@ -201,25 +201,25 @@ autocomplete=function(input){
 							type:'POST',
 							success: function(data) {
 								console.log("data");
-								console.log(data);
+								console.log(data[0].id+" "+this.index+" "+j);
 								//alert(productsLog[0].quantity+" ->"+this.index);
-								var j=this.index;
-								if(productsLog[j].id!="-1"){
+								var k=this.index;
+								if(productsLog[k].id!="-1"){
 									//alert(jsonsrt);
 									//$('.quantity').eq(j).text(data[j].quantity);
 									$(".tableingrow").unbind('DOMSubtreeModified');
-									$('.unit').eq(j).html(data[0].unit);
-									$('.description').eq(j).html(data[0].description);
-									$('.code').eq(j).html(data[0].code);
-									$('.mark').eq(j).html(data[0].mark);
-									$('.unitPrice').eq(j).html(data[0].unitPrice);
-									var quantity=productsLog[j].quantity;
-									if(productsLog[j].disabled){
-										productsLog[j]=data[0];
-										productsLog[j].disabled=true;
+									$('.unit').eq(k).html(data[0].unit);
+									$('.description').eq(k).html(data[0].description);
+									$('.code').eq(k).html(data[0].code);
+									$('.mark').eq(k).html(data[0].mark);
+									$('.unitPrice').eq(k).html(data[0].unitPrice);
+									var quantity=productsLog[k].quantity;
+									if(productsLog[k].disabled){
+										productsLog[k]=data[0];
+										productsLog[k].disabled=true;
 									}
-									else productsLog[j]=data[0];
-									productsLog[j].quantity=quantity;
+									else productsLog[k]=data[0];
+									productsLog[k].quantity=quantity;
 									onLogChange();
 									//productsLog[j].quantity=$('.quantity').eq(j).val();
 								}

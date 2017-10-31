@@ -25,6 +25,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.commons.lang.ArrayUtils;
+
 //import mx.nafiux.Rhino;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -38,7 +40,7 @@ import org.w3c.dom.NodeList;
 import com.ferremundo.InvoiceLog.LogKind;
 import com.ferremundo.db.Inventory;
 import com.ferremundo.db.Mongoi;
-import com.ferremundo.mailing.HotmailSend;
+import com.ferremundo.mailing.Hotmail;
 import com.ferremundo.stt.GSettings;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -304,6 +306,7 @@ public class Wishing extends HttpServlet {
 						invoice.setUpdated(createdLog.getDate());
 						invoice.setPrintedTo(client);
 						invoice.persist();
+						String reference=invoice.getReference();
 						
 						String xml=Utils.GEN_CFD_STRING(invoice);
 						String 	id=invoice.getReference(),
@@ -328,22 +331,25 @@ public class Wishing extends HttpServlet {
 							new PrinterFM01(new File(pdfPath), GSettings.get("PRINTER_TWO")).print(new Integer(GSettings.get("PRINTER_TWO_COPIES")));
 						}
 						// TODO has parse de mails please
+						String[] recipients={};//new String[]{};
+						
 						if (!invoice.getClient().getEmail().equals("")) {
-							HotmailSend.send(
-									"Cotización " + GSettings.get("STORE_ID") + " " + id
-											+ " $" + total,
-									GSettings.get("EMAIL_BODY"), invoice.getClient().getEmail().split(" "),
-									new String[] { GSettings.getPathTo("TMP_FOLDER") + id + ".pdf" },
-									new String[] { id + ".pdf" });
+							recipients=(String[])ArrayUtils.addAll(recipients, invoice.getClient().getEmail().split(" "));
 						}
 						if (!invoice.getAgent().getEmail().equals("")) {
-							HotmailSend.send(
-									"Cotización " + GSettings.get("STORE_ID") + " " + id
-									+ " $" + total,
-											GSettings.get("EMAIL_BODY"), invoice.getAgent().getEmail().split(" "),
-											new String[] { GSettings.getPathTo("TMP_FOLDER") + id + ".pdf" },
-											new String[] { id + ".pdf" });
+							recipients=(String[])ArrayUtils.addAll(recipients, invoice.getAgent().getEmail().split(" "));
 						}
+						if (recipients.length>0) {
+							new Hotmail().send(
+									"Cotización " + reference
+											+ " $" + total,
+									GSettings.get("EMAIL_BODY"), recipients,
+									new String[] { GSettings.getPathTo("TMP_FOLDER") + reference + ".xml",
+											GSettings.getPathTo("TMP_FOLDER") + reference + ".pdf" },
+									new String[] { reference + ".xml",
+											reference + ".pdf" });
+						}
+
 						// TODO print this electronic representation to
 						// lazer or whatever
 						try {
@@ -463,19 +469,26 @@ public class Wishing extends HttpServlet {
 								new PrinterFM01(new File(pdf), GSettings.get("PRINTER_TWO")).print(new Integer(GSettings.get("PRINTER_TWO_COPIES")));
 							}
 							// TODO has parse de mails please
+							String[] recipients={};//new String[]{};
 							
 							if (!invoice.getClient().getEmail().equals("")) {
-								HotmailSend.send(
+								recipients=(String[])ArrayUtils.addAll(recipients, invoice.getClient().getEmail().split(" "));
+							}
+							if (!invoice.getAgent().getEmail().equals("")) {
+								recipients=(String[])ArrayUtils.addAll(recipients, invoice.getAgent().getEmail().split(" "));
+							}
+							if (recipients.length>0) {
+								new Hotmail().send(
 										"factura (" +invoice.getDocumentType()+") "+ GSettings.get("INVOICE_SERIAL") + " " + reference
 												+ " $" + total,
-										GSettings.get("EMAIL_BODY"), invoice.getClient().getEmail().split(" "),
+										GSettings.get("EMAIL_BODY"), recipients,
 										new String[] { GSettings.getPathTo("TMP_FOLDER") + reference + ".xml",
 												GSettings.getPathTo("TMP_FOLDER") + reference + ".pdf" },
 										new String[] { reference + ".xml",
 												reference + ".pdf" });
 							}
-							if (!invoice.getAgent().getEmail().equals("")) {
-								HotmailSend.send(
+							/*if (!invoice.getAgent().getEmail().equals("")) {
+								new Hotmail().send(
 										"factura (" +invoice.getDocumentType()+") "+ GSettings.get("INVOICE_SERIAL") + " " + reference
 										+ " $" + total,
 												GSettings.get("EMAIL_BODY"), invoice.getAgent().getEmail().split(" "),
@@ -483,7 +496,7 @@ public class Wishing extends HttpServlet {
 												GSettings.getPathTo("TMP_FOLDER") + reference + ".pdf" },
 										new String[] { reference + ".xml",
 												reference + ".pdf" });
-							}
+							}*/
 							// TODO print this electronic representation to
 							// lazer or whatever
 							try {
@@ -604,9 +617,9 @@ public class Wishing extends HttpServlet {
 					System.out.println("mails->" + mails.length);
 					// TODO handle sent var
 					String body = GSettings.get("EMAIL_BODY");
-					boolean sent = HotmailSend.send(subject, body, mails, paths, fileNames);
+					boolean sent = new Hotmail().send(subject, body, mails, paths, fileNames);
 					mails = agent.getEmail().split(" ");
-					sent = HotmailSend.send(subject, body, mails, paths, fileNames);
+					sent = new Hotmail().send(subject, body, mails, paths, fileNames);
 					// if(!sent)HotmailSend.send("no enviado", "FERREMUNDO
 					// AGRADECE SU PREFERENCIA", new
 					// String[]{"ferremundo@live.com"}, paths,fileNames);

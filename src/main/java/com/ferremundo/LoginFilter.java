@@ -38,6 +38,7 @@ public class LoginFilter implements Filter {
         //System.out.println(new Gson().toJson(request));
         OnlineClients clients= OnlineClients.instance();
         OnlineClient onlineClient=null;
+        Log log=new Log();
         String ref=request.getParameter("clientReference");
         System.out.println("loginfilter "+ref);
         boolean auth=false;
@@ -93,7 +94,7 @@ public class LoginFilter implements Filter {
         					request.setAttribute("clientReference",onlineClient.getClientReference());
         					request.setAttribute("shopman","{ name:'"+onlineClient.getShopman().getName()+"',login:'"+onlineClient.getShopman().getLogin()+"'}");
         		        	request.getSession().setMaxInactiveInterval(60*60*8);
-        					
+        					log.info("logged");
         		            chain.doFilter(request, response); // Logged-in user found, so just continue request.
         		            
         					/*if(onlineClient.isAuthenticated(req)){

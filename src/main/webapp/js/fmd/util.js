@@ -102,3 +102,13 @@ function validateEmail(email){
 	if(email.match(filter)==null)return false;
 	return true;
 }
+
+function blockUI(opts){
+	document.blockUI=opts;
+	$.blockUI(opts);
+}
+
+function unblockUI(){
+	if(document.blockUI.anyKey)
+	$.blockUI();
+}

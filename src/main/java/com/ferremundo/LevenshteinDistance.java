@@ -26,7 +26,7 @@ public class LevenshteinDistance {
 	}
 	  
 	  public static void main(String[] args) {
-		System.out.println(LD("hell yeah", "hell yeah"));
+		System.out.println(LD("hell yeah", "hell yehah"));
 	}
 
 }

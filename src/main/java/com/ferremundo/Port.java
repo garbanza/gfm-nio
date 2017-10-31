@@ -31,12 +31,14 @@ public class Port extends HttpServlet{
 		OnlineClient onlineClient=OnlineClients.instance().get(clientReference);
 		Log log = new Log(onlineClient);
 		log.entry(req.getParameterMap());
+		log.object("is authenticated",onlineClient.isAuthenticated(req));
 		if(!(onlineClient.isAuthenticated(req)&&(
 				onlineClient.hasAccess(AccessPermission.PRODUCT_READ)||
 				onlineClient.hasAccess(AccessPermission.CONSUMMER_READ)||
 				onlineClient.hasAccess(AccessPermission.BASIC)||
 				onlineClient.hasAccess(AccessPermission.ADMIN)
 				))){
+			log.info("access denied");
 			resp.getWriter().print("{}");return;
 		}
 		

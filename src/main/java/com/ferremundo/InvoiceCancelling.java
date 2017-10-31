@@ -21,7 +21,7 @@ import org.xml.sax.InputSource;
 import com.ferremundo.InvoiceLog.LogKind;
 import com.ferremundo.db.Inventory;
 import com.ferremundo.db.Mongoi;
-import com.ferremundo.mailing.HotmailSend;
+import com.ferremundo.mailing.Hotmail;
 import com.ferremundo.stt.GSettings;
 import com.google.gson.Gson;
 import com.mongodb.DBObject;
@@ -114,7 +114,7 @@ public class InvoiceCancelling extends HttpServlet{
 										xml,
 										GSettings.getPathTo("TMP_FOLDER")+invoice.getReference()+"-CANCELADO.xml");
 								if(!invoice.getClient().getEmail().equals("")){
-									HotmailSend.send(
+									new Hotmail().send(
 										"factura CANCELADA "+invoice.getReference(),
 										"la factura \n"+invoiceREF+"\nha sido cancelada.\n"+GSettings.get("EMAIL_BODY"),
 										invoice.getClient().getEmail().split(" "),
@@ -125,7 +125,7 @@ public class InvoiceCancelling extends HttpServlet{
 									
 								}
 								if(!invoice.getAgent().getEmail().equals("")){
-									HotmailSend.send(
+									new Hotmail().send(
 											"factura CANCELADA "+invoice.getReference(),
 											"la factura\n"+invoiceREF+"\nha sido cancelada.\n"+GSettings.get("EMAIL_BODY"),
 											invoice.getAgent().getEmail().split(" "),

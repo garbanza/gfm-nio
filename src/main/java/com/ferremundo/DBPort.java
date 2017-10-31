@@ -826,6 +826,61 @@ public class DBPort extends HttpServlet{
 		
 	}
 	
+	private void searchEInvoice(
+			AccessPermission[] permissions,
+			String[] parameters,
+			HttpServletRequest request,
+			HttpServletResponse response,
+			OnlineClient onlineClient){
+		doCommand(permissions,parameters,request,response, onlineClient, new Command(){
+			@Override
+			public void execute(Map<String,String> parametersMap,
+					HttpServletResponse response, OnlineClient onlineClient) {
+				int searchRequestId=new Integer(parametersMap.get("searchRequestId"));
+				//String 
+				String search=parametersMap.get("search");
+				List<String> matchList = new ArrayList<String>();
+				Pattern regex = Pattern.compile("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'");
+				Matcher regexMatcher = regex.matcher(search);
+				while (regexMatcher.find()) {
+				    if (regexMatcher.group(1) != null) {
+				        // Add double-quoted string without the quotes
+				        matchList.add(regexMatcher.group(1));
+				    } else if (regexMatcher.group(2) != null) {
+				        // Add single-quoted string without the quotes
+				        matchList.add(regexMatcher.group(2));
+				    } else {
+				        // Add unquoted word
+				        matchList.add(regexMatcher.group());
+				    }
+				}
+				String[] patterns=matchList.toArray(new String[1]);
+				DBCursor cursor=new Mongoi()
+				.doFindLike(Mongoi.PROVIDERS, new String[]{"fullName"}, patterns).limit(15);
+				List<DBObject> list=cursor.toArray();
+				List<DBObject> filteredList=FilterDBObject.keep(
+						new String[]{"fullName"},list);
+				if(searchRequestId<onlineClient.getRequestNumber()){
+					try {
+						response.getWriter().print("{\"result\" : [ ],\"requestNumber\" : \""+searchRequestId+"\"}");
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					return;
+				}
+				String resp="{\"result\":"+new Gson().toJson(filteredList)+",\"searchRequestID\":\""+searchRequestId+"\"} ";
+				try {
+					response.getWriter().print(resp);
+					System.out.println(resp);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		});
+		
+	}
+	
 	private void doCommand(
 			AccessPermission[] permissions,
 			String[] parameters,

@@ -11,6 +11,7 @@ import javax.mail.BodyPart;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
+import javax.mail.NoSuchProviderException;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
@@ -20,16 +21,19 @@ import javax.mail.internet.MimeMultipart;
 
 import com.ferremundo.Log;
 import com.ferremundo.stt.GSettings;
+import com.google.gson.Gson;
 
-public class HotmailSend {
+public class Hotmail implements Mail {
+	
 	
 	public static void main(String[] args) {
 		//send("Cotización 3WA3 : 2.97", "FERREMUNDO AGRADECE SU PREFERENCIA", new String[]{"raynmune@hotmail.com"}, new String[]{"/opt/workspace/tmp/3WA3.0","/home/dios/FERREMUNDO/pedidos/3WA3.pdf.csv"}, new String[]{"3WA3.0.pdf","3WA3.csv"});
 	}
-	public static boolean send( String subject, String text,String[] recipients) {
+	
+	public boolean send( String subject, String text,String[] recipients) {
 		return send(subject, text, recipients, null, null);
 	}
-	public static boolean send( String subject, String text,String[] recipients, String[] paths, String[] fileNames) {
+	public boolean send( String subject, String text,String[] recipients, String[] paths, String[] fileNames) {
 		List<String> mails=new LinkedList<String>();
 		Log log=new Log();
 		for(String recipient : recipients){
@@ -50,7 +54,7 @@ public class HotmailSend {
 
 			System.out.println("Enviando…");
 			// Preparamos la sesion
-			Session session = Session.getDefaultInstance(props);
+			Session session = Session.getInstance(props);//Session.getDefaultInstance(props);
 
 			// Construimos el mensaje
 			MimeMessage message = new MimeMessage(session);
@@ -71,18 +75,39 @@ public class HotmailSend {
 			messageBodyPart.setText(text);
 			multipart.addBodyPart(messageBodyPart);
 			message.setContent(multipart);
+			message.saveChanges();
 			
-			// Lo enviamos.
-			Transport t = session.getTransport("smtp");
-			t.connect(GSettings.get("EMAIL_NOTIFICATIONS"), GSettings.get("EMAIL_NOTIFICATIONS_PASS"));
+			/*Transport t = session.getTransport("smtp");
+			t.connect("smtp.live.com",587,GSettings.get("EMAIL_NOTIFICATIONS"), GSettings.get("EMAIL_NOTIFICATIONS_PASS"));
 			t.sendMessage(message, message.getAllRecipients());
+			 */
+			new Thread(new Runnable() {
+				
+				@Override
+				public void run() {
+					Transport t;
+					try {
+						// Lo enviamos.
+						t = session.getTransport("smtp");
+						t.connect("smtp.live.com",587,GSettings.get("EMAIL_NOTIFICATIONS"), GSettings.get("EMAIL_NOTIFICATIONS_PASS"));
+						t.sendMessage(message, message.getAllRecipients());
+						// Cierre.
+						t.close();
+						log.object("mail sent");
+					} catch (NoSuchProviderException e) {
+						log.trace("failed while sending mail", e);
+					} catch (MessagingException e) {
+						log.trace("failed while sending mail", e);
+					}
+					
+					
+				}
+			}).start();
+			
 
-			// Cierre.
-			t.close();
-
-			System.out.println("Email Enviado!");
+			//System.out.println("Email Enviado!");
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.trace("failed while sending mail", e);
 			return false;
 		}
 		return true;
