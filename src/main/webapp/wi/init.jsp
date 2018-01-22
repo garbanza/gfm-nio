@@ -1,4 +1,5 @@
 
+<%@page import="com.ferremundo.stt.GSettings"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
@@ -50,6 +51,7 @@
 <link rel="stylesheet" type="text/css"
 	href="css/jquery-bubble-popup-v3.css" />
 <link rel="stylesheet" type="text/css" href="css/jquery.msg.css">
+
 <script type="text/javascript">
 	var REQUEST_NUMBER = 0;
 
@@ -64,9 +66,8 @@
 	var products;
 	var productsLog = [];
 	var clients;
-	var client = new Client_("-1", "PUBLICO EN GRAL", 1, ".", "MORELIA", ".",
-			"MICH", ".", ".", "PARA FACTURAR", ".", 0, "");
-	var agent = null;
+	var CLIENT = null;
+	var AGENT = null;
 	//var shopman=new setShopman("unauthorized");
 	var metadata = new setMetadata(1);// INVOICE_TYPE_ORDER
 	var requester = new setRequester(-1, "publico", "publico");
@@ -82,13 +83,54 @@
 	keyenter.keyCode = $.ui.keyCode.ENTER;
 	var keyenterUp = $.Event("keyup.autocomplete");
 	keyenterUp.keyCode = $.ui.keyCode.ENTER;
-	console.log(client);
+	CLIENT=new Client_(
+			"-1",
+			'${GSettings.get("CONSUMER_NAME")}',
+			1,
+			'',
+			'',
+			'',
+			'',
+			'',
+			'',
+			'${GSettings.get("CONSUMER_FISCAL_RESIDENCY")}',
+			'',
+			'',
+			'',
+			'${GSettings.get("CONSUMER_TAX_CODE")}',
+			"",
+			0,
+			"",
+			"",
+			'${GSettings.get("CONSUMER_CFDI_USE")}');
+	AGENT=new Agent_(
+			"-1",
+			'${GSettings.get("INVOICE_SENDER_SOCIAL_REASON")}',
+			1,
+			'${GSettings.get("INVOICE_SENDER_ADDRESS")}',
+			'${GSettings.get("INVOICE_SENDER_INTERIOR_NUMBER")}',
+			'${GSettings.get("INVOICE_SENDER_EXTERIOR_NUMBER")}',
+			'${GSettings.get("INVOICE_SENDER_SUBURB")}',
+			'${GSettings.get("INVOICE_SENDER_LOCALITY")}',
+			'${GSettings.get("INVOICE_SENDER_CITY")}',
+			'${GSettings.get("INVOICE_SENDER_COUNTRY")}',
+			'${GSettings.get("INVOICE_SENDER_STATE")}',
+			'${GSettings.get("INVOICE_SENDER_EMAIL")}',
+			'${GSettings.get("INVOICE_SENDER_CP")}',
+			'${GSettings.get("INVOICE_SENDER_TAX_CODE")}',
+			"",
+			0,
+			"",
+			"",
+			"");
+	//console.log(client);
 
 	$(document)
 			.ready(
 					function() {
 
 						resetClient();
+						
 						$('#shopmanSession').html(
 								':' + SHOPMAN.name + ":" + SHOPMAN.login);
 						autocomplete('#commands');
@@ -390,11 +432,11 @@
 													$('#commands').val('');
 													return;
 												}
-												if ($('#paymentMethod').val() == '' || $('#paymentWay').val() == '') {
+												/*if ($('#paymentMethod').val() == '' || $('#paymentWay').val() == '') {
 													alert("metodo de pago y/o forma de pago indefinido.");
 													$('#commands').val('');
 													return;
-												}
+												}*/
 												//alert(" kind "+commandline.kind+" argsL "+commandline.args.length);
 												if (commandline.args.length >= 0
 														&& productsLog.length > 0) {
@@ -432,7 +474,8 @@
 																	paymentMethod: $('#paymentMethod').val(),
 																	paymentWay: $('#paymentWay').val(),
 																	documentType: $('#documentType').val(),
-																	accountPaymentNumber:$('#accountPaymentNumber').val()
+																	documentType: $('#documentType').val(),
+																	cfdiUse:$('#cfdiUse').val()
 																	
 																},
 																success : function(data) {
@@ -1257,11 +1300,27 @@
 															+ "-"
 															+ SHOPMAN.login
 												});
-											} else if (commandline.kind == 'paymentmethod') {
-												$('#commands').val('');
-												$("#paymentMethod").val(commandline.args.join(" "));
 											}
-
+											else if (commandline.kind == 'paymentway') {
+												$('#commands').val('');
+												$("#paymentWay").val(commandline.args[0].toUpperCase());
+											}
+											else if (commandline.kind == 'paymentmethod') {
+												$('#commands').val('');
+												$("#paymentMethod").val(commandline.args[0].toUpperCase());
+											}
+											else if (commandline.kind == 'documenttype') {
+												$('#commands').val('');
+												$("#documentType").val(commandline.args[0].toUpperCase());
+											}
+											else if (commandline.kind == 'destiny') {
+												$('#commands').val('');
+												$("#destiny").val(commandline.args.join(" ").toUpperCase());
+											}
+											else if (commandline.kind == 'cfdiuse') {
+												$('#commands').val('');
+												$("#cfdiUse").val(commandline.args[0].toUpperCase());
+											}
 										});
 
 						$(function() {
@@ -1610,26 +1669,83 @@
 		<button type="button" onclick="new fillCommandLine('$ef');">enviar factura</button>
 		<!--button type="button" onclick="new fillCommandLine('$fa');">factura
 			a agente+abono</button-->
-		Forma de pago<input id="paymentWay" value="Pago en una sola exhibición" onfocus="(function(t){t.select()})(this)"/>
-		Método de pago
-		<select id="paymentMethodSelect" onchange="(function(th){var t=$(th).val(),pm=$('#paymentMethod').val();if(t!='')$('#paymentMethod').val(pm!=''?(pm+', '+t):t)})(this)">
-  			<option value=""></option>
-  			<option value="01">01 Efectivo</option>
-  			<option value="02">02 Cheque nominativo</option>
-  			<option value="03">03 Transferencia electrónica de fondos</option>
-  			<option value="04">04 Tarjeta de Crédito</option>
-  			<option value="05">05 Monedero Electrónico</option>
-  			<option value="06">06 Dinero electrónico</option>
-  			<option value="08">08 Vales de despensa</option>
-  			<option value="28">28 Tarjeta de Débito</option>
-  			<option value="29">29 Tarjeta de Servicio</option>
-  			<option value="99">99 Otros</option>
+		<!--Metodo de pago -->
+		<br>
+		<select id="paymentMethod" style="width:10%">
+			<option ></option>
+			<option value="PUE">PUE Pago en una sola exhibición</option>
+			<option value="PPD">PPD Pago parcialidades o diferido</option>
 		</select>
-		<input id="paymentMethod" value="" onfocus="(function(t){t.select()})(this)"/>
-		Numero de cuenta<input id="accountPaymentNumber" value="N.A." onfocus="(function(t){t.select()})(this)"/>
-		Destino<input id="destiny" value="Mostrador" onfocus="(function(t){t.select()})(this)"/>
+		<!-- Forma de pago -->
+		<select id="paymentWay" style="width:10%">
+  			<option ></option>
+  			<option value="01">01 Efectivo</option>
+			<option value="02">02 Cheque nominativo</option>
+			<option value="03">03 Transferencia electrónica de fondos</option>
+			<option value="04">04 Tarjeta de crédito</option>
+			<option value="05">05 Monedero electrónico</option>
+			<option value="06">06 Dinero electrónico</option>
+			<option value="08">08 Vales de despensa</option>
+			<option value="12">12 Dación en pago</option>
+			<option value="13">13 Pago por subrogación</option>
+			<option value="14">14 Pago por consignación</option>
+			<option value="15">15 Condonación</option>
+			<option value="17">17 Compensación</option>
+			<option value="23">23 Novación</option>
+			<option value="24">24 Confusión</option>
+			<option value="25">25 Remisión de deuda</option>
+			<option value="26">26 Prescripción o caducidad</option>
+			<option value="27">27 A satisfacción del acreedor</option>
+			<option value="28">28 Tarjeta de débito</option>
+			<option value="29">29 Tarjeta de servicios</option>
+			<option value="30">30 Aplicación de anticipos</option>
+			<option value="99">99 Por definir</option>
+		</select>
+		<select id="documentType" style="width:10%">
+			<option value="I">I Ingreso</option>
+			<option value="E">E Egreso</option>
+			<option value="T">T Traslado</option>
+			<option value="N">N Nomina</option>
+			<option value="P">P Pago</option>
+		</select>
+		<select id="cfdiUse" style="width:10%">
+			<option ></option>
+			<option value="G01">G01 Adquisición de mercancias</option>
+			<option value="G02">G02 Devoluciones, descuentos o
+				bonificaciones</option>
+			<option value="G03">G03 Gastos en general</option>
+			<option value="I01">I01 Construcciones</option>
+			<option value="I02">I02 Mobilario y equipo de oficina por
+				inversiones</option>
+			<option value="I03">I03 Equipo de transporte</option>
+			<option value="I04">I04 Equipo de computo y accesorios</option>
+			<option value="I05">I05 Dados, troqueles, moldes, matrices y
+				herramental</option>
+			<option value="I06">I06 Comunicaciones telefónicas</option>
+			<option value="I07">I07 Comunicaciones satelitales</option>
+			<option value="I08">I08 Otra maquinaria y equipo</option>
+			<option value="D01">D01 Honorarios médicos, dentales y
+				gastos hospitalarios.</option>
+			<option value="D02">D02 Gastos médicos por incapacidad o
+				discapacidad</option>
+			<option value="D03">D03 Gastos funerales.</option>
+			<option value="D04">D04 Donativos.</option>
+			<option value="D05">D05 Intereses reales efectivamente
+				pagados por créditos hipotecarios (casa habitación).</option>
+			<option value="D06">D06 Aportaciones voluntarias al SAR.</option>
+			<option value="D07">D07 Primas por seguros de gastos
+				médicos.</option>
+			<option value="D08">D08 Gastos de transportación escolar
+				obligatoria.</option>
+			<option value="D09">D09 Depósitos en cuentas para el ahorro,
+				primas que tengan como base planes de pensiones.</option>
+			<option value="D10">D10 Pagos por servicios educativos
+				(colegiaturas)</option>
+			<option value="P01">P01 Por definir</option>
+		</select>
+		<input id="destiny" value="Mostrador" onfocus="(function(t){t.select()})(this)"/>
 		desc<input id="consummerDiscount" value="0" onfocus="(function(t){t.select()})(this)" onchange="(function(){applyDiscount()})()"/>
-		tipo de comprobante<input id="documentType" value="ingreso" onfocus="(function(t){t.select()})(this)"/>
+		
 		<p class="g-total2">$0</p>
 		<p class="g-area-to-print">0 - 0 hojas</p>
 		<div id="editproduct">

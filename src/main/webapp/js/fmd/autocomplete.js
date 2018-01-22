@@ -94,7 +94,7 @@ autocomplete=function(input){
 				else if(commandline.kind=='clientstatus')where='clients';
 				$("#resultset").prepend("<img src=img/wait.gif width=70px height=70px/>");
 				$.ajax({
-					index : j,
+					index : i,
 					type:'POST',
 					url: "clienthistory",
 					data: {
@@ -132,7 +132,7 @@ autocomplete=function(input){
 					if(confirm("quitar cliente de lista?:"+$.toJSON(clients[i]))){
 						$(input).val("").focus();
 						$.ajax({
-							index : j,
+							index : i,
 							type:'POST',
 							url: "changeclientstatus",
 							data: {
@@ -153,11 +153,11 @@ autocomplete=function(input){
 				}
 				//TODO chambea esto de setear el acordion de esta forma piñata
 				
-				else if(confirm("cambiar el cliente puede modificar los datos")){
+				//else if(confirm("cambiar el cliente puede modificar los datos")){
 					console.log(clients[i].agentCode);
 					if(clients[i].agentCode!=null){
 						$.ajax({
-							index : j,
+							index : i,
 							url: "getclientbycode",
 							data: {
 								hash:clients[i].agentCode,
@@ -182,7 +182,7 @@ autocomplete=function(input){
 					var code=client.code;
 					//alert($.URLEncode(jsonsrt));
 					//alert($.toJSON(productsLog));
-					for(var j=0;j<productsLog.length;j++){
+					/*for(var j=0;j<productsLog.length;j++){
 						var jsonsrt="["+$.toJSON(productsLog[j])+"]";
 						$.ajax({
 							index : j+0,
@@ -228,9 +228,9 @@ autocomplete=function(input){
 								
 							}
 						});
-					}
+					}*/
 					
-				}
+				//}
 
 				//
 			}

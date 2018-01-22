@@ -84,6 +84,10 @@ public class Product implements Serializable {
 
 	private float providerOffer;
 	
+	private String prodservCode;
+	
+	private String unitCode;
+	
 	public static final int KIND_1=1;
 	public static final int KIND_2=2;
 	public static final float FACTOR_1=.9f;
@@ -101,7 +105,11 @@ public class Product implements Serializable {
 		this.providerPrice=(int)json.getDouble("providerPrice");
 	}
 	
-	public Product(String code, float unitPrice, String unit, String mark,String description, float providerPrice, float providerOffer,float incrementPercent) {
+	public Product(
+			String code, float unitPrice, String unit,
+			String mark,String description, float providerPrice,
+			float providerOffer,float incrementPercent,
+			String prodservCode, String unitCode) {
 		this.code=code;
 		this.unitPrice = unitPrice;
 		this.unit = unit;
@@ -110,6 +118,8 @@ public class Product implements Serializable {
 		this.providerPrice=providerPrice;
 		this.providerOffer=providerOffer;
 		this.incrementPercent=incrementPercent;
+		this.prodservCode=prodservCode;
+		this.unitCode=unitCode;
 		String hashStr=code+" "+unit+" "+mark+" "+description;
 		this.hash=MD5.get(hashStr);
 	    stored=0;
@@ -121,11 +131,23 @@ public class Product implements Serializable {
 	}
 	
 	public Product cloneL1(){
-		Product product= new Product(code, unitPrice, unit, mark, description, providerPrice, providerOffer,incrementPercent);
+		Product product= new Product(code, unitPrice, unit, mark, description, providerPrice, providerOffer,incrementPercent,prodservCode,unitCode);
 		product.id=id;
 		return product;
 	}
 	
+	public String getProdservCode() {
+		return prodservCode;
+	}
+	public void setProdservCode(String prodservCode) {
+		this.prodservCode = prodservCode;
+	}
+	public String getUnitCode() {
+		return unitCode;
+	}
+	public void setUnitCode(String unitCode) {
+		this.unitCode = unitCode;
+	}
 	public String getCode() {
 		return code;
 	}

@@ -43,9 +43,9 @@
 	<entry key="INVOICE_CERTIFICATE_AUTHORITY_PASS"></entry>
 
 	<!-- TAXING -->
-	<entry key="TAXES_IVA_NAME"></entry>
-	<entry key="TAXES_IVA_VALUE"></entry>
-
+	<entry key="TAXES_NAME"></entry>
+	<entry key="TAXES_VALUE"></entry>
+	<entry key="TAXES_FACTOR_TYPE"></entry>
 	<!-- MAILING -->
 	<entry key="EMAIL_NOTIFICATIONS"></entry>
 	<entry key="EMAIL_NOTIFICATIONS_PASS"></entry>

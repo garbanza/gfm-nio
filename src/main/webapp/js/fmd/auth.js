@@ -83,22 +83,47 @@ $.capsule([
 	       		},
 	    	   html:function(){
 	    		   return "<div id='$(id)' class=$(blockdiv)>"+"$(message)"+
-	    		   "<br>Nombre:		<input id='consummer'/>"+
-		   			"<br>Tipo:			<input id='consummerType' value='1'/>"+
-		   			"<br>Calle:			<input id='address'/>"+
-		   			"<br>Num Int:		<input id='interiorNumber'/>"+
-		   			"<br>Num Ext:		<input id='exteriorNumber'/>"+
-		   			"<br>Colonia:		<input id='suburb'/>"+
-		   			"<br>Localidad:		<input id='locality' value='MORELIA'/>"+
-		       		"<br>Municipio:		<input id='city' value='MORELIA'/>"+
-		       		"<br>Estado:		<input id='state'/>"+
-		       		"<br>País:			<input id='country' value='MEXICO'/>"+
-		       		"<br>Codigo Postal:	<input id='cp'/>"+
-		       		"<br>R.F.C.:		<input id='rfc' value='XAXX010101000'/>"+
-		       		"<br>Tel(s):		<input id='tel'/>"+
-		       		"<br>EMail:			<input id='email' value=''/>"+
-		       		"<br>Crédito:		<input id='payment' value='0'/>"+
-		         	"</div>";
+ 	    		   				"<br>Nombre:		<input id='consummer'/>"
+								+ "<br>R.F.C.:		<input id='rfc' value='XAXX010101000'/>"
+								+ "<br>uso CFDI:		<select id='cfdiUse' style='width:10%'>"
+								+ "<option ></option>"
+								+ "<option value='G01'>G01 Adquisición de mercancias</option>"
+								+ "<option value='G02'>G02 Devoluciones, descuentos o bonificaciones</option>"
+								+ "<option value='G03'>G03 Gastos en general</option>"
+								+ "<option value='I01'>I01 Construcciones</option>"
+								+ "<option value='I02'>I02 Mobilario y equipo de oficina por inversiones</option>"
+								+ "<option value='I03'>I03 Equipo de transporte</option>"
+								+ "<option value='I04'>I04 Equipo de computo y accesorios</option>"
+								+ "<option value='I05'>I05 Dados, troqueles, moldes, matrices y herramental</option>"
+								+ "<option value='I06'>I06 Comunicaciones telefónicas</option>"
+								+ "<option value='I07'>I07 Comunicaciones satelitales</option>"
+								+ "<option value='I08'>I08 Otra maquinaria y equipo</option>"
+								+ "<option value='D01'>D01 Honorarios médicos, dentales y gastos hospitalarios.</option>"
+								+ "<option value='D02'>D02 Gastos médicos por incapacidad o discapacidad</option>"
+								+ "<option value='D03'>D03 Gastos funerales.</option>"
+								+ "<option value='D04'>D04 Donativos.</option>"
+								+ "<option value='D05'>D05 Intereses reales efectivamente pagados por créditos hipotecarios (casa habitación).</option>"
+								+ "<option value='D06'>D06 Aportaciones voluntarias al SAR.</option>"
+								+ "<option value='D07'>D07 Primas por seguros de gastos médicos.</option>"
+								+ "<option value='D08'>D08 Gastos de transportación escolar obligatoria.</option>"
+								+ "<option value='D09'>D09 Depósitos en cuentas para el ahorro, primas que tengan como base planes de pensiones.</option>"
+								+ "<option value='D10'>D10 Pagos por servicios educativos (colegiaturas)</option>"
+								+ "<option value='P01'>P01 Por definir</option>"
+								+ "</select>"
+						       	+"<br>País:			<input id='country' value='MEXICO'/>"
+						       	+ "<br>EMail:			<input id='email' value=''/>"
+								+ "<br>Tel(s):		<input id='tel'/>"
+						       	+ "<br>Tipo:			<input id='consummerType' value='1'/>"
+								+ "<br>Calle:			<input id='address'/>"
+								+ "<br>Num Int:		<input id='interiorNumber'/>"
+								+ "<br>Num Ext:		<input id='exteriorNumber'/>"
+								+ "<br>Colonia:		<input id='suburb'/>"
+								+ "<br>Localidad:		<input id='locality' value='MORELIA'/>"
+								+ "<br>Municipio:		<input id='city' value='MORELIA'/>"
+								+ "<br>Estado:		<input id='state'/>"
+								+ "<br>Codigo Postal:	<input id='cp'/>"
+								+ "<br>Crédito:		<input id='payment' value='0'/>"
+								+ "</div>";
 	   			
 	    	   },
 	    	   css:function(){
@@ -319,31 +344,32 @@ addConsummerIn=function(where){
 		var tel=$add.find('#tel').val();
 		var email=$add.find('#email').val();
 		var payment=$add.find('#payment').val();
+		var cfdiUse=$add.find('#cfdiUse').val();
 		var somethingWrong=false;
 		if(consummer==null||consummer=='')somethingWrong=true;
-		if(!(isNumber(consummerType)&&isNumber(payment)&&validateRfc(rfc))){
+		if(!(/*isNumber(consummerType)&&isNumber(payment)&&*/validateRfc(rfc))){
 			somethingWrong=true;
 		}
 		if(email!=null){
 			var emails=email.split(" ");
 			for(var i=0;i<emails.length;i++){
-				if(!validateEmail(emails[i]))somethingWrong=true;
+				if(emails[i]!=""&!validateEmail(emails[i]))somethingWrong=true;
 			}
 		}
 		else somethingWrong=true;
 		if(somethingWrong){
 			var msg="error:";
 			if(consummer==null||consummer=='')msg+="\nNombre indefinido.";
-			msg+=isNumber(consummerType)?"":"\nTipo de cliente no es numerico.\n";
-			msg+=isNumber(payment)?"":"\nCredito no es numerico.\n";
+			//msg+=isNumber(consummerType)?"":"\nTipo de cliente no es numerico.\n";
+			//msg+=isNumber(payment)?"":"\nCredito no es numerico.\n";
 			msg+=validateRfc(rfc)?"":"\nRFC no valido.";
 			if(email!=null){
 				var emails=email.split(" ");
 				for(var i=0;i<emails.length;i++){
-					if(!validateEmail(emails[i]))msg+="\nEmail '"+emails[i]+"' no valido.";
+					if(emails[i]!=""&!validateEmail(emails[i]))msg+="\nEmail '"+emails[i]+"' no valido.";
 				}
 			}
-			else msg+="\nemail(s) no definido(s).";
+			//else msg+="\nemail(s) no definido(s).";
 			alert(msg);
 			return;
 		}
@@ -353,7 +379,7 @@ addConsummerIn=function(where){
 				address, interiorNumber, exteriorNumber,
 				suburb, locality, city, country,
 				state, email, cp, rfc, tel,
-				payment, null, null);
+				payment, null, null,cfdiUse);
 			client=ca;
 		}
 		else {

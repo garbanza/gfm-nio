@@ -33,6 +33,9 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import com.ferremundo.stt.GSettings;
 
+//import mx.bigdata.sat.cfdi.schema.Comprobante;
+//import mx.bigdata.sat.cfdi.schema.ObjectFactory;
+
 import mx.bigdata.sat.cfdi.CFDv32;
 import mx.bigdata.sat.cfdi.v32.schema.Comprobante;
 import mx.bigdata.sat.cfdi.v32.schema.ObjectFactory;
@@ -46,6 +49,7 @@ import mx.bigdata.sat.cfdi.v32.schema.Comprobante.Conceptos.Concepto;
 import mx.bigdata.sat.cfdi.v32.schema.Comprobante.Emisor.RegimenFiscal;
 import mx.bigdata.sat.cfdi.v32.schema.Comprobante.Impuestos.Traslados;
 import mx.bigdata.sat.cfdi.v32.schema.Comprobante.Impuestos.Traslados.Traslado;
+
 import mx.bigdata.sat.security.KeyLoader;
 import mx.bigdata.sat.security.KeyLoaderEnumeration;
 import mx.bigdata.sat.security.factory.KeyLoaderFactory;
@@ -73,7 +77,7 @@ public class ElectronicInvoiceFactory {
 	    comp.setFormaDePago(invoice.getPaymentWay());
 	    comp.setSerie(g.getKey("INVOICE_SERIAL"));
 	    comp.setFolio(invoice.getReference());
-	    if(invoice.getAccountPaymentNumber()!=null)comp.setNumCtaPago(invoice.getAccountPaymentNumber());
+	    //if(invoice.getAccountPaymentNumber()!=null)comp.setNumCtaPago(invoice.getAccountPaymentNumber());
 	    Conceptos cps = of.createComprobanteConceptos();
 	    List<Concepto> list = cps.getConcepto();
 	    float iva=new Float(GSettings.get("TAXES_IVA_VALUE"));
@@ -271,13 +275,13 @@ public class ElectronicInvoiceFactory {
 			e.printStackTrace();
 		}
 		Element t=((Element)(doc.getElementsByTagName("cfdi:Comprobante").item(0)));
-		float total=new Float(t.getAttribute("total"));
+		float total=new Float(t.getAttribute("Total"));
 		Element u=((Element)(doc.getElementsByTagName("tfd:TimbreFiscalDigital").item(0)));
 		String uuid=u.getAttribute("UUID");
 		Element e=((Element)(doc.getElementsByTagName("cfdi:Emisor").item(0)));
-		String emisor=e.getAttribute("rfc");
+		String emisor=e.getAttribute("Rfc");
 		Element r=((Element)(doc.getElementsByTagName("cfdi:Receptor").item(0)));
-		String receptor=r.getAttribute("rfc");
+		String receptor=r.getAttribute("Rfc");
 		genQRCode(emisor, receptor, total, uuid, id);
 	}
 	
@@ -362,7 +366,7 @@ public class ElectronicInvoiceFactory {
 	    comp.setFormaDePago(invoice.getPaymentWay());
 	    comp.setSerie(g.getKey("INVOICE_SERIAL"));
 	    comp.setFolio(invoice.getReference());
-	    if(invoice.getAccountPaymentNumber()!=null)comp.setNumCtaPago(invoice.getAccountPaymentNumber());
+	    //if(invoice.getAccountPaymentNumber()!=null)comp.setNumCtaPago(invoice.getAccountPaymentNumber());
 	    Conceptos cps = of.createComprobanteConceptos();
 	    List<Concepto> list = cps.getConcepto();
 	    float iva=new Float(GSettings.get("TAXES_IVA_VALUE"));

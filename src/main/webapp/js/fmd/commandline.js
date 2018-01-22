@@ -72,11 +72,12 @@
 			$('#commands').HideBubblePopup();
 		}
 		else if(//this.command=='@ic'||this.command=='@ia'||
-				this.command=='@oc'||this.command=='@oa'||
-				this.command=='$fc'||this.command=='$fa'||
-				this.command=='$oc'||this.command=='$oa'||
+				//this.command=='@oc'||this.command=='@oa'||
+				this.command=='$fc'||//this.command=='$fa'||
+				this.command=='$oc'||//this.command=='$oa'||
 				this.command=='@ecot'||this.command=='@pcot'||
 				this.command=='$ef'){
+			this.kind= 'sample';
 			var liq=true;
 			var msg="liquidando documento";
 			if(this.argssize>0){
@@ -93,23 +94,24 @@
 				}
 				
 			}
-			if(this.command=='@ic')
+			/*if(this.command=='@ic')
 				$('#commands').ShowBubblePopup( {innerHtml: 'cotizar a cliente'} );
 			else if(this.command=='@ia')
 				$('#commands').ShowBubblePopup( {innerHtml: 'cotizar a agente'} );
-			else if(this.command=='$oc')
-				$('#commands').ShowBubblePopup( {innerHtml: 'hacer pedido a cliente '+msg} );
+			
 			else if(this.command=='$oa')
 				$('#commands').ShowBubblePopup( {innerHtml: 'hacer pedido a agente '+msg} );
 			else if(this.command=='@oc')
 				$('#commands').ShowBubblePopup( {innerHtml: 'dar credito a cliente'} );
 			else if(this.command=='@oa')
 				$('#commands').ShowBubblePopup( {innerHtml: 'dar credito a agente'} );
+			if(this.command=='$oc')
+				$('#commands').ShowBubblePopup( {innerHtml: 'hacer pedido a cliente '+msg} );
 			else if(this.command=='$fc')
 				$('#commands').ShowBubblePopup( {innerHtml: 'facturar a cliente '+msg} );
 			else if(this.command=='$fa')
-				$('#commands').ShowBubblePopup( {innerHtml: 'facturar a agente '+msg} );
-			this.kind= 'sample';
+				$('#commands').ShowBubblePopup( {innerHtml: 'facturar a agente '+msg} );*/
+			
 		}
 		else if(this.command=='@p'){
 			$('#commands').ShowBubblePopup( {innerHtml: 'agregar producto'} );
@@ -209,9 +211,25 @@
 			$('#commands').ShowBubblePopup( {innerHtml: 'add user'} );
 			this.kind="adduser";
 		}
+		else if(this.command=='@fp'){
+			$('#commands').ShowBubblePopup( {innerHtml: 'forma de pago'} );
+			this.kind="paymentway";
+		}
 		else if(this.command=='@mp'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'método de pago'} );
+			$('#commands').ShowBubblePopup( {innerHtml: 'forma de pago'} );
 			this.kind="paymentmethod";
+		}
+		else if(this.command=='@tc'){
+			$('#commands').ShowBubblePopup( {innerHtml: 'tipo de documento'} );
+			this.kind="documenttype";
+		}
+		else if(this.command=='@dest'){
+			$('#commands').ShowBubblePopup( {innerHtml: 'destino/obra'} );
+			this.kind="destiny";
+		}
+		else if(this.command=='@uc'){
+			$('#commands').ShowBubblePopup( {innerHtml: 'uso de cfdi'} );
+			this.kind="cfdiuse";
 		}
 		else {
 			$('#commands').HideBubblePopup();

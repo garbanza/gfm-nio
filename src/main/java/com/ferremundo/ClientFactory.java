@@ -83,7 +83,15 @@ public class ClientFactory{
 			if(json.has("aditionalReference")){
 				aditionalReference=json.getString("aditionalReference").toUpperCase();
 			}
-			client=new Client(code, consummer, consummerType, address, interiorNumber, exteriorNumber, suburb, locality, city, country, state, email, cp, rfc, tel, payment, reference, aditionalReference);
+			String coin="";
+			if(json.has("coin")){
+				coin=json.getString("coin").toUpperCase();
+			}
+			String cfdiUse="";
+			if(json.has("cfdiUse")){
+				cfdiUse=json.getString("cfdiUse").toUpperCase();
+			}
+			client=new Client(code, consummer, consummerType, address, interiorNumber, exteriorNumber, suburb, locality, city, country, state, email, cp, rfc, tel, payment, reference, aditionalReference,cfdiUse);
 			client.setCode(client.getHash());
 		}catch(JSONException j){System.out.println("json exception");j.printStackTrace();}
 		System.out.println("client succesfuly created");

@@ -36,7 +36,9 @@ public class Client implements Serializable {
 	private int payment;//credit days
 	private String reference;
 	private String aditionalReference="";
+	private String cfdiUse;
 	
+
 	public static final int TYPE_1=1;
 	public static final int TYPE_2=2;
 	public static final int TYPE_3=3;
@@ -49,7 +51,7 @@ public class Client implements Serializable {
 			String address, String interiorNumber, String exteriorNumber,
 			String suburb, String locality, String city, String country,
 			String state, String email, String cp, String rfc, String tel,
-			int payment, String reference, String aditionalReference) {
+			int payment, String reference, String aditionalReference, String cfdiUse) {
 		this.code = code;
 		this.consummer = consummer;
 		this.consummerType = consummerType;
@@ -68,6 +70,7 @@ public class Client implements Serializable {
 		this.payment = payment;
 		this.reference = reference;
 		this.aditionalReference = aditionalReference;
+		this.cfdiUse = cfdiUse;
 	}
 
 
@@ -88,7 +91,7 @@ public class Client implements Serializable {
 		this.payment = payment;
 	}*/
 	
-	public boolean isFacturable(){
+	/*public boolean isFacturable(){
 		if(consummer!=null)if(consummer!="");else return false;
 		if(address!=null)if(address!="");else return false;
 		if(city!=null)if(city!="");else return false;
@@ -96,7 +99,7 @@ public class Client implements Serializable {
 		if(cp!=null)if(cp!="");else return false;
 		if(rfc!=null)if(rfc!="");else return false;
 		return true;
-	}
+	}*/
 	
 	/*public static Client fromDBObject(DBObject dbObject){
 		Client client= new Client(
@@ -127,6 +130,15 @@ public class Client implements Serializable {
 		client.id=id;
 		return client;
 	}*/
+	
+	public String getCfdiUse() {
+		return cfdiUse;
+	}
+
+
+	public void setCfdiUse(String cfdiUse) {
+		this.cfdiUse = cfdiUse;
+	}
 	
 	public String getCode() {
 		return code;
@@ -208,7 +220,7 @@ public class Client implements Serializable {
 		this.id=id;
 	}
 	
-	public String toJson(){
+	/*public String toJson(){
 		String json="{"+
 		"\"id\":"+this.id+","+
 		"\"code\":\""+this.code+"\","+
@@ -223,9 +235,10 @@ public class Client implements Serializable {
 		"\"rfc\":\""+this.rfc+"\","+
 		"\"tel\":\""+this.tel+"\","+
 		"\"payment\":"+this.payment+
+		"\"cfdiUse\":"+this.cfdiUse+
 		"}";
 		return json;
-	}
+	}*/
 	
 	public static List<DBObject> find(String[] patterns,String where){
 		DBCursor c1=new Mongoi().doFindThisThen(Mongoi.MATCHES,where, new String[]{"consummer"}, new String[]{"address","rfc"},patterns);

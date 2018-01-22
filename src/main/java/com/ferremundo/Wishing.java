@@ -113,7 +113,8 @@ public class Wishing extends HttpServlet {
 			String paymentMethod = request.getParameter("paymentMethod");
 			String paymentWay = request.getParameter("paymentWay");
 			String documentType = request.getParameter("documentType");
-			String accountPaymentNumber = request.getParameter("accountPaymentNumber");
+			String coin = request.getParameter("coin");
+			String cfdiUse = request.getParameter("cfdiUse");
 			System.out.println("wishing '" + argsParam + "'");
 			Float payment = 0f;
 			String encoding = "utf-8";
@@ -182,6 +183,7 @@ public class Wishing extends HttpServlet {
 					}
 					client = ClientFactory.create(jClient);
 					agent = ClientFactory.create(jAgent);
+					log.object("client is", client);
 					//System.out.println(new Gson().toJson(agent));
 				} catch (JSONException e) {
 					log.trace(e);
@@ -192,7 +194,10 @@ public class Wishing extends HttpServlet {
 					argsspl = args.split(" ");
 				String csv = null;
 				//System.out.println("command=" + command);
-				if (command.equals("@oc") || command.equals("$ef") || command.equals("$fc")
+				if (
+						command.equals("@oc")
+						|| command.equals("$ef")
+						|| command.equals("$fc")
 						|| command.equals("$oc") 
 						|| command.equals("@ic")
 						|| command.equals("@pcot")
@@ -265,7 +270,7 @@ public class Wishing extends HttpServlet {
 					log.info("trying to create invoice:");
 					log.object("shopman",shopman);
 					Invoice invoice = new InvoiceFM01(client, seller, shopman, items, metaData, requester, destiny,
-							agent, payment,paymentMethod,paymentWay,documentType,accountPaymentNumber);
+							agent, payment, paymentMethod, paymentWay, documentType, coin);
 					log.object("invoice",invoice);
 					// System.out.println("invoice: "+invoice.toJson());
 					try{
@@ -303,6 +308,7 @@ public class Wishing extends HttpServlet {
 							command.equals("@ecot")) {
 						// invoice.getLogs().add(new
 						// InvoiceLog(InvoiceLog.LogKind.CLOSE,true,shopman.getLogin()));
+						if(client.getCfdiUse()==null||client.getCfdiUse().equals(""))client.setCfdiUse(GSettings.get("CONSUMER_CFDI_USE"));
 						invoice.setUpdated(createdLog.getDate());
 						invoice.setPrintedTo(client);
 						invoice.persist();
@@ -395,6 +401,31 @@ public class Wishing extends HttpServlet {
 					} else if (command.equals("$fc") || command.equals("$ef")) {
 						InvoiceLog paymentLog = new InvoiceLog(InvoiceLog.LogKind.PAYMENT,
 								invoice.getTotal() - invoice.getDebt(), shopman.getLogin());
+						//if(client.getCfdiUse()==null||client.getCfdiUse()==""){
+						if(cfdiUse!=null&&!cfdiUse.equals("")){
+								new Mongoi().doUpdate(Mongoi.CLIENTS, "{ \"code\" : \""+client.getCode()+"\"}", "{\"cfdiUse\" : \""+cfdiUse+"\" }"+"}");
+								client.setCfdiUse(cfdiUse);
+						}
+						else {
+								try {
+									response.sendError(response.SC_NOT_ACCEPTABLE, "uso cfdi no definido");
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+								return;
+							}
+						/*}
+						else if(cfdiUse!=null&&cfdiUse!=""){
+							client.setCfdiUse(cfdiUse);
+						}
+						else {
+							try {
+								response.sendError(response.SC_NOT_ACCEPTABLE, "uso cfdi no definido");
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+							return;
+						}*/
 						invoice.getLogs().add(new InvoiceLog(InvoiceLog.LogKind.FACTURE, true, shopman.getLogin()));
 						invoice.getLogs().add(paymentLog);
 						invoice.setUpdated(paymentLog.getDate());
@@ -451,7 +482,7 @@ public class Wishing extends HttpServlet {
 							org.jsoup.nodes.Document document=null;
 							document = Jsoup.parse(xml);
 							
-							String total=document.select("cfdi|Comprobante").get(0).attr("total");
+							String total=document.select("cfdi|Comprobante").get(0).attr("Total");
 							//String pdfUrl = doc.getElementsByTagName("urlpdf").item(0).getTextContent();
 							//String xmlUrl = doc.getElementsByTagName("urlxml").item(0).getTextContent();
 							/*InvoiceElectronicVersion electronicVersion = new InvoiceElectronicVersion(
@@ -553,7 +584,7 @@ public class Wishing extends HttpServlet {
 					}
 
 					try {
-						ElectronicInvoice electronicInvoice=new Profact(invoice);
+						//ElectronicInvoice electronicInvoice=new Profact(invoice);
 						boolean production=!new Boolean(GSettings.get("TEST"));
 						
 						// Create file
@@ -561,10 +592,11 @@ public class Wishing extends HttpServlet {
 						String path = GSettings.getPathTo("TMP_FOLDER");
 						path += invoice.getReference() + ".pdf.csv";
 						csv = path;
+						System.out.println("csv path is: "+csv);
 						FileWriter fstream = new FileWriter(path);
 						BufferedWriter out = new BufferedWriter(fstream);
-						out.write(invoice.getConsummer() + "\n" + invoice.getAddress() + "\n" + invoice.getCity() + "\n"
-								+ invoice.getCp() + "\n" + invoice.getRfc() + "\n");
+						//out.write(invoice.getConsummer() + "\n" + invoice.getAddress() + "\n" + invoice.getCity() + "\n"
+						//		+ invoice.getCp() + "\n" + invoice.getRfc() + "\n");
 						List<InvoiceItem> items2 = invoice.getItems();
 						for (InvoiceItem item : items2) {
 							out.write(item.getQuantity() + "\t" + item.getCode() + "\t" + item.getUnit() + "\t"
@@ -595,6 +627,7 @@ public class Wishing extends HttpServlet {
 						fileNames[i] = pdf.getName() + ".pdf";
 						// emis.persist(invoices[i]);
 					}
+					System.out.println("csv path is: "+csv);
 					paths[invoices.length] = csv;
 					fileNames[invoices.length] = new File(csv).getName().replace(".pdf", "");
 					String[] mails = client.getEmail().split(" ");

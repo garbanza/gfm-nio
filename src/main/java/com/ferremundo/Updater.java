@@ -3,6 +3,7 @@ package com.ferremundo;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,8 +24,13 @@ import com.ferremundo.db.Mongoi;
 import com.ferremundo.stt.GSettings;
 import com.google.gson.Gson;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
 import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import com.mongodb.Mongo;
+import com.mongodb.MongoException;
+import com.mongodb.util.JSON;
 
 public class Updater extends HttpServlet{
 	
@@ -34,17 +40,6 @@ public class Updater extends HttpServlet{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	
-	
-	public static void main(String[] args) {
-
-
-	    String s = "  \t\t\r\t\r this has spaces at the beginning and at the end    \t\r  ";
-	    String result = s.replaceAll("^\\s+|\\s+$", "");
-
-	    System.out.println("'"+result+"'");
-		//new Updater().update();
-	}
 	
 	//@Override
 	protected void doGett(HttpServletRequest request, HttpServletResponse response){
@@ -117,12 +112,13 @@ public class Updater extends HttpServlet{
 				String code=sheet.getCellAt("B"+i).getTextValue().replaceAll("^\\s+|\\s+$", "").toUpperCase();
 				String unit=sheet.getCellAt("C"+i).getTextValue().replaceAll("^\\s+|\\s+$", "").toUpperCase();
 				String description=sheet.getCellAt("D"+i).getTextValue().replaceAll("^\\s+|\\s+$", "").toUpperCase();
-				
-				float providerPrice=new Float(sheet.getCellAt("E"+i).getTextValue());
-				float incrementPercentage=new Float(sheet.getCellAt("F"+i).getTextValue());
-				float providerOffer=new Float(sheet.getCellAt("G"+i).getTextValue());
-				float unitPrice=new Float(sheet.getCellAt("H"+i).getTextValue());
-				Product product= new Product(code, unitPrice, unit, mark,description, providerPrice,providerOffer,incrementPercentage);
+				String prodservCode=sheet.getCellAt("E"+i).getTextValue().replaceAll("^\\s+|\\s+$", "").toUpperCase();
+				String unitCode=sheet.getCellAt("F"+i).getTextValue().replaceAll("^\\s+|\\s+$", "").toUpperCase();
+				float providerPrice=new Float(sheet.getCellAt("G"+i).getTextValue());
+				float incrementPercentage=new Float(sheet.getCellAt("H"+i).getTextValue());
+				float providerOffer=new Float(sheet.getCellAt("I"+i).getTextValue());
+				float unitPrice=new Float(sheet.getCellAt("J"+i).getTextValue());
+				Product product= new Product(code, unitPrice, unit, mark,description, providerPrice,providerOffer,incrementPercentage,prodservCode,unitCode);
 				
 				//String pstr=code+" "+unit+" "+mark+" "+description;
 				//String hash=product.getHash();//MD5.get(pstr);
@@ -183,6 +179,12 @@ public class Updater extends HttpServlet{
 						new Mongoi().doPush(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"priceHistory\" : {\"providerOffer\" : "+oldProviderOffer+", \"deprecatedDate\" : "+new Date().getTime()+", \"updater\" : \""+onlineClient.getShopman().getLogin()+"\" }}");
 						response+="updating providerPrice("+providerOffer+") for -> "+obj+"\n";
 						log.info("updating providerPrice("+providerOffer+") for -> "+obj);
+					}
+					if(obj.get("prodservCode")==null){
+						new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"prodservCode\" : \""+prodservCode+"\" }");
+					}
+					if(obj.get("unitCode")==null){
+						new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"unitCode\" : \""+unitCode+"\" }");
 					}
 					//System.out.println("coincidence -> "+new Gson().toJson(product));
 				}
@@ -513,6 +515,7 @@ public class Updater extends HttpServlet{
 		
 	}
 	*/
+	/*
 	public static void insertClient(Client client){
 		File file = new File("/opt/workspace/com.ferremundo/db/DB.ods");
 		Sheet sheet=null;
@@ -570,5 +573,34 @@ public class Updater extends HttpServlet{
 			ClientsStore.refresh();
 		//}
 	}
-
+*/
+	/// This method is to insert the field usoCFDI as 'G01' to the whole clients
+	private static void updateClientsCFDIUse(){
+		Mongo mongo=null;
+		try {
+			mongo = new Mongo("localhost",27017);
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (MongoException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		DB db = mongo.getDB("globaldb");
+		DBCollection collection = db.getCollection("clients");
+		DBCursor cursor=collection.find();
+		while(cursor.hasNext()){
+			DBObject n=cursor.next();
+			String code=n.get("code").toString();
+			DBObject dbObject=(DBObject)JSON.parse("{ \"code\" : \""+code+"\"}");
+			String js="{ \"$set\" : "+"{\"cfdiUse\" : \"\" }"+"}";
+			DBObject dbObject2=(DBObject)JSON.parse(js);
+			collection.update(dbObject, dbObject2);
+			System.out.println(code);
+		}
+	}
+	
+	public static void main(String[] args) {
+		updateClientsCFDIUse();
+	}
 }

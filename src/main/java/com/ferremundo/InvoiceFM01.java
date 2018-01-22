@@ -19,7 +19,7 @@ import com.ibm.icu.text.DecimalFormat;
 
 public class InvoiceFM01 implements Invoice{
 	
-	private int version=3;
+	private int version=4;
 	
     private Long id;
     
@@ -73,7 +73,8 @@ public class InvoiceFM01 implements Invoice{
 
 	private String documentType;
 
-	private String accountPaymentNumber;
+	private String coin;
+
 	@Override
 	public float getAgentPayment() {
 		return agentPayment;
@@ -120,7 +121,9 @@ public class InvoiceFM01 implements Invoice{
 	
 	public InvoiceFM01(Client client, Seller seller, Shopman shopman,
 			List<InvoiceItem> items, InvoiceMetaData metaData,
-			Requester requester, Destiny destiny, Client agent,Float payment, String paymentMethod, String paymentWay, String documentType, String accountPaymentNumber) {
+			Requester requester, Destiny destiny, Client agent,
+			Float payment, String paymentMethod, String paymentWay,
+			String documentType, String coin) {
 		/**TODO implement commented fields*/
 		Log log=new Log();
 		log.entry(shopman);
@@ -141,7 +144,7 @@ public class InvoiceFM01 implements Invoice{
 		this.paymentMethod=paymentMethod;
 		this.paymentWay=paymentWay;
 		this.documentType=documentType;
-		this.accountPaymentNumber=accountPaymentNumber;
+		this.coin=coin;
 		serial=metaData.getSerial();
 		
 		InvoiceLog created=new InvoiceLog(InvoiceLog.LogKind.CREATED,true,shopman.getLogin());
@@ -310,7 +313,7 @@ public class InvoiceFM01 implements Invoice{
 			List<InvoiceItem> items= this.items.subList(from,to+1);
 			InvoiceMetaData metaData=this.metaData;
 			//if(persist)metaData=new InvoiceMetaData(this.invoiceType, true);
-			invoices[i]=new InvoiceFM01(client, seller, shopman, items, metaData, requester, destiny,agent,0f,paymentMethod,paymentWay,documentType,accountPaymentNumber);
+			invoices[i]=new InvoiceFM01(client, seller, shopman, items, metaData, requester, destiny,agent,0f,paymentMethod,paymentWay,documentType,coin);
 			invoices[i].setPrintedTo(printedTo);
 		}
 		
@@ -763,8 +766,11 @@ public class InvoiceFM01 implements Invoice{
 	}
 	*/
 	@Override
-	public String getAccountPaymentNumber() {
-		return accountPaymentNumber;
+	public String getCoin() {
+		return coin;
 	}
-	
+	public void setCoin(String coin){
+		this.coin=coin;
+	}
+
 }

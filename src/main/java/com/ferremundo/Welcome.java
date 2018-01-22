@@ -43,7 +43,7 @@ public class Welcome extends HttpServlet{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println("persisting client "+clientJson);
+		System.out.println("Welcome - persisting client "+clientJson);
 		JSONObject jClient=null;
 		try {
 			jClient=new JSONObject(clientJson);

@@ -31,14 +31,14 @@ setClient_=function(o){
 			o.address, o.interiorNumber, o.exteriorNumber,
 			o.suburb, o.locality, o.city, o.country,
 			o.state, o.email, o.cp, o.rfc, o.tel,
-			o.payment, o.reference, o.aditionalReference);
+			o.payment, o.reference, o.aditionalReference,o.cfdiUse);
 	//return o;
 };
 Client_=function(code, consummer, consummerType,
 		address, interiorNumber, exteriorNumber,
 		suburb, locality, city, country,
 		state, email, cp, rfc, tel,
-		payment, reference, aditionalReference) {
+		payment, reference, aditionalReference,cfdiUse) {
 	this.code = code?code:"";
 	this.consummer = consummer?consummer:"";
 	this.consummerType = consummerType?consummerType:1;
@@ -57,7 +57,8 @@ Client_=function(code, consummer, consummerType,
 	this.payment = payment?payment:0;
 	this.reference = reference?reference:"";
 	this.aditionalReference = aditionalReference?aditionalReference:"";
-	$('#client').html("[ tipo:"+this.consummerType+" ] [ credito:"+this.payment+"dias ] "+this.consummer+ " [ rfc:"+this.rfc+" ]");
+	this.cfdiUse = cfdiUse?cfdiUse:"";
+	$('#client').html(this.consummer+ " rfc:"+this.rfc+" "+this.country+" "+this.cfdiUse);
 	$('#client-address').html(this.consummer+" "+this.address+" "+this.interiorNumber+" "+this.exteriorNumber+" "+this.suburb);
 	$('#client-city').html(this.locality+" "+this.city);
 	$('#client-state').html(this.state);
@@ -66,7 +67,8 @@ Client_=function(code, consummer, consummerType,
 	$('#client-tel').html(this.tel);
 	$('#client-email').html(this.email);
 	$('#client-country').html(this.country);
-	document.title=this.consummer+" "+this.consummerType;
+	document.title=SHOPMAN.login+"-"+this.consummer;
+	$("#cfdiUse").val(cfdiUse);
 };
 Agent_=function(code, consummer, consummerType,
 		address, interiorNumber, exteriorNumber,
@@ -91,8 +93,8 @@ Agent_=function(code, consummer, consummerType,
 	this.payment = payment?payment:0;
 	this.reference = reference?reference:"";
 	this.aditionalReference = aditionalReference?aditionalReference:"";
-	$('#agent').html("[ tipo:"+this.consummerType+" ] [ credito:"+this.payment+"dias ] "+this.consummer+ " [ rfc:"+this.rfc+" ]");
-	$('#agent-address').html(this.consummer+" "+this.address+" "+this.interiorNumber+" "+this.exteriorNumber+" "+this.suburb);
+	$('#agent').html(this.consummer+" "+this.address);
+	$('#agent-address').html(this.consummer+" "+this.address+" "+this.exteriorNumber+" "+this.interiorNumber+" "+this.suburb);
 	$('#agent-city').html(this.locality+" "+this.city);
 	$('#agent-state').html(this.state);
 	$('#agent-cp').html(this.cp);
@@ -100,7 +102,7 @@ Agent_=function(code, consummer, consummerType,
 	$('#agent-tel').html(this.tel);
 	$('#agent-email').html(this.email);
 	$('#agent-country').html(this.country);
-	document.title=this.consummer+" "+this.consummerType;
+	
 };
 setAgent_=function(o){
 	new Agent_(o.code, o.consummer, o.consummerType,
@@ -136,7 +138,7 @@ setClient=function(code,consummer,consummerType,address,city,country,state,email
 	$('#client-tel').html(tel);
 	$('#client-email').html(email);
 	$('#client-country').html(country);
-	document.title=this.consummer+" "+this.consummerType;
+	document.title=SHOPMAN.login+"-"+this.consummer;
 	return this;
 };
 
@@ -731,9 +733,9 @@ var sample=function(){
 };
 resetClient=function(){
 	productsLog=[];
-	new setAgent_("-1","agente indefinido",".",".",".",".",".",".",".",".",".",".",".");
-	new setClient_("-1","cliente indefinido",".",".",".",".",".",".",".",".",".",".",".");
-	agent=null;
+	agent = new setAgent_(AGENT);
+	client = new setClient_(CLIENT);
+	
 	//client=null;
 	$('#log').empty();
 	$("#log").sexytable({

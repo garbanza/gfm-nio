@@ -11,7 +11,9 @@
 	<!-- FM_HOME must be set as environment variable. Defaults to $HOME/.fm -->
 	<!--entry key="FM_HOME">/op/fm</entry-->
 	<entry key="TMP_FOLDER">tmp</entry>
-	
+	<entry key="INVOICES_FOLDER">tmp</entry>
+	<entry key="ORDERS_FOLDER">tmp</entry>
+	<entry key="SAMPLES_FOLDER">tmp</entry>
 	<!-- logging -->
 	<entry key="LOGGER_CONTEXT">log4j2.xml</entry>
 	<entry key="LOGGING_PATH">logs</entry>
@@ -61,20 +63,26 @@
 	<entry key="INVOICE_SENDER_REGIME">INTERMEDIO</entry>
 	<entry key="INVOICE_SENDER_REFERENCE">ENTRE CALLE Y CALLE</entry>
 	<entry key="INVOICE_SENDER_ADDITIONAL_DATA">CUENTA BANORTE: 0403345345345. CLAVE INTER: 234234234234 84. email: mail@mail.com</entry>
-	
+	<entry key="INVOICE_SENDER_EMAIL">mail@mail.com</entry>
 	<entry key="INVOICE_CERTIFICATE_AUTHORITY_USER">euieuieu=</entry>
 	<entry key="INVOICE_CERTIFICATE_AUTHORITY_PASS">ooeioeu</entry>
 	<entry key="INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE">http://service.somewhere</entry>
-
+	<entry key="MAIN_CERTIFICATE_AUTHORITY_USER">UDR826KV8</entry>
+	<entry key="MAIN_CERTIFICATE_AUTHORITY_PASSWORD">pass</entry>
 
 	<!-- TAXING -->
-	<entry key="TAXES_IVA_NAME">IVA</entry>
-	<entry key="TAXES_IVA_VALUE">16.0</entry>
+	<entry key="TAXES_NAME">IVA</entry>
+	<entry key="TAXES_VALUE">0.16</entry>
+	<entry key="TAXES_FACTOR_TYPE">TASA</entry>
 
 	<!-- MAILING -->
 	<entry key="EMAIL_NOTIFICATIONS">MYMAIL@MYPLACE.com</entry>
 	<entry key="EMAIL_NOTIFICATIONS_PASS">mypass</entry>
 	<entry key="EMAIL_BODY">THANKS! :)</entry>
 
-
+	<!-- DEFAULT CONSUMER -->
+	<entry key="CONSUMER_NAME">PUBLICO EN GENERAL</entry>
+	<entry key="CONSUMER_TAX_CODE">XAXX010101000</entry>
+	<entry key="CONSUMER_FISCAL_RESIDENCY">MEXICO</entry>
+	<entry key="CONSUMER_CFDI_USE">G01</entry>
 </properties>
