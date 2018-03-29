@@ -19,9 +19,14 @@
 	background-color: #fff;
 }
 .even{
-	background-color: #f7f7ff;
+	background-color: #e5fffc;
 }
-
+.odd2{
+	background-color: #fff;
+}
+.even2{
+	background-color: #afceff;
+}
 .editedrow{
 	background-color: #fbff8d;
 }
@@ -30,7 +35,7 @@
 	background-color: #FFC2C2;
 }
 
-.odd2{
+/*.odd2{
 	background-color: #eaffe6;
 	margin: 0px;
 	border: 0px;
@@ -41,7 +46,7 @@
 	margin: 0px;
 	border: 0px;
 	padding: 0px;
-}
+}*/
 .hover{
 	background-color: #bcdfff;
 }

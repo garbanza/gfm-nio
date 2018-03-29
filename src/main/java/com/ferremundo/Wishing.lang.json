@@ -12,8 +12,8 @@
 		"en":"invalid argument",
 		"es":"argumento invalido"},
 	"UNSPECIFIED_ARGUMENTS":{
-		"en":"unspecified arguments: '$(0)'",
-		"es":"argumentos no especificados: '$(0)'"},
+		"en":"unspecified arguments: '${0}'",
+		"es":"argumentos no especificados: '${0}'"},
 	"INVALID_ID":{
 		"en":"invalid ID",
 		"es":"ID invalido"},

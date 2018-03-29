@@ -3,6 +3,7 @@ package com.ferremundo;
 import java.io.ByteArrayInputStream;
 import java.io.StringReader;
 import java.net.URLDecoder;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServlet;
@@ -11,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -73,7 +75,7 @@ public class InvoiceCancelling extends HttpServlet{
 						
 						if(invoice.hasElectronicVersion()){
 							ElectronicInvoice ei=new Profact();
-							PACResponse pacResponse=ei.cancel(invoice,new Boolean(GSettings.get("TEST")));
+							PACResponse pacResponse=ei.cancel(invoice,!new Boolean(GSettings.get("TEST")));
 							/*DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();  
 						    DocumentBuilder builder=null;
 						    Document document=null;
@@ -108,12 +110,41 @@ public class InvoiceCancelling extends HttpServlet{
 							
 							if(pacResponse.isSuccess()){
 								String xml=pacResponse.getContent();//document.getElementsByTagName("xmlretorno").item(0).getTextContent();
+								lg.object("PAC response success xml = "+xml);
 								new Mongoi().doUpdate(Mongoi.INVOICES, "{ \"reference\" : \""+invoiceREF+"\"}", "{ \"electronicVersion.cancelXml\" : \""+StringEscapeUtils.escapeXml(xml)+"\"}");
 								new Mongoi().doUpdate(Mongoi.INVOICES, "{ \"reference\" : \""+invoiceREF+"\"}", "{ \"electronicVersion.active\" : false }");
+								Date creationDate = new Date(invoice.getCreationTime());
+								String pathToWrite = GSettings.getPathToDirectory(GSettings.get("INVOICES_FOLDER")+"-"+Utils.getDateString(creationDate,"yyyy-MM"));
+								String reference = invoice.getReference();
 								JGet.stringTofile(
 										xml,
-										GSettings.getPathTo("TMP_FOLDER")+invoice.getReference()+"-CANCELADO.xml");
-								if(!invoice.getClient().getEmail().equals("")){
+										pathToWrite+reference+"-ACUSE-DE-CANCELADO.xml");
+								// TODO has parse de mails please
+								String[] recipients={};//new String[]{};
+								
+								if (!invoice.getClient().getEmail().equals("")) {
+									recipients=(String[])ArrayUtils.addAll(recipients, invoice.getClient().getEmail().split(" "));
+								}
+								if (!invoice.getAgent().getEmail().equals("")) {
+									recipients=(String[])ArrayUtils.addAll(recipients, invoice.getAgent().getEmail().split(" "));
+								}
+								if (recipients.length>0) {
+									new Hotmail().send(
+											"factura CANCELADA "+ GSettings.get("INVOICE_SERIAL") + " " + reference
+													+ " $" + invoice.getTotal(),
+											GSettings.get("EMAIL_BODY"), recipients,
+											new String[] { 
+													pathToWrite+reference+"-ACUSE-DE-CANCELADO.xml",
+													pathToWrite + reference + ".csv",
+													pathToWrite + reference + ".xml",
+													pathToWrite + reference + ".pdf" },
+											new String[] {
+													reference+"-ACUSE-DE-CANCELADO.xml",
+													reference + "-CANCELADO.csv",
+													reference + "-CANCELADO.xml",
+													reference + "-CANCELADO.pdf" });
+								}
+								/*if(!invoice.getClient().getEmail().equals("")){
 									new Hotmail().send(
 										"factura CANCELADA "+invoice.getReference(),
 										"la factura \n"+invoiceREF+"\nha sido cancelada.\n"+GSettings.get("EMAIL_BODY"),
@@ -133,7 +164,7 @@ public class InvoiceCancelling extends HttpServlet{
 												GSettings.getPathTo("TMP_FOLDER")+invoice.getReference()+"-CANCELADO.xml"},
 											new String[]{invoice.getReference()+"-CANCELADO.xml"}
 											);
-								}
+								}*/
 							}
 							else{
 								response.setStatus( HttpServletResponse.SC_SERVICE_UNAVAILABLE);
@@ -194,4 +225,9 @@ public class InvoiceCancelling extends HttpServlet{
 		}
 	}
 
+	public static void main(String[] args) {
+		
+		String xml ="\u0026lt;?xml version\u003d\u0026quot;1.0\u0026quot; \u0026gt;";
+		System.out.println(StringEscapeUtils.unescapeXml(xml));
+	}
 }

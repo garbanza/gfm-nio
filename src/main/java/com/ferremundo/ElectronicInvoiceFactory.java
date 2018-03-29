@@ -75,7 +75,7 @@ public class ElectronicInvoiceFactory {
 	    comp.setFecha(new Date());
 	    comp.setMetodoDePago(invoice.getPaymentMethod());
 	    comp.setFormaDePago(invoice.getPaymentWay());
-	    comp.setSerie(g.getKey("INVOICE_SERIAL"));
+	    comp.setSerie(invoice.getSeries());
 	    comp.setFolio(invoice.getReference());
 	    //if(invoice.getAccountPaymentNumber()!=null)comp.setNumCtaPago(invoice.getAccountPaymentNumber());
 	    Conceptos cps = of.createComprobanteConceptos();
@@ -243,23 +243,27 @@ public class ElectronicInvoiceFactory {
 	    
 	}
 	
-	public static void genQRCode(String emisor, String receptor, float total, String uuid, String ref){
+	public static void genQRCode(String emisor, String receptor, float total, String uuid, String ref, String dir){
 		String re="?re="+emisor.toUpperCase();
 		String rr="&rr="+receptor.toUpperCase();
 		DecimalFormat formatter = new DecimalFormat("0000000000.000000");
 		String tt="&tt="+formatter.format(total);
 		String id="&id="+uuid;
 		String toqrc=re+rr+tt+id;
-		String path=GSettings.getPathTo("TMP_FOLDER")+ref+".qrc.png";
+		String path=dir+ref+".qrc.png";
 		try {
 			QRCode.from(toqrc)
 			.to(ImageType.PNG).withSize(512, 512)
 			.writeTo(new FileOutputStream(new File(path)));
+			Process p = Runtime.getRuntime().exec(new String[]{"bash","-c","chmod 444 "+path});
 		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	public static void genQRCode(String id){
+	public static void genQRCode(String id, String dir){
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder=null;
 		try {
@@ -267,7 +271,7 @@ public class ElectronicInvoiceFactory {
 		} catch (ParserConfigurationException e) {
 			e.printStackTrace();
 		}
-		String path=GSettings.getPathTo("TMP_FOLDER")+id+".xml";
+		String path=dir+id+".xml";
 		Document doc=null;
 		try {
 			doc = dBuilder.parse(new FileInputStream(new File(path)));
@@ -282,24 +286,25 @@ public class ElectronicInvoiceFactory {
 		String emisor=e.getAttribute("Rfc");
 		Element r=((Element)(doc.getElementsByTagName("cfdi:Receptor").item(0)));
 		String receptor=r.getAttribute("Rfc");
-		genQRCode(emisor, receptor, total, uuid, id);
+		genQRCode(emisor, receptor, total, uuid, id, dir);
 	}
 	
-	public static void saveCFDI(String xml, String id){
+	public static void saveCFDI(String xml, String id, String dir){
 		GSettings g=GSettings.instance();
-		String tmp=g.getPathTo("TMP_FOLDER");
-		String path=tmp+id+".xml";
+
+		String path=dir+id+".xml";
 		try {
 			FileUtils.writeStringToFile(new File(path), xml, "utf-8");
+			Process p = Runtime.getRuntime().exec(new String[]{"bash","-c","chmod 444 "+path});
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public static void genHTML(String id){
+	public static void genHTML(String id, String dir){
 		Log log=new Log();
 		GSettings g=GSettings.instance();
-		String 	tmp=g.getPathTo("TMP_FOLDER"),
+		String 	tmp=dir,
 				xsltproc=g.getKey("XSLTPROC"),
 				xslt=g.getPathTo("XSLT"),
 				xml=tmp+id+".xml",
@@ -311,7 +316,7 @@ public class ElectronicInvoiceFactory {
 			log.info("executing '"+xsltproc +" --nonet "+ xslt+" "+xml+" > "+html+"'");
 			Process p = Runtime.getRuntime().exec(new String[]{"bash","-c",
 			xsltproc +" --nonet --stringparam INVOICE_SENDER_ADDITIONAL_DATA \""+additionalData+"\" "
-			+ xslt+" "+xml+" > "+html});
+			+ xslt+" "+xml+" > "+html+" ; chmod 444 "+html});
 			p.waitFor();
 		} catch (IOException e) {
 			log.trace(e);
@@ -320,26 +325,30 @@ public class ElectronicInvoiceFactory {
 		}
 	}
 	
-	public static void genPDF(String id){
+	public static void genPDF(String id, String dir){
 		Log log=new Log();
 		GSettings g=GSettings.instance();
 		String home=g.getHome();
-		String tmp=g.getPathTo("TMP_FOLDER");
+		String tmp=dir;
+		String html =  tmp+id+".html";
+		String pdf =  tmp+id+".pdf";
 		String htmlToPdf=g.getKey("DOCKER_HTMLTOPDF_IMAGE");
 		try {
 			log.object("executing","bash","-c","docker run --rm --volume="+
 					home+":"+home+
 					" "+ htmlToPdf+
-					" "+tmp+id+".html --header-center \"Factura CFDI-"+id
+					" --margin-top 30mm --margin-bottom 30mm "+
+					html+" --header-center \"Factura CFDI-"+id
 					+" - pagina [page]/[topage]\" --header-font-size 7 --footer-center \"Este documento es una representacion impresa de un CFDI\" --footer-font-size 7 "+
-					tmp+id+".pdf");
+					pdf+" ; chmod 444 "+pdf);
 			Process p = Runtime.getRuntime().exec(new String[]{
 					"bash","-c","docker run --rm --volume="+
 					home+":"+home+
 					" "+ htmlToPdf+
-					" "+tmp+id+".html --header-center \"Factura CFDI-"+id
+					" --margin-top 30mm --margin-bottom 30mm "+
+					html+" --header-center \"Factura CFDI-"+id
 					+" - pagina [page]/[topage]\" --header-font-size 7 --footer-center \"Este documento es una representacion impresa de un CFDI\" --footer-font-size 7 "+
-					tmp+id+".pdf"});
+					pdf+" ; chmod 444 "+pdf});
 			p.waitFor();
 		} catch (IOException e) {
 			log.trace(e);

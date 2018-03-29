@@ -21,7 +21,19 @@
 		if(this.value==""){
 			return;
 		}
-		this.args=this.value.match(/[^\s"']+|"([^"]*)"|'([^']*)'/g).splice(1);
+		var argsRegex=/[^\s"']+|"([^"]*)"|'([^']*)'/g;
+		do {
+		    //Each call to exec returns the next regex match as an array
+		    var matches = argsRegex.exec(this.value);
+		    if (matches != null)
+		    {
+		        //Index 1 in the array is the captured group if it exists
+		        //Index 0 is the matched text, which we use if no captured group exists
+		    	this.args.push(matches[1] ? matches[1] : matches[0]);
+		    }
+		} while (matches != null);
+		this.args = this.args.splice(1);
+		//this.args=this.value.match(/[^\s"']+|"([^"]*)"|'([^']*)'/g).splice(1);
 		this.argssize=this.args.length;
 		
 		if(isNumber(this.command)){
@@ -71,10 +83,10 @@
 			this.getFromDB=true;
 			$('#commands').HideBubblePopup();
 		}
-		else if(//this.command=='@ic'||this.command=='@ia'||
+		/*else if(//this.command=='@ic'||this.command=='@ia'||
 				//this.command=='@oc'||this.command=='@oa'||
-				this.command=='$fc'||//this.command=='$fa'||
-				this.command=='$oc'||//this.command=='$oa'||
+				//this.command=='$fc'||//this.command=='$fa'||
+				//this.command=='$oc'||//this.command=='$oa'||
 				this.command=='@ecot'||this.command=='@pcot'||
 				this.command=='$ef'){
 			this.kind= 'sample';
@@ -94,24 +106,49 @@
 				}
 				
 			}
-			/*if(this.command=='@ic')
-				$('#commands').ShowBubblePopup( {innerHtml: 'cotizar a cliente'} );
-			else if(this.command=='@ia')
-				$('#commands').ShowBubblePopup( {innerHtml: 'cotizar a agente'} );
-			
-			else if(this.command=='$oa')
-				$('#commands').ShowBubblePopup( {innerHtml: 'hacer pedido a agente '+msg} );
-			else if(this.command=='@oc')
-				$('#commands').ShowBubblePopup( {innerHtml: 'dar credito a cliente'} );
-			else if(this.command=='@oa')
-				$('#commands').ShowBubblePopup( {innerHtml: 'dar credito a agente'} );
-			if(this.command=='$oc')
-				$('#commands').ShowBubblePopup( {innerHtml: 'hacer pedido a cliente '+msg} );
-			else if(this.command=='$fc')
-				$('#commands').ShowBubblePopup( {innerHtml: 'facturar a cliente '+msg} );
-			else if(this.command=='$fa')
-				$('#commands').ShowBubblePopup( {innerHtml: 'facturar a agente '+msg} );*/
-			
+		}*/
+		else if(this.command=='$fc'||this.command=='$ef'){
+			if(this.args[0]){
+				if(isNumber(this.args[0]) && this.args[0]*1 >= 0){
+					this.printCopies=this.args[0];
+					this.kind = "emitinvoice";
+					if(this.command=='$ef')this.printCopies=0;
+				}
+				else this.kind="undefinedcommand"
+			}
+			else {
+				this.printCopies=-1;
+				if(this.command=='$ef')this.printCopies=0;
+				this.kind = "emitinvoice";
+			}
+		}
+		else if(this.command=='$oc'){
+			if(this.args[0]){
+				if(isNumber(this.args[0]) && this.args[0]*1 >= 0){
+					this.printCopies=this.args[0];
+					this.kind = "emitorder";
+				}
+				else this.kind="undefinedcommand"
+			}
+			else {
+				this.printCopies=-1;
+				this.kind = "emitorder";
+			}
+		}
+		else if(this.command=='@ecot'||this.command=='@pcot'){
+			if(this.args[0]){
+				if(isNumber(this.args[0]) && this.args[0]*1 >= 0){
+					this.printCopies=this.args[0];
+					this.kind = "emitsample";
+					if(this.command=='@ecot')this.printCopies=0;
+				}
+				else this.kind="undefinedcommand"
+			}
+			else {
+				this.printCopies=-1;
+				if(this.command=='@ecot')this.printCopies=0;
+				this.kind = "emitsample";
+			}
 		}
 		else if(this.command=='@p'){
 			$('#commands').ShowBubblePopup( {innerHtml: 'agregar producto'} );
@@ -230,6 +267,17 @@
 		else if(this.command=='@uc'){
 			$('#commands').ShowBubblePopup( {innerHtml: 'uso de cfdi'} );
 			this.kind="cfdiuse";
+		}
+		else if(this.command=='@ad'){
+			$('#commands').ShowBubblePopup( {innerHtml: 'absolutediscount'} );
+			this.kind="absolutediscount";
+		}
+		else if(this.command=='%fixdb'){
+			this.kind="fixdb";
+		}
+		else if(this.command.indexOf("@")==0&&isNumber(this.command.replace("@",""))){
+			this.kind="edititem";
+			this.itemNumber=this.command.replace("@","")*1;
 		}
 		else {
 			$('#commands').HideBubblePopup();

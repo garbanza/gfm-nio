@@ -30,6 +30,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
+import com.mongodb.ServerAddress;
 import com.mongodb.util.JSON;
 
 public class Updater extends HttpServlet{
@@ -161,6 +162,9 @@ public class Updater extends HttpServlet{
 					float oldProviderPrice= providerPriceO==null?-1:new Float(providerPriceO.toString());
 					Object oldProviderOfferO=obj.get("providerOffer");
 					float oldProviderOffer= oldProviderOfferO==null?-1:new Float(oldProviderOfferO.toString());
+					String oldDescription=obj.get("description").toString();
+					String oldProdservCode=obj.get("prodservCode")==null?"":obj.get("prodservCode").toString();
+					String oldUnitCode=obj.get("unitCode")==null?"":obj.get("unitCode").toString();
 					log.object("unit-price",oldPrice,"vs",unitPrice);
 					if(oldPrice!=unitPrice){
 						new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"unitPrice\" : "+unitPrice+" }");
@@ -180,11 +184,17 @@ public class Updater extends HttpServlet{
 						response+="updating providerPrice("+providerOffer+") for -> "+obj+"\n";
 						log.info("updating providerPrice("+providerOffer+") for -> "+obj);
 					}
-					if(obj.get("prodservCode")==null){
+					if(!oldProdservCode.equals(prodservCode)){
 						new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"prodservCode\" : \""+prodservCode+"\" }");
+						log.info("updating prodservCode("+oldProdservCode+") for -> "+prodservCode);
 					}
-					if(obj.get("unitCode")==null){
+					if(!oldUnitCode.equals(unitCode)){
 						new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"unitCode\" : \""+unitCode+"\" }");
+						log.info("updating unitCode("+oldUnitCode+") for -> "+unitCode);
+					}
+					if(!oldDescription.equals(description)){
+						new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"description\" : \""+description+"\" }");
+						log.info("updating description("+oldDescription+") for -> "+description);
 					}
 					//System.out.println("coincidence -> "+new Gson().toJson(product));
 				}
@@ -600,7 +610,32 @@ public class Updater extends HttpServlet{
 		}
 	}
 	
+	private static void fixProductHashToSimplyBeTheCode(){
+		Mongo mongo=null;
+		try {
+			mongo = new Mongo("192.168.10.16",27017);
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (MongoException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		DB db = mongo.getDB("globaldb");
+		DBCollection collection = db.getCollection("products");
+		DBCursor cursor=collection.find();
+		while(cursor.hasNext()){
+			DBObject n=cursor.next();
+			String code=n.get("code").toString();
+			DBObject dbObject=(DBObject)JSON.parse("{ \"code\" : \""+code+"\"}");
+			String js="{ \"$set\" : "+"{\"hash\" : \""+code+"\" }"+"}";
+			DBObject dbObject2=(DBObject)JSON.parse(js);
+			collection.update(dbObject, dbObject2);
+			System.out.println(code);
+		}
+	}
+	
 	public static void main(String[] args) {
-		updateClientsCFDIUse();
+		//fixProductHashToSimplyBeTheCode();
 	}
 }

@@ -60,7 +60,8 @@
 	var SHOPMAN = ${shopman};
 	var CONTEXT_PATH = "${pageContext.request.contextPath}";
 	var AUTHORIZED = true;
-
+	var TAXES_VALUE = ${GSettings.get("TAXES_VALUE")} * 1;
+	
 	var shopman = SHOPMAN;
 	var inputValue;
 	var products;
@@ -297,9 +298,102 @@
 											//alert(event.which);
 											//$('#commands').SetBubblePopupOptions({innerHtml:"comandos"});
 											$('#commands').HideBubblePopup();
-
+											if (commandline.kind == 'edititem'){
+												if(commandline.argssize%2!=0){
+													alert("los argumentos no son pares");
+													return;
+												}
+												var args = commandline.args;
+												for(var i = 0; i < commandline.argssize; i += 2){
+													if(!isNumber(args[i])){
+														alert("los indices deben ser numéricos: -> "+args[i]);
+														return;
+													}
+													if((args[i]*1)<0||(args[i]*1)>11){
+														alert("los indices numéricos deben ser entre 0-11: -> "+args[i]);
+														return;
+													}
+												}
+												var rowIndex = commandline.itemNumber;
+												for(var i = 0; i < commandline.argssize; i += 2){
+													var row=$('.tableingrow').get(rowIndex);
+													if(args[i]=="0"){
+														if(args[i+1]==".")$($(row).find(".control1")).click();
+														else return;
+													}
+													else if(args[i]=="11"){
+														if(args[i+1]==".")$($(row).find(".control2")).click();
+														else return;
+													}
+													else{
+														$($(row).find("div>div").get(args[i])).html(args[i+1].toUpperCase());
+													}
+													//$(row).get(args[i]).html(args[i+1].toUpperCase());
+												}
+												onLogChange();
+												$('#commands').val("");
+											}
+											else if (commandline.kind == 'fixdb'){
+												$.ajax({
+													url : CONTEXT_PATH+'/dbport',
+													type : 'POST',
+													data : {
+														command : commandline.kind,
+														fixNumber : commandline.args[0],//$("#absolutediscount").val(),
+														token : TOKEN,
+														list : $.toJSON(productsLog),
+														clientReference : CLIENT_REFERENCE
+													},
+													success : function(data) {
+														alert(data.result);
+														console.log(data.result)
+													},
+													error : function(
+															jqXHR,
+															textStatus,
+															errorThrown) {
+														alert("el sistema dice: "
+																+ textStatus
+																+ " - "
+																+ errorThrown
+																+ " - "
+																+ jqXHR.responseText);
+													}
+												});
+											}
+											else if (commandline.kind == 'absolutediscount'){
+												$.ajax({
+													url : CONTEXT_PATH+'/dbport',
+													type : 'POST',
+													data : {
+														command : commandline.kind,
+														absoluteDiscount : commandline.args[0],//$("#absolutediscount").val(),
+														token : TOKEN,
+														list : $.toJSON(productsLog),
+														clientReference : CLIENT_REFERENCE
+													},
+													success : function(data) {
+														$("#consummerDiscount").val(data.result);
+														$("#consummerDiscount").trigger("onchange");
+														$("#commands").val("");
+														console.log(data.result)
+													},
+													error : function(
+															jqXHR,
+															textStatus,
+															errorThrown) {
+														alert("el sistema dice: "
+																+ textStatus
+																+ " - "
+																+ errorThrown
+																+ " - "
+																+ jqXHR.responseText);
+													}
+												});
+											}
+													
 											//console.log(commandline.kind);
-											if (commandline.kind == 'product'
+											else if (commandline.kind == 'product'
 													|| commandline.kind == 'retrieve') {
 												if (!$(this).autocomplete(
 														"option", 'isOpen')
@@ -332,7 +426,9 @@
 																			p.description,
 																			p.code,
 																			p.mark,
-																			p.unitPrice);
+																			p.unitPrice,
+																			p.prodservCode,
+																			p.unitCode);
 																	productsLog
 																			.unshift(p);
 																	productsLog[0].quantity = quantity;
@@ -425,7 +521,298 @@
 											} else if (commandline.kind == 'editagent') {
 												addConsummerIn('agents');
 												$('#commands').empty().focus();
-											} else if (commandline.kind == 'sample') {
+											} else if (commandline.kind == 'emitinvoice') {
+												if (agent == null
+														|| client == null) {
+													alert("error: Cliente y/o Agente Indefinido(s).");
+													$('#commands').val('');
+													return;
+												}
+												/*if ($('#paymentMethod').val() == '' || $('#paymentWay').val() == '') {
+													alert("metodo de pago y/o forma de pago indefinido.");
+													$('#commands').val('');
+													return;
+												}*/
+												//alert(" kind "+commandline.kind+" argsL "+commandline.args.length);
+												if (commandline.args.length >= 0
+														&& productsLog.length > 0) {
+													//CONFIRM
+													var block1=$.blockUI({content : '<h1><img src="img/wait.gif" /> esperar...</h1>'});
+								
+													/*$
+															.blockUI({
+																message : '<h1><img src="img/wait.gif" /> esperar...</h1>'
+															});*/
+													$.ajax({
+																type : 'POST',
+																url : CONTEXT_PATH+'/dbport',
+																data : {
+																	client : encodeURIComponent($
+																			.toJSON(client)),
+																	list : encodeURIComponent($
+																			.toJSON(productsLog)),
+																	shopman : encodeURIComponent($
+																			.toJSON(shopman)),
+																	metadata : encodeURIComponent($
+																			.toJSON(metadata)),
+																	requester : encodeURIComponent($
+																			.toJSON(requester)),
+																	seller : encodeURIComponent($
+																			.toJSON(seller)),
+																	agent : encodeURIComponent($
+																			.toJSON(agent)),
+																	destiny : encodeURIComponent("{\"address\" : \""+$('#destiny').val()+"\"}"),
+																	args : encodeURIComponent(commandline.args
+																			.join(" ")),
+																	token : TOKEN,
+																	command : commandline.kind,
+																	clientReference : CLIENT_REFERENCE,
+																	paymentMethod: $('#paymentMethod').val(),
+																	paymentWay: $('#paymentWay').val(),
+																	documentType: $('#documentType').val(),
+																	cfdiUse:$('#cfdiUse').val(),
+																	coin:$('#coin').val(),
+																	printCopies : commandline.printCopies
+																},
+																success : function(data) {
+																	resetClient();
+																	$('#commands').val('');
+																	invoiceInfoLog(data.invoice);
+																	//alert(data.successResponse);
+																	$.blockUI({
+																		node:block1,
+																		content : '<h1>'+data.successResponse+'</h1>',
+																		changeContent:true,
+																		unblockOnAnyKey:true
+																	});
+																},
+																error : function(
+																		jqXHR,
+																		textStatus,
+																		errorThrown) {
+																	console
+																			.log(jqXHR);
+																	console
+																			.log(textStatus);
+																	console
+																			.log(errorThrown);
+																	/*alert("el sistema dice: "
+																			+ textStatus
+																			+ " - "
+																			+ errorThrown
+																			+ " - "
+																			+ jqXHR.responseText);*/
+
+																	$.blockUI({
+																		node:block1,
+																		content : textStatus+" - "+errorThrown+" - "+ jqXHR.responseText,
+																		changeContent:true,
+																		unblockOnAnyKey:true
+																	});
+																	
+																},
+																dataType : "json"
+															});
+												} else {
+													alert('ningun item en lista');
+													$('#commands').val('');
+												}
+											}
+											else if (commandline.kind == 'emitorder') {
+												if (agent == null
+														|| client == null) {
+													alert("error: Cliente y/o Agente Indefinido(s).");
+													$('#commands').val('');
+													return;
+												}
+												/*if ($('#paymentMethod').val() == '' || $('#paymentWay').val() == '') {
+													alert("metodo de pago y/o forma de pago indefinido.");
+													$('#commands').val('');
+													return;
+												}*/
+												//alert(" kind "+commandline.kind+" argsL "+commandline.args.length);
+												if (commandline.args.length >= 0
+														&& productsLog.length > 0) {
+													//CONFIRM
+													var block1=$.blockUI({content : '<h1><img src="img/wait.gif" /> esperar...</h1>'});
+								
+													/*$
+															.blockUI({
+																message : '<h1><img src="img/wait.gif" /> esperar...</h1>'
+															});*/
+													$.ajax({
+																type : 'POST',
+																url : CONTEXT_PATH+'/dbport',
+																data : {
+																	client : encodeURIComponent($
+																			.toJSON(client)),
+																	list : encodeURIComponent($
+																			.toJSON(productsLog)),
+																	shopman : encodeURIComponent($
+																			.toJSON(shopman)),
+																	metadata : encodeURIComponent($
+																			.toJSON(metadata)),
+																	requester : encodeURIComponent($
+																			.toJSON(requester)),
+																	seller : encodeURIComponent($
+																			.toJSON(seller)),
+																	agent : encodeURIComponent($
+																			.toJSON(agent)),
+																	destiny : encodeURIComponent("{\"address\" : \""+$('#destiny').val()+"\"}"),
+																	args : encodeURIComponent(commandline.args
+																			.join(" ")),
+																	token : TOKEN,
+																	command : commandline.kind,
+																	clientReference : CLIENT_REFERENCE,
+																	paymentMethod: $('#paymentMethod').val(),
+																	paymentWay: $('#paymentWay').val(),
+																	documentType: "ORDER",
+																	cfdiUse:$('#cfdiUse').val(),
+																	coin:$('#coin').val(),
+																	printCopies : commandline.printCopies
+																},
+																success : function(data) {
+																	resetClient();
+																	$('#commands').val('');
+																	invoiceInfoLog(data.invoice);
+																	//alert(data.successResponse);
+																	$.blockUI({
+																		node:block1,
+																		content : '<h1>'+data.successResponse+'</h1>',
+																		changeContent:true,
+																		unblockOnAnyKey:true
+																	});
+																},
+																error : function(
+																		jqXHR,
+																		textStatus,
+																		errorThrown) {
+																	console
+																			.log(jqXHR);
+																	console
+																			.log(textStatus);
+																	console
+																			.log(errorThrown);
+																	/*alert("el sistema dice: "
+																			+ textStatus
+																			+ " - "
+																			+ errorThrown
+																			+ " - "
+																			+ jqXHR.responseText);*/
+
+																	$.blockUI({
+																		node:block1,
+																		content : textStatus+" - "+errorThrown+" - "+ jqXHR.responseText,
+																		changeContent:true,
+																		unblockOnAnyKey:true
+																	});
+																	
+																},
+																dataType : "json"
+															});
+												} else {
+													alert('ningun item en lista');
+													$('#commands').val('');
+												}
+											}
+											else if (commandline.kind == 'emitsample') {
+												if (agent == null
+														|| client == null) {
+													alert("error: Cliente y/o Agente Indefinido(s).");
+													$('#commands').val('');
+													return;
+												}
+												/*if ($('#paymentMethod').val() == '' || $('#paymentWay').val() == '') {
+													alert("metodo de pago y/o forma de pago indefinido.");
+													$('#commands').val('');
+													return;
+												}*/
+												//alert(" kind "+commandline.kind+" argsL "+commandline.args.length);
+												if (commandline.args.length >= 0
+														&& productsLog.length > 0) {
+													//CONFIRM
+													var block1=$.blockUI({content : '<h1><img src="img/wait.gif" /> esperar...</h1>'});
+								
+													/*$
+															.blockUI({
+																message : '<h1><img src="img/wait.gif" /> esperar...</h1>'
+															});*/
+													$.ajax({
+																type : 'POST',
+																url : CONTEXT_PATH+'/dbport',
+																data : {
+																	client : encodeURIComponent($
+																			.toJSON(client)),
+																	list : encodeURIComponent($
+																			.toJSON(productsLog)),
+																	shopman : encodeURIComponent($
+																			.toJSON(shopman)),
+																	metadata : encodeURIComponent($
+																			.toJSON(metadata)),
+																	requester : encodeURIComponent($
+																			.toJSON(requester)),
+																	seller : encodeURIComponent($
+																			.toJSON(seller)),
+																	agent : encodeURIComponent($
+																			.toJSON(agent)),
+																	destiny : encodeURIComponent("{\"address\" : \""+$('#destiny').val()+"\"}"),
+																	args : encodeURIComponent(commandline.args
+																			.join(" ")),
+																	token : TOKEN,
+																	command : commandline.kind,
+																	clientReference : CLIENT_REFERENCE,
+																	paymentMethod: $('#paymentMethod').val(),
+																	paymentWay: $('#paymentWay').val(),
+																	documentType: "SAMPLE",
+																	cfdiUse:$('#cfdiUse').val(),
+																	coin:$('#coin').val(),
+																	printCopies : commandline.printCopies
+																},
+																success : function(data) {
+																	resetClient();
+																	$('#commands').val('');
+																	invoiceInfoLog(data.invoice);
+																	//alert(data.successResponse);
+																	$.blockUI({
+																		node:block1,
+																		content : '<h1>'+data.successResponse+'</h1>',
+																		changeContent:true,
+																		unblockOnAnyKey:true
+																	});
+																},
+																error : function(
+																		jqXHR,
+																		textStatus,
+																		errorThrown) {
+																	console
+																			.log(jqXHR);
+																	console
+																			.log(textStatus);
+																	console
+																			.log(errorThrown);
+																	/*alert("el sistema dice: "
+																			+ textStatus
+																			+ " - "
+																			+ errorThrown
+																			+ " - "
+																			+ jqXHR.responseText);*/
+
+																	$.blockUI({
+																		node:block1,
+																		content : textStatus+" - "+errorThrown+" - "+ jqXHR.responseText,
+																		changeContent:true,
+																		unblockOnAnyKey:true
+																	});
+																	
+																},
+																dataType : "json"
+															});
+												} else {
+													alert('ningun item en lista');
+													$('#commands').val('');
+												}
+											}
+											else if (commandline.kind == 'sample') {
 												if (agent == null
 														|| client == null) {
 													alert("error: Cliente y/o Agente Indefinido(s).");
@@ -521,7 +908,8 @@
 													alert('ningun item en lista');
 													$('#commands').val('');
 												}
-											} else if (commandline.kind == 'consultthebox') {
+											}
+											else if (commandline.kind == 'consultthebox') {
 												$
 														.ajax({
 															url : 'consultthebox',
@@ -808,7 +1196,9 @@
 																					itms[i].description,
 																					itms[i].code,
 																					itms[i].mark,
-																					parseFloat(itms[i].unitPrice));
+																					parseFloat(itms[i].unitPrice),
+																					itms[i].prodservCode,
+																					itms[i].unitCode);
 																			//productsLog.unshift(itms[i].product);
 																			itms[i].quantity = parseFloat(itms[i].quantity);
 																			itms[i].unitPrice = parseFloat(itms[i].unitPrice);
@@ -931,9 +1321,17 @@
 																		var rfc = data.invoices[i].client.rfc;
 																		var payment = data.invoices[i].client.payment;
 																		var reference = data.invoices[i].reference;
-																		var date = new Date(
+																		var date = null;
+																		//**TODO fix the db removing metadata */
+																		if (data.invoices[i].metaData) date = new Date(
 																				new Number(
 																						data.invoices[i].metaData.date))
+																				.format(
+																						'dd.mmm.yyyy')
+																				.toUpperCase();
+																		else date = new Date(
+																				new Number(
+																						data.invoices[i].logs[0].date))
 																				.format(
 																						'dd.mmm.yyyy')
 																				.toUpperCase();
@@ -1075,7 +1473,7 @@
 
 													$
 															.ajax({
-																url : 'dbport',
+																url : CONTEXT_PATH+'/dbport',
 																type : 'POST',
 																data : {
 																	command : commandline.kind,
@@ -1139,7 +1537,7 @@
 
 													$
 															.ajax({
-																url : 'dbport',
+																url : CONTEXT_PATH+'/dbport',
 																type : 'POST',
 																data : {
 																	command : commandline.kind,
@@ -1174,7 +1572,7 @@
 															});
 													$('#commands').val('');
 												} else
-													alert("escribe algo para recordar");
+													alert("noda por hacer");
 											} else if (commandline.kind == 'productinventoryadd') {
 												$('body')
 														.preinSysAuth({
@@ -1193,7 +1591,7 @@
 
 																			$
 																					.ajax({
-																						url : 'dbport',
+																						url : CONTEXT_PATH+'/dbport',
 																						type : 'POST',
 																						data : {
 																							command : commandline.kind,
@@ -1240,7 +1638,7 @@
 																"<img src=img/wait.gif width=70px height=70px/>");
 												$
 														.ajax({
-															url : 'dbport',
+															url : CONTEXT_PATH+'/dbport',
 															type : 'POST',
 															data : {
 																command : commandline.kind,
@@ -1356,281 +1754,6 @@
 							});
 						});
 
-						$('#editclient-payment')
-								.keyup(
-										function(event) {
-											if (event.keyCode == $.ui.keyCode.ENTER) {
-												var consummer = $(
-														'#editclient-consummer')
-														.val();
-												var consummerType = $(
-														'#editclient-consummerType')
-														.val();
-												var address = $(
-														'#editclient-address')
-														.val();
-												var interiorNumber = $(
-														'#editclient-interiorNumber')
-														.val();
-												var exteriorNumber = $(
-														'#editclient-exteriorNumber')
-														.val();
-												var suburb = $(
-														'#editclient-suburb')
-														.val();
-												var locality = $(
-														'#editclient-locality')
-														.val();
-												var city = $('#editclient-city')
-														.val();
-												var state = $(
-														'#editclient-state')
-														.val();
-												var country = $(
-														'#editclient-country')
-														.val();
-												var cp = $('#editclient-cp')
-														.val();
-												var rfc = $('#editclient-rfc')
-														.val();
-												var tel = $('#editclient-tel')
-														.val();
-												var email = $(
-														'#editclient-email')
-														.val();
-												var payment = $(
-														'#editclient-payment')
-														.val();
-
-												client = new Client_(null,
-														consummer,
-														consummerType, address,
-														interiorNumber,
-														exteriorNumber, suburb,
-														locality, city,
-														country, state, email,
-														cp, rfc, tel, payment,
-														null, null);
-												//client=new setClient(e0?e0:'-1',e1?e1:'publico',e2?e2:'1',e3?e3:'.',e4?e4:'morelia','mexico',e5?e5:'michoacan','.',e6?e6:'.',e7?e7:'.',e8?e8:'.',e9?e9:'0',e10);
-												//(code,consummer,consummerType,address,city,country,state,email,cp,rfc,tel,payment){
-												$('#vips option').eq(
-														consummerType - 1)
-														.attr('selected',
-																'selected');
-
-												$
-														.ajax({
-															url : 'welcome',
-															type : 'POST',
-															data : {
-																client : encodeURIComponent($
-																		.toJSON(client)),
-																token : TOKEN,
-																clientReference : CLIENT_REFERENCE
-															},
-															success : function(
-																	data) {
-																//console.log(client.consummer +" creado");
-																var id = data.id;
-																for (var j = 0; j < productsLog.length; j++) {
-																	var jsonsrt = "["
-																			+ $
-																					.toJSON(productsLog[j])
-																			+ "]";
-																	$
-																			.ajax({
-																				index : j,
-																				url : "getthis",
-																				type : 'POST',
-																				data : {
-																					list : encodeURIComponent(jsonsrt),
-																					id : id,
-																					token : TOKEN,
-																					clientReference : CLIENT_REFERENCE
-																				},
-																				dataType : "json",
-																				error : function(
-																						jqXHR,
-																						textStatus,
-																						errorThrown) {
-																					alert("el sistema dice: "
-																							+ textStatus
-																							+ " - "
-																							+ errorThrown
-																							+ " - "
-																							+ jqXHR.responseText);
-																				},
-																				success : function(
-																						data) {
-																					//alert(productsLog[0].quantity+" ->"+this.index);
-																					var j = this.index;
-																					if (productsLog[j].id != "-1") {
-																						//alert(jsonsrt);
-																						//$('.quantity').eq(j).text(data[j].quantity);
-																						$(
-																								".tableingrow")
-																								.unbind(
-																										'DOMSubtreeModified');
-																						$(
-																								'.unit')
-																								.eq(
-																										j)
-																								.html(
-																										data[0].unit);
-																						$(
-																								'.description')
-																								.eq(
-																										j)
-																								.html(
-																										data[0].description);
-																						$(
-																								'.code')
-																								.eq(
-																										j)
-																								.html(
-																										data[0].code);
-																						$(
-																								'.mark')
-																								.eq(
-																										j)
-																								.html(
-																										data[0].mark);
-																						$(
-																								'.unitPrice')
-																								.eq(
-																										j)
-																								.html(
-																										data[0].unitPrice);
-																						var quantity = productsLog[j].quantity;
-																						if (productsLog[j].disabled) {
-																							productsLog[j] = data[0];
-																							productsLog[j].disabled = true;
-																						} else
-																							productsLog[j] = data[0];
-																						productsLog[j].quantity = quantity;
-																						onLogChange();
-																						//productsLog[j].quantity=$('.quantity').eq(j).val();
-																					}
-																					//else{alert("code");}
-
-																				}
-																			});
-																}
-																$('#editclient')
-																		.dialog(
-																				'close');
-																$('commands')
-																		.empty()
-																		.focus();
-															},
-															error : function(
-																	jqXHR,
-																	textStatus,
-																	errorThrown) {
-																alert("el sistema dice: "
-																		+ textStatus
-																		+ " - "
-																		+ errorThrown
-																		+ " - "
-																		+ jqXHR.responseText);
-															},
-															dataType : "json"
-														});
-
-												//alert($.toJSON(client));
-
-											}
-										});
-						$('#editagent-payment')
-								.keyup(
-										function(event) {
-											if (event.keyCode == $.ui.keyCode.ENTER) {
-												var consummer = $(
-														'#editagent-consummer')
-														.val();
-												var consummerType = $(
-														'#editagent-consummerType')
-														.val();
-												var address = $(
-														'#editagent-address')
-														.val();
-												var interiorNumber = $(
-														'#editagent-interiorNumber')
-														.val();
-												var exteriorNumber = $(
-														'#editagent-exteriorNumber')
-														.val();
-												var suburb = $(
-														'#editagent-suburb')
-														.val();
-												var locality = $(
-														'#editagent-locality')
-														.val();
-												var city = $('#editagent-city')
-														.val();
-												var state = $(
-														'#editagent-state')
-														.val();
-												var country = $(
-														'#editagent-country')
-														.val();
-												var cp = $('#editagent-cp')
-														.val();
-												var rfc = $('#editagent-rfc')
-														.val();
-												var tel = $('#editagent-tel')
-														.val();
-												var email = $(
-														'#editagent-email')
-														.val();
-												var payment = $(
-														'#editagent-payment')
-														.val();
-
-												agent = new Agent_(null,
-														consummer,
-														consummerType, address,
-														interiorNumber,
-														exteriorNumber, suburb,
-														locality, city,
-														country, state, email,
-														cp, rfc, tel, payment,
-														null, null);
-												$
-														.ajax({
-															url : 'welcome',
-															type : 'POST',
-															data : {
-																client : encodeURIComponent($
-																		.toJSON(agent)),
-																agent : true,
-																token : TOKEN,
-																clientReference : CLIENT_REFERENCE
-															},
-															error : function(
-																	jqXHR,
-																	textStatus,
-																	errorThrown) {
-																alert("el sistema dice: "
-																		+ textStatus
-																		+ " - "
-																		+ errorThrown
-																		+ " - "
-																		+ jqXHR.responseText);
-															},
-															success : function(
-																	data) {
-																$('#editagent')
-																		.dialog(
-																				'close');
-																$('commands')
-																		.empty()
-																		.focus();
-															}
-														});
-
-											}
-										});
 						//$('#editclient').hide();
 						//$('#editagent').hide();
 						$('#editproduct').hide();
@@ -1641,11 +1764,11 @@
 <title>Ferremundo - pedidos</title>
 </head>
 <body>
-	<div id="shopmanSession"></div>
+	
 
 
 	<div class="ui-widget">
-		<label for="comandos">com:</label> <input id="commands" />
+		<input id="commands" style="width:80%" /><a id="shopmanSession"></a>
 		<script type="text/javascript">
 			fillCommandLine = function(text) {
 				$('#commands').val(text).focus();
@@ -1670,7 +1793,7 @@
 		<!--button type="button" onclick="new fillCommandLine('$fa');">factura
 			a agente+abono</button-->
 		<!--Metodo de pago -->
-		<br>
+		
 		<select id="paymentMethod" style="width:10%">
 			<option ></option>
 			<option value="PUE">PUE Pago en una sola exhibición</option>
@@ -1744,10 +1867,13 @@
 			<option value="P01">P01 Por definir</option>
 		</select>
 		<input id="destiny" value="Mostrador" onfocus="(function(t){t.select()})(this)"/>
-		desc<input id="consummerDiscount" value="0" onfocus="(function(t){t.select()})(this)" onchange="(function(){applyDiscount()})()"/>
+		desc<input id="consummerDiscount" value="0" onfocus="(function(t){t.select()})(this)" onchange="(function(){applyDiscount(this)})()"/>
 		
-		<p class="g-total2">$0</p>
-		<p class="g-area-to-print">0 - 0 hojas</p>
+		<!--abs<input id="absoluteDiscount" value="0" onfocus="(function(t){t.select()})(this)" onchange="(function(){applyDiscount(this)})()"/>-->
+		<select id="coin" style="width:10%">
+			<option value = "MXN">MXN</option>
+		</select>
+		<br><a class="g-total2">$0</a> [ <a class="g-area-to-print">0 - 0 hojas</a> ]
 		<div id="editproduct">
 			<input id="editproduct-1" /> <input id="editproduct-2" /> <input
 				id="editproduct-3" /> <input id="editproduct-4"/> <input
@@ -1755,7 +1881,7 @@
 		</div>
 
 	</div>
-
+    <table><tr><td>
 	<div id="client-accordion" style="height: auto;">
 		<p>
 			<a href="#" id="client" class="accordion-e"></a>
@@ -1772,6 +1898,7 @@
 
 		</div>
 	</div>
+	</td><td>
 	<div id="agent-accordion" style="height: auto;">
 		<p>
 			<a href="#" id="agent" class="accordion-e"></a>
@@ -1788,7 +1915,7 @@
 
 		</div>
 	</div>
-
+	</td></tr></table>
 	<div style="position: relative; width: 100%">
 		<div id="log" style="height: 500px; width: 100%; overflow: auto;"
 			class="ui-widget-content"></div>
@@ -1797,6 +1924,7 @@
 	<div id="resultset" style="width: 100%;" class=""></div>
 	<div id="logResultset" style="width: 100%;" class=""></div>
 	<div id='records'>records</div>
+	<h6 id="clientReference"></h6>
 </body>
 
 </html>

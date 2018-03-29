@@ -17,23 +17,25 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 
 import com.ferremundo.stt.GSettings;
-import com.profact.Timbrado;
-import com.profact.ArrayOfAnyType;
-import com.profact.CancelaCFDIAck;
 
 public class Profact implements ElectronicInvoice {
 
 	String invoice64;
 	Invoice invoice;
+	String xml;
 	public Profact(Invoice invoice) {
 		Log log = new Log();
 		String out = Utils.GEN_CFD_STRING(invoice);
 		byte[] cfd64=out.toString().getBytes();
-		log.exit("cfd is:",out.toString());
+		xml=out.toString();
+		log.exit("cfd is:",xml);
 	    invoice64 = DatatypeConverter.printBase64Binary(cfd64);
 		this.invoice=invoice;
 	}
 	public Profact() {
+	}
+	public String getXml(){
+		return xml;
 	}
 	@Override
 	public PACResponse submit(boolean production) {
@@ -136,25 +138,28 @@ public class Profact implements ElectronicInvoice {
 	    Element e=(Element)node;
 	    String uuid=e.getAttribute("UUID");
 	    GSettings g = GSettings.instance();
-		com.profact.test.ArrayOfAnyType objects=null;
+	    mx.buzoncfdi.cfdi33_pruebas.ArrayOfAnyType objects=null;
 		try {
-			objects = new com.profact.test.Timbrado(new URL(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE")))
+			objects = new mx.buzoncfdi.cfdi33_pruebas.Timbrado(new URL(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE")))
 							.getTimbradoSoap()
 							.cancelaCFDIAck(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_USER"), g.getKey("INVOICE_SENDER_TAX_CODE"), uuid);
 		} catch (MalformedURLException e1) {
 			e1.printStackTrace();
 		}
+		log.object("PAC raw response",objects);
 		List<Object> l= objects.getAnyType();
-		if((int) l.get(1)==0){
+		if(l.get(1).equals("0")){
 			String content=StringEscapeUtils.unescapeJava((String)l.get(3));
 			String message=(String)l.get(2);
 			String code=(int)l.get(1)+"";
 			boolean success=true;
+			PACResponse pr = new PACResponse(success, message, content, code);
+			log.object("PACResponse",pr);
 			return new PACResponse(success, message, content, code);
 		}
 		String content="<null></null>";
 		String message=(String)l.get(2);
-		String code=(int)l.get(1)+"";
+		String code=l.get(1)+"";
 		boolean success=false;
 		return new PACResponse(success, message, content, code);
 	}
@@ -163,8 +168,8 @@ public class Profact implements ElectronicInvoice {
 		Log log =new Log();
 		log.entry();
 		log.object("cancelling invoice",invoice);
-		String xml=invoice.getElectronicVersion().getXml();
-		
+		String xml=StringEscapeUtils.unescapeXml(invoice.getElectronicVersion().getXml());
+		log.object("xml is:",xml);
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();  
 	    DocumentBuilder builder=null;
 	    Document document=null;
@@ -174,32 +179,41 @@ public class Profact implements ElectronicInvoice {
 	        document = builder.parse(
 	        		new InputSource( 
 	        				new StringReader( xml ) ) );  
-	    } catch (Exception e) {  
-	        e.printStackTrace();  
+	    } catch (Exception e) {
+	    	log.trace("failed to cancel "+invoice.getReference(), e);
+	        e.printStackTrace();
 	    }
+		log.object("document parsed successfully");
 		Node node=document.getElementsByTagName("tfd:TimbreFiscalDigital").item(0);
+		log.object("node found");
 	    Element e=(Element)node;
 	    String uuid=e.getAttribute("UUID");
 	    GSettings g = GSettings.instance();
-		ArrayOfAnyType objects=null;
+	    mx.timbracfdi33.ArrayOfAnyType objects=null;
+	    log.object("cancelling invoice with uuid '"+uuid+"' via " +g.getKey("INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE"));
 		try {
-			objects = new Timbrado(new URL(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE")))
+			objects = new mx.timbracfdi33.Timbrado(new URL(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE")))
 							.getTimbradoSoap()
 							.cancelaCFDIAck(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_USER"), g.getKey("INVOICE_SENDER_TAX_CODE"), uuid);
 		} catch (MalformedURLException e1) {
+			log.trace("failed to cancel "+invoice.getReference()+ ", uuid : "+uuid,e1);
 			e1.printStackTrace();
 		}
+		log.object("PAC raw response",objects);
 		List<Object> l= objects.getAnyType();
-		if((int) l.get(1)==0){
+		
+		if(((String)l.get(1)).equals("0")){
+			log.object("PAC response success 0="+l.get(1));
 			String content=StringEscapeUtils.unescapeJava((String)l.get(3));
 			String message=(String)l.get(2);
-			String code=(int)l.get(1)+"";
+			String code=l.get(1)+"";
 			boolean success=true;
 			return new PACResponse(success, message, content, code);
 		}
+		log.object("PAC response fail "+l.get(1));
 		String content="<null></null>";
 		String message=(String)l.get(2);
-		String code=(int)l.get(1)+"";
+		String code=l.get(1)+"";
 		boolean success=false;
 		PACResponse pr=new PACResponse(success, message, content, code);
 		log.exit("packpesponse",pr);

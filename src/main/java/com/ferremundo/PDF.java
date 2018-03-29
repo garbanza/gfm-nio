@@ -143,7 +143,7 @@ public class PDF {
 
         // put our text into a phrase
         
-        Client pt=invoice.getPrintedTo();
+        Client pt=invoice.getClient();
         
         String line="";
         System.out.println(line);
@@ -262,11 +262,13 @@ public class PDF {
 	}
 
 	private void insertSubtotalToPDF() {
-		insertTextToPDF(form.getSubtotalArea(), "" + formatter.format(invoice.getSubtotal()),FONT_SIZE_NORMAL,ALIGNMENT_RIGTH);
+		/**TODO this is hardcoded*/
+		insertTextToPDF(form.getSubtotalArea(), "" + formatter.format(/*invoice.getSubtotal()*/ invoice.getTotal()),FONT_SIZE_NORMAL,ALIGNMENT_RIGTH);
 	}
 
 	private void insertTaxesToPDF() {
-		insertTextToPDF(form.getTaxesArea(), "" + formatter.format(invoice.getTaxes()),FONT_SIZE_NORMAL,ALIGNMENT_RIGTH);
+		/**TODO this is hardcoded*/
+		insertTextToPDF(form.getTaxesArea(), "" + formatter.format(/*invoice.getTaxes()*/ 0),FONT_SIZE_NORMAL,ALIGNMENT_RIGTH);
 	}
 
 	private void insertTelToPDF() {

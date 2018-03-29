@@ -81,7 +81,7 @@ autocomplete=function(input){
 				quantity=commandline.quantity?commandline.quantity:1;
 				p=products;
 			
-				dolog(quantity,p[i].unit,p[i].description,p[i].code,p[i].mark,p[i].unitPrice);
+				dolog(quantity,p[i].unit,p[i].description,p[i].code,p[i].mark,p[i].unitPrice,p[i].prodservCode,p[i].unitCode);
 				productsLog.unshift(p[i]);
 				productsLog[0].quantity=quantity;
 				onLogChange();
@@ -150,6 +150,10 @@ autocomplete=function(input){
 							}
 						});
 					}
+				}
+				else {
+					console.log("event.which");
+					console.log(event.which);
 				}
 				//TODO chambea esto de setear el acordion de esta forma piñata
 				
@@ -242,7 +246,7 @@ autocomplete=function(input){
 		},
 /** AUTOCOMPLETE OPEN*/
 		open: function() {
-			$('.ui-autocomplete').css({width:'80%',height:'auto'});
+			$('.ui-autocomplete').css({width:'95%',height:'auto'});
 			console.log('commandline.kind='+commandline.kind);
 			if(commandline.kind=='product'||commandline.kind=='retrieve'){
 				var i=0;

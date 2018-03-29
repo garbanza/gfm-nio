@@ -173,16 +173,13 @@ public class ClientAuthenticate extends HttpServlet{
 		}
 		for(int i=0;i<size;i++){
 			AccessPermission permission=permissions.get(i);
-			boolean matches=false;
 			for(int j=0;j<csize;j++){
 				if(permission.equals(clientPermissions.get(j))){
-					matches=true;
-					break;
+					return true;
 				}
 			}
-			if(!matches)return false;
 		}
-		return true;
+		return false;
 	}
 	
 	public static boolean hasAccess(OnlineClient onlineClient, AccessPermission[] permissions){

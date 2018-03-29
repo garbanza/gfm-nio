@@ -34,6 +34,14 @@ public class InvoiceItem extends Product{
 	}*/
 	
 	public InvoiceItem() {}
+	public InvoiceItem(float quantity,
+			String code, float unitPrice, String unit,
+			String mark,String description, float providerPrice,
+			float providerOffer,float incrementPercent,
+			String prodservCode, String unitCode) {
+		super(code, unitPrice, unit, mark, description, providerPrice, providerOffer, incrementPercent, prodservCode, unitCode);
+		this.quantity=quantity;
+	}
 	/*
 	public InvoiceItem(JSONObject json) {
 		

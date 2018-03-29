@@ -158,5 +158,6 @@ public interface Invoice {
 	public String getCoin();
 	public void setCoin(String coin);
 
-
+	public String getSeries();
+	public void setSeries(String series);
 }

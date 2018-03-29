@@ -129,8 +129,8 @@
 			var H=0;
 			topts=getRegisteredTopts(e);
 			$(e).children().each(function(){
-				if(topts.animate==0)$(this).css({top:H});
-				else $(this).animate({top:H},topts.animate);
+				/*if(topts.animate==0)*/$(this).css({top:H});
+				/*else $(this).animate({top:H},topts.animate);*/
 				H+=$(this).height();
 				//alert('H: '+H+" $(this).height(): "+$(this).height());
 			});

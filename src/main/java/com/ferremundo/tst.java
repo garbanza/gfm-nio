@@ -26,12 +26,18 @@ import com.lowagie.text.Rectangle;
 
 public class tst {
 
-	public static void main(String[] args) {
+	public static void main2(String[] args) {
 		double myDouble = 2.673;
 		DecimalFormat myFormat = new DecimalFormat("0.000000");
 		String myDoubleString = myFormat.format(myDouble);
 		System.out.println("My number is: " + myDoubleString);
 	}
+	
+	public static void main(String[] args) {
+		String escapeUtils = StringEscapeUtils.escapeJava("\u002758cc15e4-4c2a-4f34-8923-2a5990360e0b\u0027");
+		System.out.println("-"+escapeUtils+"-");
+	}
+	
 	public static void main1(String[] args) throws ParserConfigurationException, SAXException, IOException {
 		String cfdiResponse="<xml><codigo>0</codigo><str>&lt;merga&gt;</str></xml>";
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();

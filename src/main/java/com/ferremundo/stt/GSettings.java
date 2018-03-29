@@ -27,6 +27,7 @@ public class GSettings extends Properties{
 	private GSettings(){
 		
 		if(gSettings==null){
+			System.out.println("gsettings is null");
 			if(System.getProperty("FM_HOME")!=null){
 				folderBase=System.getProperty("FM_HOME")+File.separator;
 			}
@@ -63,6 +64,7 @@ public class GSettings extends Properties{
 			Obt*/
 		}
 		if(!fileWatcherExecuted){
+			System.out.println("starting file watcher");
 			String path=
 					folderBase+
 					//this.getClass().getName().replace(".",File.separator)+
@@ -76,7 +78,8 @@ public class GSettings extends Properties{
 					new Log().info(path +" changed");
 				}
 			});
-			fileWatcher.run();
+			fileWatcher.start();
+			System.out.println("continuing file watcher");
 		}
 	}
 	
@@ -119,14 +122,26 @@ public class GSettings extends Properties{
 	}
 	
 	public static String getPathTo(String key){
+		System.out.println("getting path to: "+ key);
 		if(gSettings==null){
 			gSettings=new GSettings();
 		}
+		System.out.println("after getting path to: "+ key);
 		String path=getHome()+gSettings.getKey(key);
 		File file=new File(path);
 		if(file.isDirectory())return path+file.separator;
 		return path;
 		
+	}
+	
+	public static String getPathToDirectory(String dir){
+		if(gSettings==null){
+			gSettings=new GSettings();
+		}
+		String path = getHome()+dir;
+		File file = new File(path);
+		if(!file.exists())file.mkdir();
+		return path+File.separator;
 	}
 	
 }

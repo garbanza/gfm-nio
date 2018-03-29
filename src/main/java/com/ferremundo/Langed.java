@@ -74,6 +74,8 @@ public class Langed {
 	}
 	
 	private static String getf(String str,String... args){
+		Log log = new Log();
+		log.entry("transforming",str,args);
 		String ret=str.toString();
 		for(int i=0;i<args.length;i++){
 			ret=ret.replaceAll("\\$\\{"+i+"\\}", args[i]);

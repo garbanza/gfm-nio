@@ -474,10 +474,10 @@ public class Wishing extends HttpServlet {
 							String xmlEscaped=StringEscapeUtils.escapeXml(xml);
 							log.object("xmlEscaped is : ",xmlEscaped);
 							String reference=invoice.getReference();
-							ElectronicInvoiceFactory.saveCFDI(xml, reference);
-							ElectronicInvoiceFactory.genQRCode(reference);
-							ElectronicInvoiceFactory.genHTML(reference);
-							ElectronicInvoiceFactory.genPDF(reference);
+							ElectronicInvoiceFactory.saveCFDI(xml, reference,null);
+							ElectronicInvoiceFactory.genQRCode(reference,null);
+							ElectronicInvoiceFactory.genHTML(reference,null);
+							ElectronicInvoiceFactory.genPDF(reference,null);
 							
 							org.jsoup.nodes.Document document=null;
 							document = Jsoup.parse(xml);

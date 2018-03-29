@@ -1,5 +1,8 @@
 package com.ferremundo;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -18,13 +21,25 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
+import com.ferremundo.InvoiceLog.LogKind;
 import com.ferremundo.db.FilterDBObject;
+import com.ferremundo.db.Inventory;
 import com.ferremundo.db.Mongoi;
+import com.ferremundo.mailing.Hotmail;
+import com.ferremundo.stt.GSettings;
+import com.ferremundo.util.Util;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -86,9 +101,8 @@ public class DBPort extends HttpServlet{
 			
 			int clientReference=new Integer(request.getParameter("clientReference"));
 			ClientReference.set(clientReference);
-			new Log().entry();
 			OnlineClient onlineClient=OnlineClients.instance().get(clientReference);
-			Log log = new Log(onlineClient);
+			Log log = new Log();
 			log.entry(request.getParameterMap());
 			String locale=onlineClient.getLocale();
 			response.setCharacterEncoding("utf-8");
@@ -100,6 +114,7 @@ public class DBPort extends HttpServlet{
 				return;
 			}
 			String dc=URLDecoder.decode(command,"utf-8");
+			log.info("command is: '"+dc+"'");
 			if(dcMatch(dc,MAKE_RECORD)){
 				makeRecord(request, response, onlineClient);
 				return;
@@ -137,10 +152,6 @@ public class DBPort extends HttpServlet{
 			}
 			else if(dcMatch(dc,SEARCH_PROVIDERS)){
 				searchProviders(
-						/*new ArrayList<AccessPermission>(Arrays.asList(
-								AccessPermission.ADMIN,
-								AccessPermission.PRODUCT_READ)),
-								*/
 						new AccessPermission[]{ADMIN,READ_PROVIDERS},
 						new String[]{"searchRequestId","search"},
 						request, response, onlineClient);
@@ -148,6 +159,77 @@ public class DBPort extends HttpServlet{
 			}
 			else if(dcMatch(dc,UPDATE_PRODUCTS)){
 				updateProducts(request, response, onlineClient);
+				return;
+			}
+			else if(dcMatch(dc,Commands.ABSOLUTE_DISCOUNT)){
+				calculateRelativeDiscount(
+						new AccessPermission[]{ADMIN,BASIC},
+						new String[]{"absoluteDiscount","list"},
+						request, response, onlineClient);
+				return;
+			}
+			else if(dcMatch(dc,AccessPermission.EMIT_INVOICE)){
+				emitInvoice(
+						new AccessPermission[]{ADMIN,BASIC,EMIT_INVOICE},
+						new String[]{
+								"client",
+								"list",
+								"shopman",
+								"agent",
+								"destiny",
+								"clientReference",
+								"cfdiUse",
+								"documentType",
+								"paymentMethod",
+								"paymentWay",
+								"printCopies",
+								"coin"},
+						request, response, onlineClient);
+				return;
+			}
+			else if(dcMatch(dc,AccessPermission.EMIT_ORDER)){
+				emitOrder(
+						new AccessPermission[]{ADMIN,BASIC,EMIT_ORDER},
+						new String[]{
+								"client",
+								"list",
+								"shopman",
+								"agent",
+								"destiny",
+								"clientReference",
+								"cfdiUse",
+								"documentType",
+								"paymentMethod",
+								"paymentWay",
+								"printCopies",
+								"coin"},
+						request, response, onlineClient);
+				return;
+			}
+			else if(dcMatch(dc,AccessPermission.EMIT_SAMPLE)){
+				emitSample(
+						new AccessPermission[]{ADMIN,BASIC,EMIT_SAMPLE},
+						new String[]{
+								"client",
+								"list",
+								"shopman",
+								"agent",
+								"destiny",
+								"clientReference",
+								"cfdiUse",
+								"documentType",
+								"paymentMethod",
+								"paymentWay",
+								"printCopies",
+								"coin"},
+						request, response, onlineClient);
+				return;
+			}
+			else if(dcMatch(dc,Commands.FIX_DB)){
+				fixDB(
+						new AccessPermission[]{ADMIN},
+						new String[]{"fixNumber"},
+						request, response, onlineClient);
 				return;
 			}
 			else{
@@ -349,9 +431,17 @@ public class DBPort extends HttpServlet{
 		
 	
 	private boolean requestHasParameter(HttpServletRequest request,String parameter){
+		Log log = new Log();
+		log.entry("Looking for required parameter",parameter);
 		String arg=request.getParameter(parameter);
-		if(arg!=null)return true;
-		return false;
+		if(arg!=null){
+			log.info("parameter found");
+			return true;
+		}
+		else {
+			log.info("parameter not found");
+			return false;
+		}
 	}
 	private void incrementAgentEarning(HttpServletRequest request, HttpServletResponse response,OnlineClient onlineClient){
 		try{
@@ -772,6 +862,860 @@ public class DBPort extends HttpServlet{
 		
 	}
 	
+	private void fixDB(
+			AccessPermission[] permissions,
+			String[] parameters,
+			HttpServletRequest request,
+			HttpServletResponse response,
+			OnlineClient onlineClient){
+		doCommand(permissions,parameters,request,response, onlineClient, new Command(){
+			@Override
+			public void execute(Map<String,String> parametersMap,
+					HttpServletResponse response, OnlineClient onlineClient) {
+				int fixNumber = new Integer(parametersMap.get("fixNumber"));
+				
+				String result = FixDB.fix(fixNumber);
+				String resp="{\"result\": "+result+"}";
+				try {
+					response.getWriter().print(resp);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				return;
+			}
+		});
+		
+	}
+
+	private void emitInvoice(
+			AccessPermission[] permissions,
+			String[] parameters,
+			HttpServletRequest request,
+			HttpServletResponse response,
+			OnlineClient onlineClient){
+		doCommand(permissions,parameters,request,response, onlineClient, new Command(){
+			@Override
+			public void execute(Map<String,String> parametersMap,
+					HttpServletResponse response, OnlineClient onlineClient) {
+				Log log = new Log();
+				Gson gson = new Gson();
+				Mongoi mongo = new Mongoi();
+				JSONObject jClient = null;
+				JSONObject jAgent = null;
+				Client client = null;
+				Client agent = null;
+				try {
+					jClient = new JSONObject(parametersMap.get("client"));
+					jAgent = new JSONObject(parametersMap.get("agent"));
+					client = ClientFactory.create(jClient);
+					agent = ClientFactory.create(jAgent);
+				} catch (JSONException e1) {
+					log.trace(e1);
+				}
+				JSONArray jList = null;
+				try {
+					jList = new JSONArray(parametersMap.get("list"));
+				} catch (JSONException e) {
+					log.trace(e);
+				} 
+				List<InvoiceItem> list = new LinkedList<InvoiceItem>();
+				for (int i = jList.length() - 1; i >= 0; i--) {
+					InvoiceItem item = null;
+					try {
+						log.object("parsing item",jList.getJSONObject(i).toString());
+						item = gson.fromJson(jList.getJSONObject(i).toString(), InvoiceItem.class);
+					} catch (JsonSyntaxException | JSONException e) {
+						log.trace(e);
+					}
+					list.add(item);
+				}
+				Shopman shopman = OnlineClients.instance().get(new Integer(parametersMap.get("clientReference"))).getShopman();
+				
+				Destiny destiny = gson.fromJson(parametersMap.get("destiny"), Destiny.class);
+				String clientReference = parametersMap.get("clientReference");
+				String cfdiUse = parametersMap.get("cfdiUse");
+				String paymentMethod = parametersMap.get("paymentMethod");
+				String paymentWay = parametersMap.get("paymentWay");
+				String documentType = parametersMap.get("documentType");
+				int printCopies = -1;
+				if(!(parametersMap.get("printCopies")==null||parametersMap.get("printCopies").equals(""))){
+					printCopies = new Integer(parametersMap.get("printCopies"));
+				}
+				String coin = parametersMap.get("coin");
+				String series = GSettings.get("INVOICE_SERIAL");
+				if(cfdiUse!=null&&!cfdiUse.equals("")){
+					mongo.doUpdate(Mongoi.CLIENTS, "{ \"code\" : \""+client.getCode()+"\"}", "{\"cfdiUse\" : \""+cfdiUse+"\" }"+"}");
+					client.setCfdiUse(cfdiUse);
+				}
+				else {
+					try {
+						response.sendError(response.SC_NOT_ACCEPTABLE, "uso cfdi no definido");
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					return;
+				}
+				int count=mongo.doIncrement(Mongoi.REFERENCE, "{ \"reference\" : \"unique\" }", "count");
+				String reference = count+"";
+				Invoice invoice = new InvoiceFM01(
+						client, shopman, list, reference, series, destiny,
+						agent, paymentMethod, paymentWay, documentType, coin);
+				invoice.persist();
+				ElectronicInvoice electronicInvoice=new Profact(invoice);
+				boolean production=!new Boolean(GSettings.get("TEST"));
+				PACResponse pacResponse=electronicInvoice.submit(production);
+				
+				if (pacResponse.isSuccess()) {
+					String xml = pacResponse.getContent();
+					String xmlEscaped=StringEscapeUtils.escapeXml(xml);
+					
+					String pathToWrite = GSettings.getPathToDirectory(GSettings.get("INVOICES_FOLDER")+"-"+Utils.getDateString("yyyy-MM"));
+					String pdf = pathToWrite + reference + ".pdf";
+					
+					log.object("xmlEscaped is : ",xmlEscaped);
+					//String reference=invoice.getReference();
+					ElectronicInvoiceFactory.saveCFDI(xml, reference, pathToWrite);
+					ElectronicInvoiceFactory.genQRCode(reference, pathToWrite);
+					ElectronicInvoiceFactory.genHTML(reference, pathToWrite);
+					ElectronicInvoiceFactory.genPDF(reference, pathToWrite);
+					
+					org.jsoup.nodes.Document document=null;
+					document = Jsoup.parse(xml);
+					
+					String total=document.select("cfdi|Comprobante").get(0).attr("Total");
+					String subTotal=document.select("cfdi|Comprobante").get(0).attr("SubTotal");
+					String taxes=document.select("cfdi|Comprobante > cfdi|Impuestos").get(0).attr("TotalImpuestosTrasladados");
+					
+					mongo.doUpdate(Mongoi.INVOICES,
+							"{ \"reference\" : \"" + reference + "\" }",
+							"{ \"electronicVersion\" : {\"xml\" : \"" + xmlEscaped + "\"} }");
+					mongo.doUpdate(Mongoi.INVOICES,
+							"{ \"reference\" : \"" + reference + "\" }",
+							"{ \"hasElectronicVersion\" : true }");
+					
+					String csv = pathToWrite + invoice.getReference() +".csv";
+					FileWriter fstream;
+					try {
+						fstream = new FileWriter(csv);
+					
+						BufferedWriter out = new BufferedWriter(fstream);
+						// out.write(invoice.getConsummer() + "\n" +
+						// invoice.getAddress() + "\n" + invoice.getCity() + "\n"
+						// + invoice.getCp() + "\n" + invoice.getRfc() + "\n");
+						
+						Elements elements = document.select("cfdi|Comprobante > cfdi|Conceptos > cfdi|Concepto");
+						for(int i = 0 ; i < elements.size(); i ++){
+							Element element = elements.get(i);
+							String prodservCode = element.attr("ClaveProdServ");
+							String quantity = element.attr("Cantidad");
+							String unitCode = element.attr("ClaveUnidad");
+							String unit = element.attr("Unidad");
+							String description = element.attr("Descripcion");
+							String unitPrice = element.attr("ValorUnitario");
+							String itotal = element.attr("Importe");
+							out.write(
+									quantity + "\t" +
+											prodservCode + "\t" +
+											unitCode + "\t" +
+											unit + "\t" +
+											description + "\t" +
+											unitPrice + "\t" +
+											itotal + "\n"
+									);
+							
+						}
+						/*List<InvoiceItem> items2 = invoice.getItems();
+						for (InvoiceItem item : items2) {
+							out.write(item.getQuantity() + "\t" + item.getCode() + "\t" + item.getUnit() + "\t"
+									+ item.getDescription() + "\t" + item.getMark() + "\t" + item.getUnitPrice() + "\n");
+						}*/
+						out.write("subtotal\t" + subTotal);
+						out.write("\niva\t" + taxes);
+						out.write("\ntotal\t" + total);
+						// Close the output stream
+						out.close();
+						Process p = Runtime.getRuntime().exec(new String[]{"bash","-c","chmod 444 "+csv});
+					} catch (IOException e1) {
+						log.trace(e1);
+					}
+					
+					
+					if (printCopies == -1) {
+						new PrinterFM01(new File(pdf), GSettings.get("PRINTER_TWO")).print(new Integer(GSettings.get("PRINTER_TWO_COPIES")));
+					}
+					else if(printCopies > 0){
+						new PrinterFM01(new File(pdf), GSettings.get("PRINTER_TWO")).print(printCopies);
+					}
+					
+					
+					
+					// TODO has parse de mails please
+					String[] recipients={};//new String[]{};
+					
+					if (!invoice.getClient().getEmail().equals("")) {
+						recipients=(String[])ArrayUtils.addAll(recipients, invoice.getClient().getEmail().split(" "));
+					}
+					if (!invoice.getAgent().getEmail().equals("")) {
+						recipients=(String[])ArrayUtils.addAll(recipients, invoice.getAgent().getEmail().split(" "));
+					}
+					if (recipients.length>0) {
+						new Hotmail().send(
+								"factura "+ GSettings.get("INVOICE_SERIAL") + " " + reference
+										+ " $" + total,
+								GSettings.get("EMAIL_BODY"), recipients,
+								new String[] { 
+										pathToWrite + reference + ".csv",
+										pathToWrite + reference + ".xml",
+										pathToWrite + reference + ".pdf" },
+								new String[] {
+										reference + ".csv",
+										reference + ".xml",
+										reference + ".pdf" });
+					}
+					/*if (!invoice.getAgent().getEmail().equals("")) {
+						new Hotmail().send(
+								"factura (" +invoice.getDocumentType()+") "+ GSettings.get("INVOICE_SERIAL") + " " + reference
+								+ " $" + total,
+										GSettings.get("EMAIL_BODY"), invoice.getAgent().getEmail().split(" "),
+								new String[] { GSettings.getPathTo("TMP_FOLDER") + reference + ".xml",
+										GSettings.getPathTo("TMP_FOLDER") + reference + ".pdf" },
+								new String[] { reference + ".xml",
+										reference + ".pdf" });
+					}*/
+					// TODO print this electronic representation to
+					// lazer or whatever
+					
+					/*TheBox.instance().plus(invoice.getTotal());
+					TheBox.instance()
+							.addLog(new TheBoxLog(invoice.getTotal(), paymentLog.getDate(),
+									invoice.getReference(), LogKind.PAYMENT.toString(),
+									onlineClient.getShopman().getLogin()));*/
+					List<InvoiceItem> invoiceItems = invoice.getItems();
+					for (int i = 0; i < invoiceItems.size(); i++) {
+						InvoiceItem item = invoiceItems.get(i);
+						if (Inventory.exists(item) && !item.isDisabled())
+							Inventory.decrementStored(item);
+					}
+					try {
+						DBObject dbObject = mongo.doFindOne(Mongoi.INVOICES, "{ \"reference\" : \"" + invoice.getReference() + "\"}");
+						String resp = "{ \"invoice\" : " + dbObject.toString()
+						+ ", \"successResponse\" : \"facturado "+reference+" por "+total+"\"}";
+						log.exit("response",resp);
+						response.getWriter().print(resp);
+					} catch (IOException e) {
+						log.trace("", e);
+					}
+					return;
+				} else {
+					// TODO has que esta piñates te diga el mensage
+					String serverMessage = "ERROR - El servidor de facturacion dijo: codigo "
+							+ pacResponse.getResponseCode() + " - mensaje "
+							+ pacResponse.getMessage();
+					System.out.println(serverMessage);
+					try {
+						response.sendError(response.SC_SERVICE_UNAVAILABLE, serverMessage);
+					} catch (IOException e) {
+						log.trace("", e);
+					}
+					try {
+						response.getWriter().print("{\"failed\":\"true\", \"message\": \"" + serverMessage + "\"}");
+					} catch (IOException e) {
+						log.trace("", e);
+					}
+					/*InvoiceLog cancelLog = new InvoiceLog(LogKind.CANCEL, true,
+							onlineClient.getShopman().getLogin());
+					mongo.doPush(Mongoi.INVOICES,
+							"{ \"reference\" : \"" + invoice.getReference() + "\"}",
+							"{\"logs\" : " + new Gson().toJson(cancelLog) + " }");
+					*/
+					
+					return;
+				}
+			}
+		});
+		
+	}
+	
+
+	private void emitOrder(
+			AccessPermission[] permissions,
+			String[] parameters,
+			HttpServletRequest request,
+			HttpServletResponse response,
+			OnlineClient onlineClient){
+		doCommand(permissions,parameters,request,response, onlineClient, new Command(){
+			@Override
+			public void execute(Map<String,String> parametersMap,
+					HttpServletResponse response, OnlineClient onlineClient) {
+				Log log = new Log();
+				Gson gson = new Gson();
+				Mongoi mongo = new Mongoi();
+				JSONObject jClient = null;
+				JSONObject jAgent = null;
+				Client client = null;
+				Client agent = null;
+				try {
+					jClient = new JSONObject(parametersMap.get("client"));
+					jAgent = new JSONObject(parametersMap.get("agent"));
+					client = ClientFactory.create(jClient);
+					agent = ClientFactory.create(jAgent);
+				} catch (JSONException e1) {
+					log.trace(e1);
+				}
+				JSONArray jList = null;
+				try {
+					jList = new JSONArray(parametersMap.get("list"));
+				} catch (JSONException e) {
+					log.trace(e);
+				} 
+				List<InvoiceItem> list = new LinkedList<InvoiceItem>();
+				for (int i = jList.length() - 1; i >= 0; i--) {
+					InvoiceItem item = null;
+					try {
+						log.object("parsing item",jList.getJSONObject(i).toString());
+						item = gson.fromJson(jList.getJSONObject(i).toString(), InvoiceItem.class);
+					} catch (JsonSyntaxException | JSONException e) {
+						log.trace(e);
+					}
+					list.add(item);
+				}
+				Shopman shopman = OnlineClients.instance().get(new Integer(parametersMap.get("clientReference"))).getShopman();
+				
+				Destiny destiny = gson.fromJson(parametersMap.get("destiny"), Destiny.class);
+				String clientReference = parametersMap.get("clientReference");
+				String cfdiUse = parametersMap.get("cfdiUse");
+				String paymentMethod = parametersMap.get("paymentMethod");
+				String paymentWay = parametersMap.get("paymentWay");
+				String documentType = parametersMap.get("documentType");
+				int printCopies = -1;
+				if(!(parametersMap.get("printCopies")==null||parametersMap.get("printCopies").equals(""))){
+					printCopies = new Integer(parametersMap.get("printCopies"));
+				}
+				String coin = parametersMap.get("coin");
+				String series = GSettings.get("INVOICE_SERIAL");
+				if(cfdiUse!=null&&!cfdiUse.equals("")){
+					mongo.doUpdate(Mongoi.CLIENTS, "{ \"code\" : \""+client.getCode()+"\"}", "{\"cfdiUse\" : \""+cfdiUse+"\" }"+"}");
+					client.setCfdiUse(cfdiUse);
+				}
+				else {
+					try {
+						response.sendError(response.SC_NOT_ACCEPTABLE, "uso cfdi no definido");
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					return;
+				}
+				int count=mongo.doIncrement(Mongoi.REFERENCE, "{ \"reference\" : \"unique\" }", "count");
+				String reference = count+"";
+				Invoice invoice = new InvoiceFM01(
+						client, shopman, list, reference, series, destiny,
+						agent, paymentMethod, paymentWay, documentType, coin);
+				invoice.persist();
+				Invoice[] invoices = invoice.subdivide(InvoiceFormFM01.ROWS_NUMBER);
+				
+				String[] paths = new String[invoices.length + 1];
+				String[] fileNames = new String[invoices.length + 1];
+				String pathToWrite = GSettings.getPathToDirectory(GSettings.get("ORDERS_FOLDER")+"-"+Utils.getDateString("yyyy-MM"));
+				
+				String xml=Utils.GEN_CFD_STRING(invoice);
+				String 	id=invoice.getReference(),
+						xsltPath=GSettings.getPathTo("XSLT_ORDER"),
+						xmlPath=pathToWrite+id+".xml",
+						htmlPath=pathToWrite+id+".html",
+						pdfPath=pathToWrite+id+".pdf",
+						additionalData=GSettings.get("INVOICE_SENDER_ADDITIONAL_DATA");
+				Utils.saveStringToFile(xml, xmlPath);						
+				Utils.XML_TO_HTML(xmlPath, xsltPath, htmlPath, additionalData);
+				Utils.HTML_TO_PDF(htmlPath, pdfPath, "Pedido "+id+" - pagina [page]/[topage]", "");
+				
+				
+				String csv = pathToWrite + invoice.getReference() +".csv";
+				org.jsoup.nodes.Document document=null;
+				document = Jsoup.parse(xml);
+				String total=document.select("cfdi|Comprobante").get(0).attr("Total");
+				String subTotal=document.select("cfdi|Comprobante").get(0).attr("SubTotal");
+				String taxes=document.select("cfdi|Comprobante > cfdi|Impuestos").get(0).attr("TotalImpuestosTrasladados");
+
+
+				FileWriter fstream;
+				try {
+					fstream = new FileWriter(csv);
+				
+					BufferedWriter out = new BufferedWriter(fstream);
+					// out.write(invoice.getConsummer() + "\n" +
+					// invoice.getAddress() + "\n" + invoice.getCity() + "\n"
+					// + invoice.getCp() + "\n" + invoice.getRfc() + "\n");
+					
+					Elements elements = document.select("cfdi|Comprobante > cfdi|Conceptos > cfdi|Concepto");
+					for(int i = 0 ; i < elements.size(); i ++){
+						Element element = elements.get(i);
+						String prodservCode = element.attr("ClaveProdServ");
+						String quantity = element.attr("Cantidad");
+						String unitCode = element.attr("ClaveUnidad");
+						String unit = element.attr("Unidad");
+						String description = element.attr("Descripcion");
+						String unitPrice = element.attr("ValorUnitario");
+						String itotal = element.attr("Importe");
+						out.write(
+								quantity + "\t" +
+										prodservCode + "\t" +
+										unitCode + "\t" +
+										unit + "\t" +
+										description + "\t" +
+										unitPrice + "\t" +
+										itotal + "\n"
+								);
+						
+					}
+					/*List<InvoiceItem> items2 = invoice.getItems();
+					for (InvoiceItem item : items2) {
+						out.write(item.getQuantity() + "\t" + item.getCode() + "\t" + item.getUnit() + "\t"
+								+ item.getDescription() + "\t" + item.getMark() + "\t" + item.getUnitPrice() + "\n");
+					}*/
+					out.write("subtotal\t" + subTotal);
+					out.write("\niva\t" + taxes);
+					out.write("\ntotal\t" + total);
+					// Close the output stream
+					out.close();
+					Process p = Runtime.getRuntime().exec(new String[]{"bash","-c","chmod 444 "+csv});
+				} catch (IOException e1) {
+					log.trace(e1);
+				}
+				
+				
+				for (int i = 0; i < invoices.length; i++) {
+					String pathname = pathToWrite + invoices[i].getReference() + "-" + i+".pdf";
+					
+					File pdf = new PDF(invoices[i], pathname).make();
+					try {
+						Process p = Runtime.getRuntime().exec(new String[]{"bash","-c","chmod 444 "+pathname});
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					// System.out.println("invoices["+i+"]:
+					// "+invoices[i].toJson());
+					// TODO this is printing time
+					if (printCopies == -1) {
+						new PrinterFM01(pdf, GSettings.get("PRINTER_ONE")).print(new Integer(GSettings.get("PRINTER_ONE_COPIES")));
+					}
+					else if(printCopies > 0){
+						new PrinterFM01(pdf, GSettings.get("PRINTER_ONE")).print(printCopies);
+					}
+					
+					//new PrinterFM01(pdf, GSettings.get("PRINTER_ONE")).print(new Integer(GSettings.get("PRINTER_ONE_COPIES")));
+					paths[i] = pathname;
+					fileNames[i] = pdf.getName();
+					// emis.persist(invoices[i]);
+				}
+				
+				String[] recipients={};//new String[]{};
+				
+				if (!invoice.getClient().getEmail().equals("")) {
+					recipients=(String[])ArrayUtils.addAll(recipients, invoice.getClient().getEmail().split(" "));
+				}
+				if (!invoice.getAgent().getEmail().equals("")) {
+					recipients=(String[])ArrayUtils.addAll(recipients, invoice.getAgent().getEmail().split(" "));
+				}
+				if (recipients.length>0) {
+					new Hotmail().send(
+							"Pedido "+ reference
+									+ " $" + invoice.getTotal(),
+							GSettings.get("EMAIL_BODY"), recipients,
+							new String[] { pathToWrite + reference + ".csv",
+									pathToWrite + reference + ".pdf" },
+							new String[] { reference + ".csv",
+									reference + ".pdf" });
+				}
+				
+				List<InvoiceItem> invoiceItems = invoice.getItems();
+				for (int i = 0; i < invoiceItems.size(); i++) {
+					InvoiceItem item = invoiceItems.get(i);
+					if (Inventory.exists(item) && !item.isDisabled())
+						Inventory.decrementStored(item);
+				}
+				try {
+					DBObject dbObject = mongo.doFindOne(Mongoi.INVOICES, "{ \"reference\" : \"" + invoice.getReference() + "\"}");
+					String resp = "{ \"invoice\" : " + dbObject.toString()
+					+ ", \"successResponse\" : \"pedido "+id+" por "+total+"\"}";
+					log.exit("response",resp);
+					response.getWriter().print(resp);
+				} catch (IOException e) {
+					log.trace("", e);
+				}
+				return;
+				
+				/*
+				ElectronicInvoice electronicInvoice=new Profact(invoice);
+				boolean production=!new Boolean(GSettings.get("TEST"));
+				PACResponse pacResponse=electronicInvoice.submit(production);
+				
+				if (pacResponse.isSuccess()) {
+					String xml = pacResponse.getContent();
+					String xmlEscaped=StringEscapeUtils.escapeXml(xml);
+					
+					String pathToWrite = GSettings.getPathToDirectory(GSettings.get("INVOICES_FOLDER")+"-"+Utils.getDateString("yyyy-MM"));
+					String pdf = pathToWrite + reference + ".pdf";
+					
+					log.object("xmlEscaped is : ",xmlEscaped);
+					//String reference=invoice.getReference();
+					ElectronicInvoiceFactory.saveCFDI(xml, reference, pathToWrite);
+					ElectronicInvoiceFactory.genQRCode(reference, pathToWrite);
+					ElectronicInvoiceFactory.genHTML(reference, pathToWrite);
+					ElectronicInvoiceFactory.genPDF(reference, pathToWrite);
+					
+					org.jsoup.nodes.Document document=null;
+					document = Jsoup.parse(xml);
+					
+					String total=document.select("cfdi|Comprobante").get(0).attr("Total");
+					String subTotal=document.select("cfdi|Comprobante").get(0).attr("SubTotal");
+					String taxes=document.select("cfdi|Comprobante > cfdi|Impuestos").get(0).attr("TotalImpuestosTrasladados");
+					
+					mongo.doUpdate(Mongoi.INVOICES,
+							"{ \"reference\" : \"" + reference + "\" }",
+							"{ \"electronicVersion\" : {\"xml\" : \"" + xmlEscaped + "\"} }");
+					mongo.doUpdate(Mongoi.INVOICES,
+							"{ \"reference\" : \"" + reference + "\" }",
+							"{ \"hasElectronicVersion\" : true }");
+					if (printCopies == -1) {
+						new PrinterFM01(new File(pdf), GSettings.get("PRINTER_TWO")).print(new Integer(GSettings.get("PRINTER_TWO_COPIES")));
+					}
+					else if(printCopies > 0){
+						new PrinterFM01(new File(pdf), GSettings.get("PRINTER_TWO")).print(printCopies);
+					}
+					// TODO has parse de mails please
+					String[] recipients={};//new String[]{};
+					
+					if (!invoice.getClient().getEmail().equals("")) {
+						recipients=(String[])ArrayUtils.addAll(recipients, invoice.getClient().getEmail().split(" "));
+					}
+					if (!invoice.getAgent().getEmail().equals("")) {
+						recipients=(String[])ArrayUtils.addAll(recipients, invoice.getAgent().getEmail().split(" "));
+					}
+					if (recipients.length>0) {
+						new Hotmail().send(
+								"factura (" +invoice.getDocumentType()+") "+ GSettings.get("INVOICE_SERIAL") + " " + reference
+										+ " $" + total,
+								GSettings.get("EMAIL_BODY"), recipients,
+								new String[] { pathToWrite + reference + ".xml",
+										pathToWrite + reference + ".pdf" },
+								new String[] { reference + ".xml",
+										reference + ".pdf" });
+					}
+
+					List<InvoiceItem> invoiceItems = invoice.getItems();
+					for (int i = 0; i < invoiceItems.size(); i++) {
+						InvoiceItem item = invoiceItems.get(i);
+						if (Inventory.exists(item) && !item.isDisabled())
+							Inventory.decrementStored(item);
+					}
+					try {
+						DBObject dbObject = mongo.doFindOne(Mongoi.INVOICES, "{ \"reference\" : \"" + invoice.getReference() + "\"}");
+						String resp = "{ \"invoice\" : " + dbObject.toString()
+						+ ", \"successResponse\" : \"facturado\"}";
+						log.exit("response",resp);
+						response.getWriter().print(resp);
+					} catch (IOException e) {
+						log.trace("", e);
+					}
+					return;
+				} else {
+					// TODO has que esta piñates te diga el mensage
+					String serverMessage = "ERROR - El servidor de facturacion dijo: codigo "
+							+ pacResponse.getResponseCode() + " - mensaje "
+							+ pacResponse.getMessage();
+					System.out.println(serverMessage);
+					try {
+						response.sendError(response.SC_SERVICE_UNAVAILABLE, serverMessage);
+					} catch (IOException e) {
+						log.trace("", e);
+					}
+					try {
+						response.getWriter().print("{\"failed\":\"true\", \"message\": \"" + serverMessage + "\"}");
+					} catch (IOException e) {
+						log.trace("", e);
+					}
+			
+					
+					return;
+				}*/
+			}
+		});
+		
+	}
+	
+
+	private void emitSample(
+			AccessPermission[] permissions,
+			String[] parameters,
+			HttpServletRequest request,
+			HttpServletResponse response,
+			OnlineClient onlineClient){
+		doCommand(permissions,parameters,request,response, onlineClient, new Command(){
+			@Override
+			public void execute(Map<String,String> parametersMap,
+					HttpServletResponse response, OnlineClient onlineClient) {
+				Log log = new Log();
+				Gson gson = new Gson();
+				Mongoi mongo = new Mongoi();
+				JSONObject jClient = null;
+				JSONObject jAgent = null;
+				Client client = null;
+				Client agent = null;
+				try {
+					jClient = new JSONObject(parametersMap.get("client"));
+					jAgent = new JSONObject(parametersMap.get("agent"));
+					client = ClientFactory.create(jClient);
+					agent = ClientFactory.create(jAgent);
+				} catch (JSONException e1) {
+					log.trace(e1);
+				}
+				JSONArray jList = null;
+				try {
+					jList = new JSONArray(parametersMap.get("list"));
+				} catch (JSONException e) {
+					log.trace(e);
+				} 
+				List<InvoiceItem> list = new LinkedList<InvoiceItem>();
+				for (int i = jList.length() - 1; i >= 0; i--) {
+					InvoiceItem item = null;
+					try {
+						log.object("parsing item",jList.getJSONObject(i).toString());
+						item = gson.fromJson(jList.getJSONObject(i).toString(), InvoiceItem.class);
+					} catch (JsonSyntaxException | JSONException e) {
+						log.trace(e);
+					}
+					list.add(item);
+				}
+				Shopman shopman = OnlineClients.instance().get(new Integer(parametersMap.get("clientReference"))).getShopman();
+				
+				Destiny destiny = gson.fromJson(parametersMap.get("destiny"), Destiny.class);
+				String clientReference = parametersMap.get("clientReference");
+				String cfdiUse = parametersMap.get("cfdiUse");
+				String paymentMethod = parametersMap.get("paymentMethod");
+				String paymentWay = parametersMap.get("paymentWay");
+				String documentType = parametersMap.get("documentType");
+				int printCopies = -1;
+				if(!(parametersMap.get("printCopies")==null||parametersMap.get("printCopies").equals(""))){
+					printCopies = new Integer(parametersMap.get("printCopies"));
+				}
+				String coin = parametersMap.get("coin");
+				String series = GSettings.get("INVOICE_SERIAL");
+				if(cfdiUse!=null&&!cfdiUse.equals("")){
+					mongo.doUpdate(Mongoi.CLIENTS, "{ \"code\" : \""+client.getCode()+"\"}", "{\"cfdiUse\" : \""+cfdiUse+"\" }"+"}");
+					client.setCfdiUse(cfdiUse);
+				}
+				else {
+					try {
+						response.sendError(response.SC_NOT_ACCEPTABLE, "uso cfdi no definido");
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					return;
+				}
+				int count=mongo.doIncrement(Mongoi.REFERENCE, "{ \"reference\" : \"unique\" }", "count");
+				String reference = count+"";
+				Invoice invoice = new InvoiceFM01(
+						client, shopman, list, reference, series, destiny,
+						agent, paymentMethod, paymentWay, documentType, coin);
+				invoice.persist();
+				Invoice[] invoices = invoice.subdivide(InvoiceFormFM01.ROWS_NUMBER);
+				
+				//String[] paths = new String[invoices.length + 1];
+				//String[] fileNames = new String[invoices.length + 1];
+				String pathToWrite = GSettings.getPathToDirectory(GSettings.get("SAMPLES_FOLDER")+"-"+Utils.getDateString("yyyy-MM"));
+				
+				String xml=Utils.GEN_CFD_STRING(invoice);
+				String 	id=invoice.getReference(),
+						xsltPath=GSettings.getPathTo("XSLT_SAMPLE"),
+						xmlPath=pathToWrite+id+".xml",
+						htmlPath=pathToWrite+id+".html",
+						pdfPath=pathToWrite+id+".pdf",
+						additionalData=GSettings.get("INVOICE_SENDER_ADDITIONAL_DATA");
+				Utils.saveStringToFile(xml, xmlPath);						
+				Utils.XML_TO_HTML(xmlPath, xsltPath, htmlPath, additionalData);
+				Utils.HTML_TO_PDF(htmlPath, pdfPath, "Cotizacion "+id+" - pagina [page]/[topage]", "");
+				
+				
+				String csv = pathToWrite + invoice.getReference() +".csv";
+				org.jsoup.nodes.Document document=null;
+				document = Jsoup.parse(xml);
+				String total=document.select("cfdi|Comprobante").get(0).attr("Total");
+				String subTotal=document.select("cfdi|Comprobante").get(0).attr("SubTotal");
+				String taxes=document.select("cfdi|Comprobante > cfdi|Impuestos").get(0).attr("TotalImpuestosTrasladados");
+				FileWriter fstream;
+				try {
+					fstream = new FileWriter(csv);
+				
+					BufferedWriter out = new BufferedWriter(fstream);
+					// out.write(invoice.getConsummer() + "\n" +
+					// invoice.getAddress() + "\n" + invoice.getCity() + "\n"
+					// + invoice.getCp() + "\n" + invoice.getRfc() + "\n");
+					
+					Elements elements = document.select("cfdi|Comprobante > cfdi|Conceptos > cfdi|Concepto");
+					for(int i = 0 ; i < elements.size(); i ++){
+						Element element = elements.get(i);
+						String prodservCode = element.attr("ClaveProdServ");
+						String quantity = element.attr("Cantidad");
+						String unitCode = element.attr("ClaveUnidad");
+						String unit = element.attr("Unidad");
+						String description = element.attr("Descripcion");
+						String unitPrice = element.attr("ValorUnitario");
+						String itotal = element.attr("Importe");
+						out.write(
+								quantity + "\t" +
+										prodservCode + "\t" +
+										unitCode + "\t" +
+										unit + "\t" +
+										description + "\t" +
+										unitPrice + "\t" +
+										itotal + "\n"
+								);
+						
+					}
+					/*List<InvoiceItem> items2 = invoice.getItems();
+					for (InvoiceItem item : items2) {
+						out.write(item.getQuantity() + "\t" + item.getCode() + "\t" + item.getUnit() + "\t"
+								+ item.getDescription() + "\t" + item.getMark() + "\t" + item.getUnitPrice() + "\n");
+					}*/
+					out.write("subtotal\t" + subTotal);
+					out.write("\niva\t" + taxes);
+					out.write("\ntotal\t" + total);
+					// Close the output stream
+					out.close();
+					Process p = Runtime.getRuntime().exec(new String[]{"bash","-c","chmod 444 "+csv});
+				} catch (IOException e1) {
+					log.trace(e1);
+				}
+				
+				
+				/*for (int i = 0; i < invoices.length; i++) {
+					String pathname = pathToWrite + invoices[i].getReference() + "-" + i+".pdf";
+					
+					File pdf = new PDF(invoices[i], pathname).make();
+					// System.out.println("invoices["+i+"]:
+					// "+invoices[i].toJson());
+					// TODO this is printing time
+					if (printCopies == -1) {
+						new PrinterFM01(pdf, GSettings.get("PRINTER_TWO")).print(new Integer(GSettings.get("PRINTER_TWO_COPIES")));
+					}
+					else if(printCopies > 0){
+						new PrinterFM01(pdf, GSettings.get("PRINTER_TWO")).print(printCopies);
+					}
+					
+					//new PrinterFM01(pdf, GSettings.get("PRINTER_ONE")).print(new Integer(GSettings.get("PRINTER_ONE_COPIES")));
+					paths[i] = pathname;
+					fileNames[i] = pdf.getName();
+					// emis.persist(invoices[i]);
+				}*/
+				String pdf = pathToWrite + reference + ".pdf";
+				if (printCopies == -1) {
+					new PrinterFM01(new File(pdf), GSettings.get("PRINTER_TWO")).print(new Integer(GSettings.get("PRINTER_TWO_COPIES")));
+				}
+				else if(printCopies > 0){
+					new PrinterFM01(new File(pdf), GSettings.get("PRINTER_TWO")).print(printCopies);
+				}
+				String[] recipients={};//new String[]{};
+				
+				if (!invoice.getClient().getEmail().equals("")) {
+					recipients=(String[])ArrayUtils.addAll(recipients, invoice.getClient().getEmail().split(" "));
+				}
+				if (!invoice.getAgent().getEmail().equals("")) {
+					recipients=(String[])ArrayUtils.addAll(recipients, invoice.getAgent().getEmail().split(" "));
+				}
+				if (recipients.length>0) {
+					new Hotmail().send(
+							"Cotizacion "+ reference
+									+ " $" + invoice.getTotal(),
+							GSettings.get("EMAIL_BODY"), recipients,
+							new String[] { pathToWrite + reference + ".csv",
+									pathToWrite + reference + ".pdf" },
+							new String[] { reference + ".csv",
+									reference + ".pdf" });
+				}
+				
+				List<InvoiceItem> invoiceItems = invoice.getItems();
+				for (int i = 0; i < invoiceItems.size(); i++) {
+					InvoiceItem item = invoiceItems.get(i);
+					if (Inventory.exists(item) && !item.isDisabled())
+						Inventory.decrementStored(item);
+				}
+				try {
+					DBObject dbObject = mongo.doFindOne(Mongoi.INVOICES, "{ \"reference\" : \"" + invoice.getReference() + "\"}");
+					String resp = "{ \"invoice\" : " + dbObject.toString()
+					+ ", \"successResponse\" : \"cotizado "+id+" por "+total+"\"}";
+					log.exit("response",resp);
+					response.getWriter().print(resp);
+				} catch (IOException e) {
+					log.trace("", e);
+				}
+				return;
+			}
+		});
+		
+	}
+	
+	private void calculateRelativeDiscount(
+			AccessPermission[] permissions,
+			String[] parameters,
+			HttpServletRequest request,
+			HttpServletResponse response,
+			OnlineClient onlineClient){
+		doCommand(permissions,parameters,request,response, onlineClient, new Command(){
+			@Override
+			public void execute(Map<String,String> parametersMap,
+					HttpServletResponse response, OnlineClient onlineClient) {
+				JSONArray jList = null;
+				try {
+					jList = new JSONArray(URLDecoder.decode(parametersMap.get("list"),"utf-8"));
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+				List<InvoiceItem> items = new LinkedList<InvoiceItem>();
+				float D = (100 - new Float(parametersMap.get("absoluteDiscount")))/100;
+				float total = 0;
+				float gain = 0;
+				float init = 0;
+				Mongoi mongo = new Mongoi();
+				for (int i = 0; i < jList.length(); i++) {
+					InvoiceItem item = null;
+					try {
+						item = new Gson().fromJson(jList.getJSONObject(i).toString(), InvoiceItem.class);
+					} catch (JsonSyntaxException | JSONException e) {
+						e.printStackTrace();
+					}
+					DBObject dbo = mongo.doFindOne(Mongoi.PRODUCTS, "{\"code\" : \""+item.getCode()+"\"}");
+					if(dbo==null){
+						float t = item.getQuantity()*item.getUnitPrice();
+						total += t;
+						init += t;
+					}
+					else {
+						float q = item.getQuantity();
+						float j = new Float(dbo.get("unitPrice").toString());
+						float t = new Float(dbo.get("providerOffer").toString());
+						total += q * j;
+						init += q * t;
+						gain += q * (j - t);
+					}
+				}
+				float d = Util.round2((1 - (D * total - init) / gain) * 100);
+				String resp="{\"result\": "+d+"}";
+				try {
+					response.getWriter().print(resp);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				return;
+			}
+		});
+		
+	}
+
+	
 	private void searchProviders(
 			AccessPermission[] permissions,
 			String[] parameters,
@@ -888,6 +1832,9 @@ public class DBPort extends HttpServlet{
 			HttpServletResponse response,
 			OnlineClient onlineClient,
 			Command command){
+		Log log = new Log();
+		log.entry(parameters);
+		log.entry(request.getParameterMap());
 		try{
 			if(!onlineClient.isAuthenticated(request)){
 				response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
@@ -913,10 +1860,11 @@ public class DBPort extends HttpServlet{
 				}
 				else{
 					response.setStatus( HttpServletResponse.SC_UNAUTHORIZED);
-					response.getWriter().write(fromLang(onlineClient.getLocale(),"UNSPECIFIED_ARGUMENTS"));
+					response.getWriter().write(fromLang(onlineClient.getLocale(),"UNSPECIFIED_ARGUMENTS",parameters[i]));
 					return;
 				}
 			}
+			log.info("executing");
 			command.execute(parametersMap, response, onlineClient);
 			return;
 		}

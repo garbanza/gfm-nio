@@ -96,14 +96,14 @@ public class Product implements Serializable {
 	public static final float FACTOR_4=.945f;
 	
 	public Product(){}
-	public Product(JSONObject json) throws JSONException{
+	/*public Product(JSONObject json) throws JSONException{
 		this.code=json.getString("code");
 		this.unitPrice = (float)json.getDouble("unitprice");
 		this.unit =json.getString("unit");
 		this.mark=json.getString("mark");
 		this.description = json.getString("description");
 		this.providerPrice=(int)json.getDouble("providerPrice");
-	}
+	}*/
 	
 	public Product(
 			String code, float unitPrice, String unit,
@@ -120,8 +120,8 @@ public class Product implements Serializable {
 		this.incrementPercent=incrementPercent;
 		this.prodservCode=prodservCode;
 		this.unitCode=unitCode;
-		String hashStr=code+" "+unit+" "+mark+" "+description;
-		this.hash=MD5.get(hashStr);
+		//String hashStr=code+" "+unit+" "+mark+" "+description;
+		this.hash=code;//MD5.get(hashStr);
 	    stored=0;
 	    collecting=0;
 	    sending=0;
@@ -312,11 +312,11 @@ public class Product implements Serializable {
 	
 
 	public String getHash() {
-		if (hash==null){
+		/*if (hash==null){
 			String str=code+" "+unit+" "+mark+" "+description;
-			return MD5.get(str);
-		}
-		return hash;
+			return code;//MD5.get(str);
+		}*/
+		return code;
 	}
 	public void setHash(String hash) {
 		this.hash = hash;
@@ -375,9 +375,9 @@ public class Product implements Serializable {
 	}
 	
 	public static String dbObjectToHash(DBObject dbObject){
-		String pstr=dbObject.get("code")+" "+dbObject.get("unit")+" "+dbObject.get("mark")+" "+dbObject.get("description");
-		String hash=MD5.get(pstr);
-		return hash;
+		//String pstr=dbObject.get("code")+" "+dbObject.get("unit")+" "+dbObject.get("mark")+" "+dbObject.get("description");
+		//String hash=MD5.get(pstr);
+		return dbObject.get("code").toString();//hash;
 	}
 	public void setDisabled(boolean disabled) {
 		this.disabled=disabled;

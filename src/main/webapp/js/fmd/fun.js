@@ -1,4 +1,5 @@
 
+CLIENT_ID=function(){return "-|1803272109|sessionid:"+CLIENT_REFERENCE+"|-"};
 function Item(quantity,code,unit,mark,description,unitPrice,total){
 	this.quantity=quantity;
 	this.unit=unit;
@@ -58,7 +59,7 @@ Client_=function(code, consummer, consummerType,
 	this.reference = reference?reference:"";
 	this.aditionalReference = aditionalReference?aditionalReference:"";
 	this.cfdiUse = cfdiUse?cfdiUse:"";
-	$('#client').html(this.consummer+ " rfc:"+this.rfc+" "+this.country+" "+this.cfdiUse);
+	$('#client').html(this.consummer+ " rfc:"+this.rfc+" "+this.cfdiUse);
 	$('#client-address').html(this.consummer+" "+this.address+" "+this.interiorNumber+" "+this.exteriorNumber+" "+this.suburb);
 	$('#client-city').html(this.locality+" "+this.city);
 	$('#client-state').html(this.state);
@@ -244,18 +245,18 @@ invoiceInfoLog=function(invoice,node){
 	i.logs?"":i.logs=[];
 	for(var j=0;j<i.logs.length;j++){
 		log=i.logs[j];
-		console.log('log');
+		console.log('LOG');
 		console.log(log);
 		var thedate = new Date(log.date);
 		var mm = thedate.getMonth() + 1;
 	    var dd = thedate.getDate();
 	    var yyyy = thedate.getFullYear();
 	    var date = yyyy+'.'+mm + '.' + dd;
-		if(log.kind==="AGENT_PAYMENT"){
+		/*if(log.kind==="AGENT_PAYMENT"){
 			agentPayed=true;
 			theLogs+="LIQUIDO AGENTE "+log.login+" " +date+" | ";
-		}
-		else if(log.kind==="FACTURE"){
+		}*/
+		if(log.kind==="FACTURE"){
 			factured=true;
 			theLogs+="FACTURADO "+log.login+" " +date+" | ";
 		}
@@ -281,13 +282,14 @@ invoiceInfoLog=function(invoice,node){
 		}
 	}
 	theLogs+="-";
-	var pastDue=i.creationTime+i.printedTo.payment*1000*60*60*24;
+	/*var pastDue=i.creationTime+i.printedTo.payment*1000*60*60*24;
 	var pdd = new Date(pastDue);
     var mm = pdd.getMonth() + 1;
     var dd = pdd.getDate();
     var yyyy = pdd.getFullYear();
     var date = yyyy+'.'+mm + '.' + dd;
-	var pastDued=new Date().getTime()>=pastDue;
+    */
+	//var pastDued=new Date().getTime()>=pastDue;
 	
 	var result="TIPO : "+(i.invoiceType==0?'FACTURA':(i.invoiceType==1?'PEDIDO':'COTIZACION'))+" | "+
 		(canceled?"(CANCELADA)":"")+
@@ -295,12 +297,12 @@ invoiceInfoLog=function(invoice,node){
 		"referencia : "+i.reference+" | "+
 		"valor neto : "+i.totalValue+" | "+
 		"total : "+i.total+" | "+
-		"agente : "+i.agent.consummer+" | "+
-		"$agente : $"+i.agentPayment+""+(agentPayed?"(LIQUIDADO)":"(NO LIQUIDADO)")+" | "+
+		//"agente : "+i.agent.consummer+" | "+
+		//"$agente : $"+i.agentPayment+""+(agentPayed?"(LIQUIDADO)":"(NO LIQUIDADO)")+" | "+
 		"cliente : "+i.client.consummer+" | "+
 		"facturado? : "+(factured?"SI":"NO")+" | "+
-		"adeudo : $"+i.debt+" | "+
-		"vence : "+date+""+(pastDued?"(VENCIDO)":"")+" | "+
+		//"adeudo : $"+i.debt+" | "+
+		//"vence : "+date+""+(pastDued?"(VENCIDO)":"")+" | "+
 		"atendio : "+i.shopman.login+" | "+
 		theLogs;
 	
@@ -566,30 +568,33 @@ function lock(){
 
 };
 var RNDID=0;
-function dolog(quantity,unit,description,code,mark,unitPrice){
+function dolog(quantity,unit,description,code,mark,unitPrice,prodservCode,unitCode){
 	if(!quantity)quantity=1;
 	if(!unitPrice)unitPrice=0;
 	var rndID1="tableingdivRNDID"+String((new Date()).getTime()).replace(/\D/gi,'')+(RNDID++);
 	var rndID2="tableingdivRNDID"+String((new Date()).getTime()).replace(/\D/gi,'')+(RNDID++);
 	$("#log").sexytable({
 		row:[
-		     	{content: "<div class='control' id='"+
+		     	{content: "<div class='control1' id='"+
 		     		rndID1+"'> <img src='img/disable-red.png' height='12' width='12'/></div>",width:2},
 				{content: "<div class='quantity'>"+quantity+"</div>", width:5},
-				{content: "<div class='unit'>"+unit+"</div>", width:10},
-				{content: "<div class='description'>"+description+"</div>", width:40},
-				{content: "<div class='code'>"+code+"</div>", width:10},
-				{content: "<div class='mark'>"+mark+"</div>", width:10},
-				{content: "<div class='unitPrice'>"+unitPrice+"</div>", width:10},
-				{content: "<div class='total'>"+(quantity*unitPrice)+"</div>", width:10},
-				{content: "<div class='control'"+
+				{content: "<div class='unit'>"+unit+"</div>", width:8},
+				{content: "<div class='description'>"+description+"</div>", width:33},
+				{content: "<div class='code'>"+code+"</div>", width:8},
+				{content: "<div class='mark'>"+mark+"</div>", width:8},
+				{content: "<div class='unitPrice'>"+unitPrice+"</div>", width:8},
+				{content: "<div class='prodservCode'>"+prodservCode+"</div>", width:8},
+				{content: "<div class='unitCode'>"+unitCode+"</div>", width:8},
+				{content: "<div class='total'>"+(quantity*unitPrice)+"</div>", width:8},
+				{content: "<div class='itemNumber'></div>", width:2},
+				{content: "<div class='control2'"+
 					"id='"+rndID2+"'> <img src='img/delete.png' height='12' width='12'/></div>", width:2}
 				],
 		animate:0,
 		class_:"tableingrow"
 	});
 	var row=$('.tableingrow').get(0);
-	$('.quantity, .unitPrice, .description, .unit, .code, .mark',row)
+	$('.quantity, .unitPrice, .description, .unit, .code, .mark, .prodservCode, .unitCode',row)
 	.editable({closeOnEnter : true, event : 'click', callback : function() {onLogChange();}});
 	$("#"+rndID1).click(function(){
 		var index=$('.tableingrow').index(row);
@@ -615,7 +620,7 @@ function dolog(quantity,unit,description,code,mark,unitPrice){
 	$('.code',row).editable();
 	$('.mark',row).editable(); */
 	
-	$('*',row).bind("contextmenu",function(e) {
+	$(row).bind("contextmenu",function(e) {
     	e.preventDefault();
 	});
 	/*$(".unitPrice, .description, .unit, .code, .mark",row).bind('DOMSubtreeModified',function(e){
@@ -658,10 +663,17 @@ function onLogChange(){
 	var total=0;
 	$('.total').each(function(){
 		//$(this).html((q[i]*up[i]).toFixed(2));
-		$(this).html((q[i]*up[i]).toFixed(2));
-		total+=q[i]*up[i];
+		var thisTotal=parseFloat(((q[i]*up[i]/(1+TAXES_VALUE)).toFixed(2)*(1+TAXES_VALUE)).toFixed(2));
+		$(this).html(thisTotal);
+		total+=thisTotal;
 		i++;
 	});
+	i=0;
+	$('.itemNumber').each(function(){
+		$(this).html(i);
+		i++;
+	});
+	
 	$('.g-total').html("$ "+total.toFixed(2));
 	$(".tableingrow").unbind('mousedown').mousedown(function(e){
 		var index=$('.tableingrow').index(this);
@@ -686,13 +698,15 @@ function onLogChange(){
 	$(".tableingrow").unbind('DOMSubtreeModified').bind('DOMSubtreeModified',function(e){
 		//alert("clicked "+ event.target);
 		var index=$('.tableingrow').index(this);
-		if($('.unitPrice, .description, .unit, .code, .mark',this).is(e.target)){
+		if($('.unitPrice, .description, .unit, .code, .mark, .prodservCode, .unitCode',this).is(e.target)){
 			productsLog[index].id=-1;
 			productsLog[index].unitPrice=$($('.unitPrice',this).get(0)).html();
 			productsLog[index].description=$($('.description',this).get(0)).html();
 			productsLog[index].unit=$($('.unit',this).get(0)).html();
 			productsLog[index].code=$($('.code',this).get(0)).html().replace(".","")+".";
 			productsLog[index].mark=$($('.mark',this).get(0)).html();
+			productsLog[index].prodservCode=$($('.prodservCode',this).get(0)).html();
+			productsLog[index].unitCode=$($('.unitCode',this).get(0)).html();
 			productsLog[index].edited=true;
 			$('#log').sexytable({'editedRow':true,'index':this});
 			//onLogChange();
@@ -709,8 +723,19 @@ function onLogChange(){
 		//onLogChange();
 		
 	});
+	var i=0;
+	$(".tableingrow").each(function(){
+		$(this).removeClass("odd2 even2");
+		if(i%2==0)$(this).addClass("even2");
+		else $(this).addClass("odd1");
+		i++;
+	});
 	total=0;
-	for(var i=0;i<productsLog.length;i++)total+=productsLog[i].disabled?0:parseFloat(productsLog[i].quantity)*parseFloat(productsLog[i].unitPrice);
+	for(var i=0;i<productsLog.length;i++){
+		var thisTotal=parseFloat(((q[i]*up[i]/(1+TAXES_VALUE)).toFixed(2)*(1+TAXES_VALUE)).toFixed(2));
+		//total+=productsLog[i].disabled?0:parseFloat(productsLog[i].quantity)*parseFloat(productsLog[i].unitPrice);
+		total+=productsLog[i].disabled?0:thisTotal;
+	}
 	$('.g-total2').html("$ "+total.toFixed(2));
 	var length_=$(".tableingrow").length;
 	$('.g-area-to-print').html(length_+" -> "+Math.ceil(length_/17)+" hojas");
@@ -735,31 +760,49 @@ resetClient=function(){
 	productsLog=[];
 	agent = new setAgent_(AGENT);
 	client = new setClient_(CLIENT);
-	
+	$("#clientReference").html(CLIENT_ID());
 	//client=null;
 	$('#log').empty();
 	$("#log").sexytable({
-		row : [ {
+		row : [ 
+		       {
+		    	   	content : '',
+		    	   	width : 2
+		       },
+		   {
 			content : 'cant',
 			width : 5
 		}, {
 			content : 'unidad',
-			width : 10
+			width : 8
 		}, {
 			content : 'descripción',
-			width : 40
+			width : 33
 		}, {
 			content : 'codigo',
-			width : 10
+			width : 8
 		}, {
 			content : 'marca',
-			width : 10
+			width : 8
 		}, {
 			content : '$ unit',
-			width : 10
-		}, {
+			width : 8
+		},{
+			content : 'clave sat',
+			width : 8
+		},{
+			content : 'uni sat',
+			width : 8
+		},
+		{
 			content : "<div class='g-total'>total</div>",
-			width : 10
+			width : 8
+		},{
+			content : '#',
+			width : 2
+		},{
+			content : '',
+			width : 2
 		} ],
 		animate : 100
 	});
@@ -950,6 +993,7 @@ function typeOf(value) {
     return s;
 };
 
+
 function applyDiscount(){
 	if(''==$('#consummerDiscount').val())$('#consummerDiscount').val(0)
 	for(var j=0;j<productsLog.length;j++){
@@ -983,6 +1027,8 @@ function applyDiscount(){
 					$('.code').eq(j).html(data[0].code);
 					$('.mark').eq(j).html(data[0].mark);
 					$('.unitPrice').eq(j).html(data[0].unitPrice);
+					$('.prodservCode').eq(j).html(data[0].prodservCode);
+					$('.unitCode').eq(j).html(data[0].unitCode);
 					var quantity=productsLog[j].quantity;
 					if(productsLog[j].disabled){
 						productsLog[j]=data[0];

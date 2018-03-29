@@ -75,6 +75,8 @@ public class Mongoi {
 	
 	public static final String PROVIDERS="providers";
 	
+	public static final String DB_FIXES="dbFixes";
+	
 	public static final int STARTS=0;
 	public static final int CONTAINS=1;
 	public static final int MATCHES=2;
@@ -546,6 +548,10 @@ public class Mongoi {
 		DBCursor cursor=doFindLike(INVOICES, new String[]{"reference","client.consummer","agent.consummer","client.address","agent.address","client.rfc","agent.rfc","items.code","items.mark","items.description"}, strl,10).sort(new BasicDBObject("$natural",-1));
 		System.out.println(cursor.count()+" hallados");
 		return cursor;
+	}
+	
+	public DBObject doFindLast(String where){
+		return this.doFind(where).sort(new BasicDBObject("$natural",-1)).next();
 	}
 	
 	public List<DBObject> doFindAgentHistory(String code,int size, int page){

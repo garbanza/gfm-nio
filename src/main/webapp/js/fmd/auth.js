@@ -406,7 +406,7 @@ addConsummerIn=function(where){
 				if(where=='clients'){
 				client=new setClient_(data);
 				var code=data.code;
-				for(var j=0;j<productsLog.length;j++){
+				/*for(var j=0;j<productsLog.length;j++){
 					var jsonsrt="["+$.toJSON(productsLog[j])+"]";
 					$.ajax({
 						index : j,
@@ -448,7 +448,7 @@ addConsummerIn=function(where){
 							
 						}
 					});
-				}
+				}*/
 				}
 				//$('#editclient').dialog('close');
 				$add.remove();

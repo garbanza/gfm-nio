@@ -10,9 +10,12 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.jsoup.Jsoup;
+
 import com.ferremundo.InvoiceLog.LogKind;
 import com.ferremundo.db.Mongoi;
 import com.ferremundo.gth.SpanishInvoiceNumber;
+import com.ferremundo.stt.GSettings;
 import com.google.gson.Gson;
 import com.ibm.icu.text.DecimalFormat;
 
@@ -24,6 +27,8 @@ public class InvoiceFM01 implements Invoice{
     private Long id;
     
     private String reference;
+    
+    private String series;
     
     private int invoiceType=Invoice.INVOICE_TYPE_ORDER;
     
@@ -203,6 +208,108 @@ public class InvoiceFM01 implements Invoice{
 		System.out.println("creating invoice : SUCCES");
 	}
 	
+	public InvoiceFM01(Client client, Shopman shopman,
+			List<InvoiceItem> items, String reference, String series,
+			Destiny destiny, Client agent,
+			String paymentMethod, String paymentWay, String documentType,
+			String coin) {
+		/**TODO implement commented fields*/
+		System.out.println("start of InvoiceFM01");
+		Log log=new Log();
+		System.out.println("after log");
+		log.entry(shopman);
+		
+		System.out.println("creating invoice");
+		this.client = client;
+		//this.seller = seller;
+		this.shopman = shopman;
+		this.shopman.setPassword("");
+		this.items = items;
+		//this.metaData = metaData;
+		//this.requester = requester;
+		this.destiny = destiny;
+		this.agent=agent;
+		this.reference=reference;//metaData.getReference();
+		this.series = series;
+		//json=toJson();
+		//invoiceType=metaData.getInvoiceType();
+		this.paymentMethod=paymentMethod;
+		this.paymentWay=paymentWay;
+		this.documentType=documentType;
+		this.coin=coin;
+		//serial=metaData.getSerial();
+		
+		InvoiceLog created=new InvoiceLog(InvoiceLog.LogKind.CREATED,true,shopman.getLogin());
+		//InvoiceLog created=new InvoiceLog(InvoiceLog.LogKind.CREATED,true);
+		this.creationTime=(Long)created.getDate();
+		//metaData.setDate(creationTime+"");
+		
+		logs=new ArrayList<InvoiceLog>(Arrays.asList(
+				new InvoiceLog(InvoiceLog.LogKind.CREATED,true,shopman.getLogin())
+		));
+		//** TODO make this more efficient please, setting total, subtotal & taxex*/
+		Profact electronicInvoice=new Profact(this);
+		String xml=electronicInvoice.xml;
+		org.jsoup.nodes.Document document=null;
+		document = Jsoup.parse(xml);
+		String total=document.select("cfdi|Comprobante").get(0).attr("Total");
+		String subTotal=document.select("cfdi|Comprobante").get(0).attr("SubTotal");
+		String taxes=document.select("cfdi|Comprobante > cfdi|Impuestos").get(0).attr("TotalImpuestosTrasladados");
+		if(documentType.equals("I"))invoiceType=InvoiceFM01.INVOICE_TYPE_TAXES_APLY;
+		else if(documentType.equals("ORDER"))invoiceType=InvoiceFM01.INVOICE_TYPE_ORDER;
+		else if(documentType.equals("SAMPLE"))invoiceType=InvoiceFM01.INVOICE_TYPE_SAMPLE;
+		this.total=new Float(total);
+		this.subTotal=new Float(subTotal);
+		this.taxes=new Float(taxes);
+		
+		//System.out.println("LOGS:"+new Gson().toJson(logs));
+		//total=this.getTotal();
+		//System.out.println("TOTAL:"+total);
+		//subTotal=this.getSubtotal();
+		//System.out.println("SUBTOTAL:"+subTotal);
+		//taxes=this.getTaxes();
+		//System.out.println("TAXES:"+taxes);
+		/*float vipActive=0;
+		float taxInactive=0;
+		for(int i=0;i<items.size();i++){
+			float quantity=items.get(i).getQuantity();
+			Float unitPrice=items.get(i).getUnitPrice();
+			// If not edited
+			if(items.get(i).getId()!=-1){
+				// If not disabled.
+				if(!items.get(i).isDisabled()){
+					unitPrice=items.get(i).getUnitPrice(agent.getConsummerType());
+					vipActive+=unitPrice*quantity;
+				}
+				else{
+					taxInactive+=unitPrice*quantity*(1-1/TAXES_APPLY);
+				}
+			}
+			else{
+				// If not disabled.
+				if(!items.get(i).isDisabled()){
+					vipActive+=unitPrice*quantity;
+				}
+				else{
+					taxInactive+=unitPrice*quantity*(1-1/TAXES_APPLY);
+				}
+			}
+		}
+		totalValue=vipActive+taxInactive;//totalEnabled+(totalDisabled-totalDisabled/TAXES_APPLY);
+		agentPayment=total-totalValue;//(totalEnabled-vipEnabled)/TAXES_APPLY+(total-totalValue);
+		
+		System.out.println("AGENTPAYMENT:"+agentPayment+
+				"\n TOTALVALUE="+totalValue);
+
+		if(payment==0)debt=total;
+		else if(payment>=total)debt=0;
+		else {
+			debt=total-payment;
+		}
+		
+		System.out.println("creating invoice : SUCCES");*/
+	}
+	
 	public long getCreationTime() {
 		return creationTime;
 	}
@@ -297,8 +404,7 @@ public class InvoiceFM01 implements Invoice{
 		return items;
 	}
 
-	@Override
-	public Invoice[] subdivide(int size) {
+	public Invoice[] subdivideDeprecated(int size) {
 		int S=items.size();
 		int s=size;
 		int[][] indexes=getIndexes(S, s);
@@ -314,6 +420,33 @@ public class InvoiceFM01 implements Invoice{
 			InvoiceMetaData metaData=this.metaData;
 			//if(persist)metaData=new InvoiceMetaData(this.invoiceType, true);
 			invoices[i]=new InvoiceFM01(client, seller, shopman, items, metaData, requester, destiny,agent,0f,paymentMethod,paymentWay,documentType,coin);
+			invoices[i].setPrintedTo(printedTo);
+		}
+		
+		return invoices;
+	}
+	
+	public Invoice[] subdivide(int size) {
+		int S=items.size();
+		int s=size;
+		int[][] indexes=getIndexes(S, s);
+
+		Invoice[] invoices=new InvoiceFM01[indexes.length];
+		
+		for(int i=0;i<indexes.length;i++){
+			int 
+				from=indexes[i][0],
+				to=indexes[i][1];//(i==indexes.length-1 ? S : indexes[i-1]);
+			System.out.println("from: "+from+" to: "+to);
+			List<InvoiceItem> items= this.items.subList(from,to+1);
+			//InvoiceMetaData metaData=this.metaData;
+			//if(persist)metaData=new InvoiceMetaData(this.invoiceType, true);
+			invoices[i] = new InvoiceFM01(
+					client, shopman, items, reference, series, destiny,
+					agent, paymentMethod, paymentWay, documentType, coin);
+			/*invoices[i] = new InvoiceFM01(
+					client, seller, shopman, items, metaData, requester,
+					destiny,agent,0f,paymentMethod,paymentWay,documentType,coin);*/
 			invoices[i].setPrintedTo(printedTo);
 		}
 		
@@ -489,17 +622,19 @@ public class InvoiceFM01 implements Invoice{
 
 	@Override
 	public float getSubtotal() {
-		float subt=0;
+		/*float subt=0;
 		for(int i=0;i<items.size();i++){
 			subt+=getTotalPrice(i);
 		}
 		return roundTo6(subt);
+		*/
+		return subTotal;
 	}
 
 	@Override
 	public float getTotal() {
-		
-		return roundTo6(getSubtotal()+getTaxes());//(float)(getSubtotal()+getTaxes());
+		return total;
+		//return roundTo6(getSubtotal()+getTaxes());//(float)(getSubtotal()+getTaxes());
 	}
 	
 	public float getTotalForConsummerType(int consummerType){
@@ -524,11 +659,13 @@ public class InvoiceFM01 implements Invoice{
 
 	@Override
 	public float getTaxes() {
-		float subt=getSubtotal();
+		/*float subt=getSubtotal();
 		if(metaData.getInvoiceType()==Invoice.INVOICE_TYPE_TAXES_APLY){
 			return roundTo6(subt*TAXES_APPLY-subt);//subt*TAXES_APPLY-subt;
 		}
 		else return 0;
+		*/
+		return taxes;
 	}
 	@Override
 	public float getTaxesApply() {
@@ -773,4 +910,10 @@ public class InvoiceFM01 implements Invoice{
 		this.coin=coin;
 	}
 
+	public String getSeries() {
+		return series;
+	}
+	public void setSeries(String series) {
+		this.series = series;
+	}
 }

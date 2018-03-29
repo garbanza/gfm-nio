@@ -48,6 +48,7 @@ public class Getthis extends HttpServlet{
 			String list=req.getParameter("list");
 			//String clientCode=req.getParameter("code");
 			String ct=req.getParameter("consummerType");
+
 			Integer consummerType=null;
 			if(ct!=null)consummerType=new Integer(ct);
 			String consummerDiscountS=req.getParameter("consummerDiscount");

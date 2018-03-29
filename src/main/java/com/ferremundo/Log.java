@@ -24,6 +24,7 @@ public class Log {
 	String login;
 	String className;
 	String methodName;
+	int lineNumber;
 	int reference;
 	public Log(OnlineClient oc){
 		login = oc.getShopman().getLogin();
@@ -31,12 +32,15 @@ public class Log {
 		StackTraceElement traceElement=Thread.currentThread().getStackTrace()[2];//index];
 		className=traceElement.getClassName();
 		methodName=traceElement.getMethodName();
+		lineNumber=traceElement.getLineNumber();
 		initLogger();
 		logger = LogManager.getLogger(className);
 	}
 	
 	public Log(){
+		System.out.println("start Log");
 		Integer clientReference=ClientReference.get();
+		System.out.println("after getting clientReference: "+clientReference);
 		if(clientReference!=null){
 			OnlineClient ol=OnlineClients.instance().get(clientReference);
 			if(ol!=null&&ol.getShopman()!=null){
@@ -51,7 +55,10 @@ public class Log {
 		StackTraceElement traceElement=Thread.currentThread().getStackTrace()[2];
 		className=traceElement.getClassName();
 		methodName=traceElement.getMethodName();
+		lineNumber=traceElement.getLineNumber();
+		System.out.println("Log after initLogger");
 		initLogger();
+		System.out.println("Log before initLogger");
 		logger = LogManager.getLogger(className);
 	}
 	
@@ -61,6 +68,7 @@ public class Log {
 		StackTraceElement traceElement=Thread.currentThread().getStackTrace()[2];
 		className=traceElement.getClassName();
 		methodName=traceElement.getMethodName();
+		lineNumber=traceElement.getLineNumber();
 		initLogger();
 		logger = LogManager.getLogger(className);
 	}
@@ -71,16 +79,21 @@ public class Log {
 		StackTraceElement traceElement=Thread.currentThread().getStackTrace()[2];//index];
 		className=traceElement.getClassName();
 		methodName=traceElement.getMethodName();
+		lineNumber=traceElement.getLineNumber();
 		initLogger();
 		logger = LogManager.getLogger(className);
 	}
 	
-	private static void initLogger(){
+	private void initLogger(){
+		System.out.println("Log before setting property: log4j.configuration=FUCK");
+		System.setProperty("log4j.configuration", GSettings.getPathTo("LOGGER_CONTEXT"));
+		System.out.println(System.getProperty("log4j.configuration"));
 		if (loggerContext==null) {
+			ThreadContext.put("log-path", GSettings.getPathTo("LOGGING_PATH"));
 			LoggerContext loggerContext = (org.apache.logging.log4j.core.LoggerContext) LogManager.getContext(false);
 			File file = new File(GSettings.getPathTo("LOGGER_CONTEXT"));
 			// this will force a reconfiguration 
-			ThreadContext.put("log-path", GSettings.getPathTo("LOGGING_PATH"));
+			
 			loggerContext.setConfigLocation(file.toURI());
 		}
 	}
@@ -90,57 +103,57 @@ public class Log {
 	}
 
 	public void info(String msg){
-		logger.info(className+"-"+methodName+"\t[user:"+login+"."+reference+"]\t"+ msg);
+		logger.info(className+"-"+methodName+":"+lineNumber+"\t[user:"+login+":sessionid:"+reference+"]\t"+ msg);
 	}
 	public void entry(){
-		logger.log(ENTRY,className+"-"+methodName+" \t[user:"+login+"."+reference+"]\tentry");
+		logger.log(ENTRY,className+"-"+methodName+":"+lineNumber+"\t[user:"+login+":sessionid:"+reference+"]\tentry");
 	}
 	public void entry(Object... os){
 		String oss= new Gson().toJson(os);
-		logger.log(ENTRY,className+"-"+methodName+"\t[user:"+login+"."+reference+"]\tentry("+ oss +")");
+		logger.log(ENTRY,className+"-"+methodName+":"+lineNumber+"\t[user:"+login+":sessionid:"+reference+"]\tentry("+ oss +")");
 	}
 	public void exit(){
-		logger.log(EXIT,className+"-"+methodName+" \t[user:"+login+"."+reference+"]\texit");
+		logger.log(EXIT,className+"-"+methodName+":"+lineNumber+"\t[user:"+login+":sessionid:"+reference+"]\texit");
 	}
 	public void exit(Object... os){
 		String oss= new Gson().toJson(os);
-		logger.log(EXIT,className+"-"+methodName+"\t[user:"+login+"."+reference+"]\texit("+ oss +")");
+		logger.log(EXIT,className+"-"+methodName+":"+lineNumber+"\t[user:"+login+":sessionid:"+reference+"]\texit("+ oss +")");
 	}
 	public void object(Object... os){
 		String oss= new Gson().toJson(os);
-		logger.log(OBJECT,className+"-"+methodName+"\t[user:"+login+"."+reference+"]\tobject("+ oss +")");
+		logger.log(OBJECT,className+"-"+methodName+":"+lineNumber+"\t[user:"+login+":sessionid:"+reference+"]\tobject("+ oss +")");
 	}
 	public void debug(String msg){
-		logger.debug(className+"-"+methodName+"\t[user:"+login+"."+reference+"]\t"+ msg);
+		logger.debug(className+"-"+methodName+":"+lineNumber+"\t[user:"+login+":sessionid:"+reference+"]\t"+ msg);
 	}
 	public void error(String msg){
-		logger.error(className+"-"+methodName+"\t[user:"+login+"."+reference+"]\t"+ msg);
+		logger.error(className+"-"+methodName+":"+lineNumber+"\t[user:"+login+":sessionid:"+reference+"]\t"+ msg);
 	}
 	public void error(Object... os){
 		String oss= new Gson().toJson(os);
-		logger.error(className+"-"+methodName+"\t[user:"+login+"."+reference+"]\tobject("+ oss +")");
+		logger.error(className+"-"+methodName+":"+lineNumber+"\t[user:"+login+":sessionid:"+reference+"]\tobject("+ oss +")");
 	}
 	public void fatal(String msg){
-		logger.fatal(className+"-"+methodName+"\t[user:"+login+"."+reference+"]\t"+ msg);
+		logger.fatal(className+"-"+methodName+":"+lineNumber+"\t[user:"+login+":sessionid:"+reference+"]\t"+ msg);
 	}
 	public void log(Level level, String msg){
-		logger.log(level,className+"-"+methodName+"\t[user:"+login+"."+reference+"]\t"+ msg);
+		logger.log(level,className+"-"+methodName+":"+lineNumber+"\t[user:"+login+":sessionid:"+reference+"]\t"+ msg);
 	}
 	public void trace(String msg, Throwable t){
-		logger.trace(className+"-"+methodName+"\t[user:"+login+"."+reference+"]\t"+ msg+" - "+t.toString());
+		logger.trace(className+"-"+methodName+":"+lineNumber+"\t[user:"+login+":sessionid:"+reference+"]\t"+ msg+" - "+t.toString());
 		for (StackTraceElement element : t.getStackTrace()){
-			logger.trace(className+"-"+methodName+"\t[user:"+login+"."+reference+"]\t"+ element);
+			logger.trace(className+"-"+methodName+":"+lineNumber+"\t[user:"+login+":sessionid:"+reference+"]\t"+ element);
 		 }
-		//logger.trace(className+"-"+methodName+"\t[user:"+login+"."+reference+"]\t"+ msg);
+		//logger.trace(className+"-"+methodName+":"+lineNumber+"\t[user:"+login+":sessionid:"+reference+"]\t"+ msg);
 	}
 	public void trace(Throwable t){
-		logger.trace(className+"-"+methodName+"\t[user:"+login+"."+reference+"]\t"+ t.toString());
+		logger.trace(className+"-"+methodName+":"+lineNumber+"\t[user:"+login+":sessionid:"+reference+"]\t"+ t.toString());
 		for (StackTraceElement element : t.getStackTrace()){
-			logger.trace(className+"-"+methodName+"\t[user:"+login+"."+reference+"]\t"+ element);
+			logger.trace(className+"-"+methodName+":"+lineNumber+"\t[user:"+login+":sessionid:"+reference+"]\t"+ element);
 		 }
-		//logger.trace(className+"-"+methodName+"\t[user:"+login+"."+reference+"]\t"+ msg);
+		//logger.trace(className+"-"+methodName+":"+lineNumber+"\t[user:"+login+":sessionid:"+reference+"]\t"+ msg);
 	}
 	public void warn(String msg){
-		logger.warn(className+"-"+methodName+"\t[user:"+login+"."+reference+"]\t"+ msg);
+		logger.warn(className+"-"+methodName+":"+lineNumber+"\t[user:"+login+":sessionid:"+reference+"]\t"+ msg);
 	}
 }
