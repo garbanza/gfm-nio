@@ -1,13 +1,13 @@
 /** COMMAND LINE FUNCTION*/
-	commandLine=function(){
+	commandLine = function(input){
 		//resetClient();
 		console.log(productsLog);
 		//TODO quita la dependencia de este popup
 		
-		$('#commands').autocomplete('close');
-		this.value=$('#commands').val().replace(/^\s+|\s+$/g, '')//.replace(/^\s\s*/, '').replace(/\s\s*$/, '');		//value
+		$(input).autocomplete('close');
+		this.value=$(input).val().replace(/^\s+|\s+$/g, '')//.replace(/^\s\s*/, '').replace(/\s\s*$/, '');		//value
 		//clean
-		//$('#commands').SetBubblePopupOptions({innerHtml:"comandos"});
+		//$(input).SetBubblePopupOptions({innerHtml:"comandos"});
 		//alert("'"+this.value+"'");
 		
 		var splited=this.value.split(" ");
@@ -43,10 +43,17 @@
 				this.args[i-1]=splited[i];
 				this.argssize++;
 			}
-			if(this.argssize>=1)this.getFromDB=true;
-			this.pargs=this.value.match(/[^\s"']+|"([^"]*)"|'([^']*)'/g);
-			this.getFromDB=true;
-			$('#commands').HideBubblePopup();
+			if(this.argssize > 0){
+				this.getFromDB=true;
+				this.kind ='product';
+				this.quantity=this.command;
+			}
+			else {
+				this.kind ='undefined';
+			}
+			//this.pargs=this.value.match(/[^\s"']+|"([^"]*)"|'([^']*)'/g);
+			//this.getFromDB=true;
+			//$(input).HideBubblePopup();
 		}
 		else if(this.command=='c'){
 			this.kind ='client';
@@ -55,10 +62,11 @@
 				this.argssize++;
 			}
 			if(this.argssize>=1)this.getFromDB=true;
+			else this.kind = undefined;
 			this.pargs=this.value.match(/[^\s"']+|"([^"]*)"|'([^']*)'/g);
 			this.pargs.splice(0,1);
 			this.getFromDB=true;
-			$('#commands').HideBubblePopup();
+			$(input).HideBubblePopup();
 		}
 		else if(this.command=='a'){
 			this.kind ='agent';
@@ -71,17 +79,17 @@
 			this.pargs.splice(0,1);
 			*/
 			this.getFromDB=true;
-			$('#commands').HideBubblePopup();
+			$(input).HideBubblePopup();
 		}
 		else if(this.command=='ha'){
 			this.kind ='agentstatus';
 			this.getFromDB=true;
-			$('#commands').HideBubblePopup();
+			$(input).HideBubblePopup();
 		}
 		else if(this.command=='hc'){
 			this.kind ='clientstatus';
 			this.getFromDB=true;
-			$('#commands').HideBubblePopup();
+			$(input).HideBubblePopup();
 		}
 		/*else if(//this.command=='@ic'||this.command=='@ia'||
 				//this.command=='@oc'||this.command=='@oa'||
@@ -100,8 +108,8 @@
 				else{
 					msg="ERROR, cantidad invalida <b>$"+this.args[0]+"</b>";
 					this.kind='undefined';
-					$('#commands').ShowBubblePopup( {innerHtml: msg} );
-					$('#commands').val($('#commands').val().replace(this.args[0],""));
+					$(input).ShowBubblePopup( {innerHtml: msg} );
+					$(input).val($(input).val().replace(this.args[0],""));
 					return;
 				}
 				
@@ -122,6 +130,19 @@
 				this.kind = "emitinvoice";
 			}
 		}
+		else if(this.command=='$tfc'){
+			if(this.args[0]){
+				if(isNumber(this.args[0]) && this.args[0]*1 >= 0){
+					this.printCopies=this.args[0];
+					this.kind = "emitinvoiceticket";
+				}
+				else this.kind="undefinedcommand"
+			}
+			else {
+				this.printCopies=-1;
+				this.kind = "emitinvoiceticket";
+			}
+		}
 		else if(this.command=='$oc'){
 			if(this.args[0]){
 				if(isNumber(this.args[0]) && this.args[0]*1 >= 0){
@@ -133,6 +154,19 @@
 			else {
 				this.printCopies=-1;
 				this.kind = "emitorder";
+			}
+		}
+		else if(this.command=='$toc'){
+			if(this.args[0]){
+				if(isNumber(this.args[0]) && this.args[0]*1 >= 0){
+					this.printCopies=this.args[0];
+					this.kind = "emitorderticket";
+				}
+				else this.kind="undefinedcommand"
+			}
+			else {
+				this.printCopies=-1;
+				this.kind = "emitorderticket";
 			}
 		}
 		else if(this.command=='@ecot'||this.command=='@pcot'){
@@ -150,62 +184,123 @@
 				this.kind = "emitsample";
 			}
 		}
+		else if(this.command=='@tpcot'){
+			if(this.args[0]){
+				if(isNumber(this.args[0]) && this.args[0]*1 >= 0){
+					this.printCopies=this.args[0];
+					this.kind = "emitsampleticket";
+				}
+				else this.kind="undefinedcommand"
+			}
+			else {
+				this.printCopies=-1;
+				this.kind = "emitsampleticket";
+			}
+		}
+		else if(this.command=='@print'){
+			if(this.args[0]){
+				if(isNumber(this.args[1]) && this.args[1]*1 >= 0){
+					this.printCopies=this.args[1];
+					this.documentReference = this.args[0];
+					this.kind = "print";
+				}
+				else this.kind="undefinedcommand"
+			}
+			else {
+				this.kind="undefinedcommand"
+			}
+		}
+		else if(this.command=='@tprint'){
+			if(this.args[0]){
+				if(isNumber(this.args[1]) && this.args[1]*1 >= 0){
+					this.printCopies=this.args[1];
+					this.documentReference = this.args[0];
+					this.kind = "tprint";
+				}
+				else this.kind="undefinedcommand"
+			}
+			else {
+				this.kind="undefinedcommand"
+			}
+		}
+		else if(this.command=='@mail'){
+			if(this.args[0]){
+				if(isNumber(this.args[0])){
+					this.documentReference = this.args[0];
+					this.kind = "mail";
+					this.recipients = "";
+					for(var i = 1; i < this.args.length; i++){
+						this.recipients += this.args[i]+(i==(this.args.length-1)?"":" ");
+					}
+				}
+				else this.kind="undefinedcommand"
+			}
+			else {
+				this.kind="undefinedcommand"
+			}
+		}
+		else if(this.command=='@h'){
+			this.kind = "help";
+		}
 		else if(this.command=='@p'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'agregar producto'} );
+			$(input).ShowBubblePopup( {innerHtml: 'agregar producto'} );
 			this.kind= 'editproduct';
 		}
 		else if(this.command=='@c'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'agregar cliente'} );
+			$(input).ShowBubblePopup( {innerHtml: 'agregar cliente'} );
 			this.kind= 'editclient';
 		}
 		else if(this.command=='@a'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'agregar agente'} );
+			$(input).ShowBubblePopup( {innerHtml: 'agregar agente'} );
 			this.kind= 'editagent';
 		}
 		else if(this.command=='+f'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'facturar documento <b>'+this.args[0]+'</b>'} );
+			$(input).ShowBubblePopup( {innerHtml: 'facturar documento <b>'+this.args[0]+'</b>'} );
 			this.kind="facture";
 		}
 		else if(this.command=='_inventario'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'se inventaríara la lista con los costos<b>'+this.args[0]+'</b>'} );
+			$(input).ShowBubblePopup( {innerHtml: 'se inventaríara la lista con los costos<b>'+this.args[0]+'</b>'} );
 			this.kind="facture";
 		}
 		else if(this.command=='@r'||this.command=='@rl'){
 			if(this.command=='@r'){
-				$('#commands').ShowBubblePopup( {innerHtml: 'traer documento <b>'+this.args[0]+'</b>'} );
+				$(input).ShowBubblePopup( {innerHtml: 'traer documento <b>'+this.args[0]+'</b>'} );
 			}
 			else{
-				$('#commands').ShowBubblePopup( {innerHtml: 'mostrar estatus de documento <b>'+this.args[0]+'</b>'} );
+				$(input).ShowBubblePopup( {innerHtml: 'mostrar estatus de documento <b>'+this.args[0]+'</b>'} );
 			}
 			this.kind="getinvoice";
 		}
 		else if(this.command=='%rc'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'escribe tu recordatorio'} );
-			this.kind="makerecord";
+			if(this.args.length > 0){
+				this.kind="makerecord";
+				this.message = this.args.join(" ");
+			}
+			else this.kind="undefined";
 		}
 		else if(this.command=='%rr'){
-			$('#commands').ShowBubblePopup( {innerHtml: '<enter> mostrar recordatorios. <espacio> n mostrar ultimos n recordatorios'} );
+			$(input).ShowBubblePopup( {innerHtml: '<enter> mostrar recordatorios. <espacio> n mostrar ultimos n recordatorios'} );
 			this.kind="returnrecords";
 		}
 		else if(this.command=='%rb'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'marcar recordatorio como hecho'} );
+			$(input).ShowBubblePopup( {innerHtml: 'marcar recordatorio como hecho'} );
 			this.kind="deactivaterecord";
 		}
 		else if(this.command=='$a'||this.command=='$d'){
 			if(this.command=='$a')
-				$('#commands').ShowBubblePopup( {innerHtml: 'liquidar agente para <b>'+this.args[0]+'</b>'} );
+				$(input).ShowBubblePopup( {innerHtml: 'liquidar agente para <b>'+this.args[0]+'</b>'} );
 			else if(this.command=='$d'){
 				
 				if(this.args[1]){
 					if(isNumber(this.args[1]))
-						$('#commands').ShowBubblePopup( {innerHtml: 'abonar a documento <b>'+this.args[0]+' $'+this.args[1]+'</b>'} );
+						$(input).ShowBubblePopup( {innerHtml: 'abonar a documento <b>'+this.args[0]+' $'+this.args[1]+'</b>'} );
 					else
-						$('#commands').ShowBubblePopup( {innerHtml: 'ERROR: cantidad invalida'} );
+						$(input).ShowBubblePopup( {innerHtml: 'ERROR: cantidad invalida'} );
 				}
 				else if(this.args[0]){
-					$('#commands').ShowBubblePopup( {innerHtml: 'liquidar documento <b>'+this.args[0]+'</b>'} );
+					$(input).ShowBubblePopup( {innerHtml: 'liquidar documento <b>'+this.args[0]+'</b>'} );
 				}
-				else $('#commands').ShowBubblePopup( {innerHtml: 'liquidar/abonar documento'} );
+				else $(input).ShowBubblePopup( {innerHtml: 'liquidar/abonar documento'} );
 			}
 			this.kind="invoicepayment";
 		}
@@ -220,8 +315,16 @@
 			this.kind="discount";
 		}
 		else if(this.command=='@cd'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'cancelar documento <b>'+this.args[0]+'</b>'} );
-			this.kind="canceldocument";
+			if(this.args[0]){
+				if(isNumber(this.args[0])){
+					this.documentReference = this.args[0];
+					this.kind = "canceldocument";
+				}
+				else this.kind="undefinedcommand"
+			}
+			else {
+				this.kind="undefinedcommand"
+			}
 		}
 		else if(this.command=='@s'){
 			this.kind="searchinvoices";
@@ -233,54 +336,63 @@
 			this.kind="testproducts";
 		}
 		else if(this.command=='@j'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'consultar caja'} );
+			$(input).ShowBubblePopup( {innerHtml: 'consultar caja'} );
 			this.kind="consultthebox";
 		}
 		else if(this.command=='%ip'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'inventarear productos'} );
+			$(input).ShowBubblePopup( {innerHtml: 'inventarear productos'} );
 			this.kind="productinventoryadd";
 		}
 		else if(this.command=='%updateproducts'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'update products'} );
+			$(input).ShowBubblePopup( {innerHtml: 'update products'} );
 			this.kind="updateproducts";
 		}
 		else if(this.command=='%adduser'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'add user'} );
+			$(input).ShowBubblePopup( {innerHtml: 'add user'} );
 			this.kind="adduser";
 		}
 		else if(this.command=='@fp'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'forma de pago'} );
+			$(input).ShowBubblePopup( {innerHtml: 'forma de pago'} );
 			this.kind="paymentway";
 		}
 		else if(this.command=='@mp'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'forma de pago'} );
+			$(input).ShowBubblePopup( {innerHtml: 'forma de pago'} );
 			this.kind="paymentmethod";
 		}
 		else if(this.command=='@tc'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'tipo de documento'} );
+			$(input).ShowBubblePopup( {innerHtml: 'tipo de documento'} );
 			this.kind="documenttype";
 		}
 		else if(this.command=='@dest'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'destino/obra'} );
+			$(input).ShowBubblePopup( {innerHtml: 'destino/obra'} );
 			this.kind="destiny";
 		}
 		else if(this.command=='@uc'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'uso de cfdi'} );
+			$(input).ShowBubblePopup( {innerHtml: 'uso de cfdi'} );
 			this.kind="cfdiuse";
 		}
 		else if(this.command=='@ad'){
-			$('#commands').ShowBubblePopup( {innerHtml: 'absolutediscount'} );
+			$(input).ShowBubblePopup( {innerHtml: 'absolutediscount'} );
 			this.kind="absolutediscount";
 		}
 		else if(this.command=='%fixdb'){
-			this.kind="fixdb";
+			if(this.args[0]){
+				if(isNumber(this.args[0])){
+					this.fixNumber = this.args[0];
+					this.kind = "fixdb";
+				}
+				else this.kind="undefinedcommand"
+			}
+			else {
+				this.kind="undefinedcommand"
+			}
 		}
 		else if(this.command.indexOf("@")==0&&isNumber(this.command.replace("@",""))){
 			this.kind="edititem";
 			this.itemNumber=this.command.replace("@","")*1;
 		}
 		else {
-			$('#commands').HideBubblePopup();
+			$(input).HideBubblePopup();
 			if(this.command.indexOf("@")==0||
 					this.command.indexOf("%")==0||
 					this.command.indexOf("+")==0||
@@ -290,6 +402,7 @@
 				
 			}
 			console.log("matches!");
+			console.log(this);
 			this.quantity=1;
 			this.kind= "retrieve";
 			this.args=this.value.match(/[^\s"']+|"([^"]*)"|'([^']*)'/g);

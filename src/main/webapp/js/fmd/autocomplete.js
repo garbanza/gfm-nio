@@ -1,3 +1,5 @@
+helpData = [["@pcot", "print cotization"],
+            ["@tpcot", "print cotization ticket"]];
 /** AUTOCOMPLETE BEGINS*/
 autocomplete=function(input){
 	$(input).autocomplete({
@@ -6,6 +8,8 @@ autocomplete=function(input){
 		
 /** AUTOCOMPLETE SOURCE*/
 		source: function(request, response) {
+			commandline=new commandLine("#commands");
+			console.log("SOURCE commandline.kind"+ commandline.kind);
 			var event=this.options.keydownEvent;
 			if(event.which==13)console.log('ENTER');
 			console.log('this');
@@ -13,7 +17,7 @@ autocomplete=function(input){
 			console.log(event);
 			//console.log(this.event);
 			//console.log(this.event.which);
-			commandline=new commandLine();
+			
 			console.log('commandline');
 			console.log(commandline);
 			//alert("kind:"+c.kind+"\nquantity:"+c.quantity+"\nargs:"+c.args+"\nargssize:"+c.argssize+"\ngetFRomBD:"+c.getFromDB+"\ncommand:"+c.command);
@@ -70,11 +74,24 @@ autocomplete=function(input){
 					}
 				});
 			}
+			else if (commandline.kind == "help"){
+				inputValue=$(input).val();
+				var cpos=$(input).getCursorPosition();
+				//console.log(cpos);
+				//console.log(this);
+				response($.map(helpData, function(item) {
+					return {
+						label: item[0]+" "+item[1],
+						value: inputValue
+					};
+				}));
+				
+			}
 		},
 		minLength: 1,
 /** AUTOCOMPLETE SELECT*/
 		select: function(event, ui) {
-			console.log("commandline "+commandline.kind);
+			console.log("SELECT commandline "+commandline.kind);
 			var i=$('#ui-active-menuitem').parent().index('.ui-menu-item');
 			if(commandline.kind=='product'||commandline.kind=='retrieve'){
 				var quantity=0;
@@ -85,7 +102,7 @@ autocomplete=function(input){
 				productsLog.unshift(p[i]);
 				productsLog[0].quantity=quantity;
 				onLogChange();
-				
+				emptyCommand=true;
 				//alert(productsLog[i].key);
 			}
 			else if(commandline.kind=='agentstatus'||commandline.kind=='clientstatus'){
@@ -184,6 +201,7 @@ autocomplete=function(input){
 					console.log(client);
 					//$('#vips option').eq(client.consummerType-1).attr('selected', 'selected');
 					var code=client.code;
+					emptyCommand=true;
 					//alert($.URLEncode(jsonsrt));
 					//alert($.toJSON(productsLog));
 					/*for(var j=0;j<productsLog.length;j++){
@@ -238,16 +256,22 @@ autocomplete=function(input){
 
 				//
 			}
+			else if(commandline.kind == "help"){
+				var i=$('#ui-active-menuitem').parent().index('.ui-menu-item');
+				console.log(helpData[i][0]+" "+$(input).val());
+				$(input).val("oeuoeuoeu");//helpData[i][0]);
+				$('#commands').val("oeuoeuoeu");
+				emptyCommand = false;
+				alert($(input).val());
+			}
 
-
-			$(input).val('');
-			emptyCommand=true;
+			//emptyCommand=true;
 			//log(ui.item ? ("Selected: " + ui.item.label) : "Nothing selected, input was " + this.value);
 		},
 /** AUTOCOMPLETE OPEN*/
 		open: function() {
 			$('.ui-autocomplete').css({width:'95%',height:'auto'});
-			console.log('commandline.kind='+commandline.kind);
+			console.log('OPEN commandline.kind='+commandline.kind);
 			if(commandline.kind=='product'||commandline.kind=='retrieve'){
 				var i=0;
 				$('li>a.ui-corner-all').each(function(){
@@ -315,8 +339,10 @@ autocomplete=function(input){
 			$(input).trigger(key_down);
 		},
 		close: function() {
+			console.log("CLOSE commandline "+commandline.kind);
 			$(this).removeClass("ui-corner-top").addClass("ui-corner-all");
 			if(emptyCommand)$(input).val("");
+			console.log("CLOSE "+$(input).val());
 			emptyCommand=false;
 		},
 		delay: 0

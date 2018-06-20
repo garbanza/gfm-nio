@@ -141,6 +141,11 @@ public class GSettings extends Properties{
 		String path = getHome()+dir;
 		File file = new File(path);
 		if(!file.exists())file.mkdir();
+		try {
+			Process p = Runtime.getRuntime().exec(new String[]{"bash","-c","chmod +xr "+file});
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return path+File.separator;
 	}
 	

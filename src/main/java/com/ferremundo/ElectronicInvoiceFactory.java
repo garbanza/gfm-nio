@@ -306,7 +306,7 @@ public class ElectronicInvoiceFactory {
 		GSettings g=GSettings.instance();
 		String 	tmp=dir,
 				xsltproc=g.getKey("XSLTPROC"),
-				xslt=g.getPathTo("XSLT"),
+				xslt=g.getPathTo("XSLT_INVOICE"),
 				xml=tmp+id+".xml",
 				html=tmp+id+".html",
 				additionalData=g.getKey("INVOICE_SENDER_ADDITIONAL_DATA"),
@@ -315,7 +315,8 @@ public class ElectronicInvoiceFactory {
 		try {
 			log.info("executing '"+xsltproc +" --nonet "+ xslt+" "+xml+" > "+html+"'");
 			Process p = Runtime.getRuntime().exec(new String[]{"bash","-c",
-			xsltproc +" --nonet --stringparam INVOICE_SENDER_ADDITIONAL_DATA \""+additionalData+"\" "
+			xsltproc
+			+" --nonet --stringparam INVOICE_SENDER_ADDITIONAL_DATA \""+additionalData+"\" "
 			+ xslt+" "+xml+" > "+html+" ; chmod 444 "+html});
 			p.waitFor();
 		} catch (IOException e) {

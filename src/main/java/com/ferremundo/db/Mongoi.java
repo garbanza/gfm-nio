@@ -177,7 +177,7 @@ public class Mongoi {
 		
 		DBObject query=new BasicDBObject("$and",and);
 		DBCollection collection=db.getCollection(where);
-		DBCursor cursor=collection.find(query).limit(20);
+		DBCursor cursor=collection.find(query).limit(200);
 		return cursor;
 	}
 	
@@ -545,7 +545,7 @@ public class Mongoi {
 			strl[i]=list.get(i);
 			System.out.println("'"+strl[i]+"'<-");
 		}
-		DBCursor cursor=doFindLike(INVOICES, new String[]{"reference","client.consummer","agent.consummer","client.address","agent.address","client.rfc","agent.rfc","items.code","items.mark","items.description"}, strl,10).sort(new BasicDBObject("$natural",-1));
+		DBCursor cursor=doFindLike(INVOICES, new String[]{"reference","client.consummer","agent.consummer","client.address","agent.address","client.rfc","agent.rfc","items.code","items.mark","items.description"}, strl,50).sort(new BasicDBObject("$natural",-1));
 		System.out.println(cursor.count()+" hallados");
 		return cursor;
 	}

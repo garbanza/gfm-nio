@@ -36,7 +36,7 @@
             		var i=0;
             		hme.each(function(){
             			var j=i;
-            			$(this).hover(function(){
+            			$(this).mousemove(function(){
             				this_.moveTo(j);
             				$(this)
             				.css({'cursor':'pointer'});
@@ -101,7 +101,7 @@
             			$(this_.input).focus();
             		},
             		click:function(this_){
-            			this_.handleData(this_.data);
+            			this_.show();
             		}
             	},
             	menu:null,
@@ -184,6 +184,7 @@
 	       		.attr('tabindex','0')
 	       		.css({'cursor':'pointer'});
 	       	}
+	       	var this_ = this;
     		$(this).keydown(function(event){
         		if(event.which==40||event.which==38){
         			if(settings._isDown)return;
@@ -205,7 +206,8 @@
         			settings._repeatKeyDown(false);
         			return;
         		}
-        		
+        		console.log("KEYUP");
+        		console.log(event);
 				settings.command(event);
         		
         	})
@@ -213,6 +215,11 @@
         		settings._repeatKeyDown(false);
         		//TODO fix this. timeout added to let on-menu-click to actually happen
         		window.setTimeout(function(){settings.hide();},100);
+        	})
+        	.bind("paste", function(){
+        		setTimeout(function(){
+        			$(this_).trigger("keyup");
+        	    }, 4);
         	});
     	});
     };

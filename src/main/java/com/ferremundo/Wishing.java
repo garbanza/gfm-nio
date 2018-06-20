@@ -323,7 +323,7 @@ public class Wishing extends HttpServlet {
 								pdfPath=tmp+id+".pdf",
 								additionalData=g.getKey("INVOICE_SENDER_ADDITIONAL_DATA");
 						Utils.saveStringToFile(xml, xmlPath);						
-						Utils.XML_TO_HTML(xmlPath, xsltPath, htmlPath, additionalData);
+						Utils.XML_TO_HTML(xmlPath, xsltPath, htmlPath, additionalData,"");
 						Utils.HTML_TO_PDF(htmlPath, pdfPath, "Cotizacion "+id+" - pagina [page]/[topage]", "Los precios actuales estan sujetos a cambios sin previo aviso");
 						
 						org.jsoup.nodes.Document document=null;

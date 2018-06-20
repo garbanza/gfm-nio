@@ -73,6 +73,34 @@ $.capsule([
 	    		   
 	       },
 	       {
+	    	   name:"editProduct",
+	    	   defaults:{
+	       			id:function(){
+		       			return "editProductID"+$.capsule.randomString(1,15,'aA0');
+		       		},
+	       			blockdiv:"blockdiv",
+	       			message:"editProduct"
+	       		},
+	    	   html:function(){
+	    		   return "<div id='$(id)' class='$(blockdiv)'> $(message)"+
+	    		   "<br>cantidad:		<input id='quantity' value='1'/>"+
+	    		   "<br>unidad:		<input id='unit' value='pza'/>"+
+	    		   "<br>descripcion:		<input id='description' value='articulo'/>"+
+	    		   "<br>codigo:		<input id='code' value='art-gen'/>"+
+	    		   "<br>marca:		<input id='mark' value='generica'/>"+
+	    		   "<br>clave sat:		<input id='unitCode' value='h87'/>"+
+	    		   "<br>unidad sat:		<input id='prodservCode' value='01010101'/>"+
+	    		   "<br>$ unitario:		<input id='unitPrice' value='0'/>"+
+			        "</div>";
+	    	   },
+	    	   css:function(){
+	       			return {
+	       				'.blockdiv' : { 'position': 'fixed', 'top': '0', 'left': '0', 'right': '0', 'bottom': '0', 'background-color': '#fff', 'opacity': '0.9' }
+	       			};
+	       		}
+	    		   
+	       },
+	       {
 	    	   name:"addConsummerIn",
 	    	   defaults:{
 	       			id:function(){
@@ -312,6 +340,47 @@ registerShopmanIn=function(){
 		});
 	});
 };
+editProduct=function(commander){
+	var addid='editProductID'+$.capsule.randomString(1,15,'aA0');
+	var $add=$('body').inEditProduct({id:addid, message:"editar producto"});
+	commander.reset();
+	$add.find('#quantity').focus();
+	$add.find('input').bind('keydown',function(event){
+		if(event.keyCode==27){
+			var stay=confirm("abandonar formulario?");
+			if(!stay){
+				//$('#commands').focus();
+				return;
+			}
+			commander.input.focus();
+			$add.remove();
+			return;
+		}
+		if(event.which!=13)return;
+		var quantity=$add.find('#quantity').val();
+		var unit=$add.find('#unit').val().toUpperCase();
+		var description=$add.find('#description').val().toUpperCase();
+		var code=$add.find('#code').val().toUpperCase();
+		var mark=$add.find('#mark').val().toUpperCase();
+		var unitCode=$add.find('#unitCode').val().toUpperCase();
+		var prodservCode=$add.find('#prodservCode').val().toUpperCase();
+		var unitPrice=$add.find('#unitPrice').val();
+		dolog(quantity?quantity:1,unit?unit:"PZA",
+				description?description:"ARTICULO",code?code:"ART-GEN",
+				mark?mark:"GEN",unitPrice?unitPrice:0,
+				prodservCode?prodservCode:"01010101",unitCode?unitCode:"H87");
+		var json = "{"+ '"quantity":"' + quantity + '",' + '"unit":"'+ unit	+ '",' + '"description":"' + description + '",'	+ '"code":"' + code
+					+ '",'	+ '"mark":"' + mark	+ '",'	+ '"productPriceKind":"-1",' + '"unitPrice":"'	+ unitPrice + '",'	+ '"id":"-1", "edited" : true }';
+		productsLog.unshift($.parseJSON(json));
+		onLogChange();
+		commander.input.focus();
+		$add.remove();
+		$('.tableingrow').sexytable({
+			'editedRow' : true,
+			'index' : $('.tableingrow').get(0)
+		});
+	});
+};
 addConsummerIn=function(where){
 	var addid='addConsummerInID'+$.capsule.randomString(1,15,'aA0');
 	var $add=$('body').inAddConsummerIn({id:addid, message:where});
@@ -453,6 +522,115 @@ addConsummerIn=function(where){
 				//$('#editclient').dialog('close');
 				$add.remove();
 				$('#commands').focus();
+			},
+			error: function(jqXHR, textStatus, errorThrown){
+				alert("el sistema dice: "+textStatus+" - "+errorThrown+" - "+jqXHR.responseText);
+			},
+			dataType:"json"
+		});
+		
+	});
+};
+addConsummerIn2=function(commander){
+	var where;
+	if(commander.commandline.kind == "editclient")where = "clients";
+	else if(commander.commandline.kind == "editagent")where = "agents";
+	var addid='addConsummerInID'+$.capsule.randomString(1,15,'aA0');
+	var $add=$('body').inAddConsummerIn({id:addid, message:where});
+	$add.find('#consummer').focus();
+	$add.find('input').bind('keydown',function(event){
+		if(event.keyCode==27){
+			var stay=confirm("abandonar formulario?");
+			if(!stay){
+				//$('#commands').focus();
+				return;
+			}
+			$add.remove();
+			$(commander.input).focus();
+			commander.reset();
+			return;
+		}
+		if(event.which!=13)return;
+		var consummer=$add.find('#consummer').val();
+		var consummerType=$add.find('#consummerType').val();
+		var address=$add.find('#address').val();
+		var interiorNumber=$add.find('#interiorNumber').val();
+		var exteriorNumber=$add.find('#exteriorNumber').val();
+		var suburb=$add.find('#suburb').val();
+		var locality=$add.find('#locality').val();
+		var city=$add.find('#city').val();
+		var state=$add.find('#state').val();
+		var country=$add.find('#country').val();
+		var cp=$add.find('#cp').val();
+		var rfc=$add.find('#rfc').val();
+		var tel=$add.find('#tel').val();
+		var email=$add.find('#email').val();
+		var payment=$add.find('#payment').val();
+		var cfdiUse=$add.find('#cfdiUse').val();
+		var somethingWrong=false;
+		if(consummer==null||consummer=='')somethingWrong=true;
+		if(!(/*isNumber(consummerType)&&isNumber(payment)&&*/validateRfc(rfc))){
+			somethingWrong=true;
+		}
+		if(email!=null){
+			var emails=email.split(" ");
+			for(var i=0;i<emails.length;i++){
+				if(emails[i]!=""&!validateEmail(emails[i]))somethingWrong=true;
+			}
+		}
+		else somethingWrong=true;
+		if(somethingWrong){
+			var msg="error:";
+			if(consummer==null||consummer=='')msg+="\nNombre indefinido.";
+			//msg+=isNumber(consummerType)?"":"\nTipo de cliente no es numerico.\n";
+			//msg+=isNumber(payment)?"":"\nCredito no es numerico.\n";
+			msg+=validateRfc(rfc)?"":"\nRFC no valido.";
+			if(email!=null){
+				var emails=email.split(" ");
+				for(var i=0;i<emails.length;i++){
+					if(emails[i]!=""&!validateEmail(emails[i]))msg+="\nEmail '"+emails[i]+"' no valido.";
+				}
+			}
+			//else msg+="\nemail(s) no definido(s).";
+			alert(msg);
+			return;
+		}
+		var ca;
+		if(where=='clients'){
+			ca=new Client_(null, consummer, consummerType,
+				address, interiorNumber, exteriorNumber,
+				suburb, locality, city, country,
+				state, email, cp, rfc, tel,
+				payment, null, null,cfdiUse);
+			client=ca;
+		}
+		else {
+			ca=new Agent_(null, consummer, consummerType,
+				address, interiorNumber, exteriorNumber,
+				suburb, locality, city, country,
+				state, email, cp, rfc, tel,
+				payment, null, null);
+			agent=ca
+		}
+		$.ajax({
+			url: CONTEXT_PATH+"/welcome",
+			type:'POST',
+			data: {
+				client : encodeURIComponent($.toJSON(ca)),
+				where:where,
+				token : TOKEN,
+				clientReference: CLIENT_REFERENCE
+			},
+			success: function(data){
+				console.log("SUCCESS");
+				console.log(data);
+				if(where=='clients'){
+					client=new setClient_(data);
+					var code=data.code;
+				}
+				$add.remove();
+				$(commander.input).focus();
+				commander.reset();
 			},
 			error: function(jqXHR, textStatus, errorThrown){
 				alert("el sistema dice: "+textStatus+" - "+errorThrown+" - "+jqXHR.responseText);

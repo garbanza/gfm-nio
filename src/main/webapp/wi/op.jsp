@@ -238,7 +238,7 @@ $(document).ready(function(){
 				}*/
 			},
 			source:function(path){
-				var commandl=commandLine($(this.input));
+				var commandl= new commandLine($(this.input));
 				console.log("commandl");
 				console.log(commandl);
 				var args=path.replace(/^\s\s*/, '').replace(/\s\s*$/, '');

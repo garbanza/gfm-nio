@@ -10,6 +10,7 @@ public interface Invoice {
 	public final static int INVOICE_TYPE_ORDER=1;
 	public final static int INVOICE_TYPE_SAMPLE=2;
 	public final static int INVOICE_TYPE_UNKNOWN=-1;
+	public static final int INVOICE_TYPE_PAYMENT = 3;
 	
 	public Client getClient();
 

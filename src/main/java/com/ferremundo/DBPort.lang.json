@@ -22,5 +22,15 @@
 		"es":"permisos requeridos: ${0}"},
 	"EMPTY_LIST":{
 		"en":"empty list",
-		"es":"lista vacia"}
+		"es":"lista vacia"},
+	"REQUESTED_DOCUMENT_NOT_FOUND":{
+		"en":"requested document not found ${0}",
+		"es":"el documento requerido no fue encontrado ${0}"},
+	"CODE_1":{
+		"en":"this invoice was generated but we could not find the XML file",
+		"es":"la factura fué generada pero el archivo XML no fue encontrado"},
+	"CODE_2":{
+		"en":"no solution found at the moment, could not gererate your printing document ${0}",
+		"es":"no hubo solución implementada actualmente para generar el documento de impresión ${0}"}
+		
 }

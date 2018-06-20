@@ -149,7 +149,7 @@ public class Utils {
 	 * @param xsltPath
 	 * @param outPath
 	 */
-	public static void XML_TO_HTML(String xmlPath, String xsltPath, String outPath, String additionalData){
+	public static void XML_TO_HTML(String xmlPath, String xsltPath, String outPath, String additionalData, String recieverAditionalData){
 		Log log=new Log();
 		GSettings g=GSettings.instance();
 		String 	//tmp=g.getPathTo("TMP_FOLDER"),
@@ -158,11 +158,19 @@ public class Utils {
 				//xml=tmp+id+".xml",
 				//html=tmp+id+".html";
 		try {
-			log.info("executing '"+xsltproc +" --nonet "+ xsltPath+" "+xmlPath+" > "+outPath+"'");
+			log.info("executing '"+
+			xsltproc + " --nonet --stringparam INVOICE_SENDER_ADDITIONAL_DATA \""+additionalData+"\" "
+					+ "--stringparam INVOICE_RECIEVER_ADDITIONAL_DATA \" "+recieverAditionalData+"\" "
+			 		+ xsltPath+" "+xmlPath+" > "+outPath +"; chmod 444 "+outPath);
 			Process p = Runtime.getRuntime().exec(new String[]{"bash","-c",
-			xsltproc +" --nonet --stringparam INVOICE_SENDER_ADDITIONAL_DATA \""+additionalData+"\" "
-			+ xsltPath+" "+xmlPath+" > "+outPath +"; chmod 444 "+outPath});
+			xsltproc + " --nonet --stringparam INVOICE_SENDER_ADDITIONAL_DATA \""+additionalData+"\" "
+					 + "--stringparam INVOICE_RECIEVER_ADDITIONAL_DATA \""+recieverAditionalData+"\" "
+					 + xsltPath+" "+xmlPath+" > "+outPath +"; chmod 444 "+outPath});
+			p.waitFor();
 		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -194,6 +202,36 @@ public class Utils {
 					" "+htmlPath+" --header-center \""+header+"\""
 					+" --header-font-size 7 --footer-center \""+footer+"\" --footer-font-size 7 "+
 					outPath+"; chmod 444 "+outPath});
+			p.waitFor();
+		} catch (IOException e) {
+			log.trace(e);
+		} catch (InterruptedException e) {
+			log.trace(e);
+		}
+	}
+	
+	public static void HTML_TO_PDF_TICKET(String htmlPath, String outPath){
+		GSettings g=GSettings.instance();
+		String home=g.getHome();
+		String tmp=g.getPathTo("TMP_FOLDER");
+		String htmlToPdf=g.getKey("DOCKER_HTMLTOPDF_IMAGE");
+		Log log = new Log();
+		log.object("executing","bash","-c","docker run --rm --volume="+
+				home+":"+home+
+				" "+ htmlToPdf
+				+" --page-width 80mm --page-height 240mm --margin-bottom 0mm --margin-left 0mm --margin-right 0mm --margin-top 0mm "
+				+htmlPath+ " "
+				+outPath
+				+"; chmod 444 "+outPath);
+		try {
+			Process p = Runtime.getRuntime().exec(new String[]{
+					"bash","-c","docker run --rm --volume="+
+					home+":"+home+
+					" "+ htmlToPdf
+					+" --page-width 80mm --page-height 240mm --margin-bottom 0mm --margin-left 0mm --margin-right 0mm --margin-top 0mm "
+					+htmlPath+ " "
+					+outPath
+					+"; chmod 444 "+outPath});
 			p.waitFor();
 		} catch (IOException e) {
 			log.trace(e);
@@ -489,7 +527,7 @@ public class Utils {
 	    
 	}
 
-	public static String GEN_CFD_STRING_PAGO(Invoice invoice){
+	public static String GEN_CFD_STRING_PAGO(InvoiceTypePayment invoice){
 		int clientReference=ClientReference.get();
 		
 		OnlineClient onlineClient=OnlineClients.instance().get(clientReference);

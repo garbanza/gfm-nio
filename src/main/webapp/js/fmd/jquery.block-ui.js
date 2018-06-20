@@ -12,6 +12,7 @@
 	};
 	$.blockUI=function(opts){
 		console.log("reg init:");console.log(registry);
+		console.log("opts"); console.log(opts);
 		if(opts.unBlockUI){
 			var focusOn;
 			if(opts.id){
@@ -30,6 +31,7 @@
 			}
 			else{
 				console.log("delete last");
+				if(opts.afterUnblock)opts.afterUnblock();
 				var last=registry.length-1;
 				focusOn=registry[last].focusOn;
 				$(registry[last].node).remove();
@@ -90,8 +92,11 @@
 				return;
 			}
 			else if(typeOf(opts)=="object"){
+				console.log("opts");
+				console.log(opts);
 				console.log("object id:"+opts.attr('id'));
 				$.blockUI({id:opts.attr('id'), unBlockUI:true});
+				//$.blockUI(opts);
 				return;
 			}
 			

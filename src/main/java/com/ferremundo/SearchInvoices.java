@@ -22,7 +22,7 @@ import com.mongodb.DBObject;
 
 public class SearchInvoices extends HttpServlet{
 
-	private static int MAX_RESULTS=20;
+	private static int MAX_RESULTS=100;
 	 
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException{

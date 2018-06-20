@@ -25,7 +25,12 @@ public class FixDB {
 			new Mongoi().doUpdate(Mongoi.DB_FIXES, "{ \"id\" : 0 }", "{ \"fixed\" : true }");
 			return "ok";
 		}
-		if(n>0)return "fix not yet implemented : "+n;
+		else if(n>0)return "fix not yet implemented : "+n;
+		else if(n == -1){
+			fixRecordsCollectionNotAvailable();
+			return "ok";
+		}
+		
 		else return "fix not yet implemented : "+n;
 	}
 	
@@ -42,6 +47,16 @@ public class FixDB {
 			collection.update(dbObject, dbObject2);
 			log.info("updatig :"+ code);
 		}
+	}
+	
+	private static void fixRecordsCollectionNotAvailable(){
+		new Mongoi().getCollection(Mongoi.TEMPORAL_RECORDS).ensureIndex(new BasicDBObject("login", 1));
+		new Mongoi().getCollection(Mongoi.TEMPORAL_RECORDS).ensureIndex(new BasicDBObject("todo", 1));
+		new Mongoi().getCollection(Mongoi.TEMPORAL_RECORDS).ensureIndex(new BasicDBObject("id", 1), new BasicDBObject("unique", true));
+		
+		new Mongoi().getCollection(Mongoi.TEMPORAL_RECORDS_COUNTER).ensureIndex(new BasicDBObject("unique", 1), new BasicDBObject("unique", true));
+		new Mongoi().doInsert(Mongoi.TEMPORAL_RECORDS_COUNTER, "{ \"unique\" : \"unique\" , \"id\" : 0}");
+		
 	}
 	
 

@@ -1,5 +1,5 @@
 
-CLIENT_ID=function(){return "-|1803272109|sessionid:"+CLIENT_REFERENCE+"|-"};
+CLIENT_ID=function(){return "-|1806200006|sessionid:"+CLIENT_REFERENCE+"|-"};
 function Item(quantity,code,unit,mark,description,unitPrice,total){
 	this.quantity=quantity;
 	this.unit=unit;
@@ -816,10 +816,9 @@ resetClient=function(){
 		url: CONTEXT_PATH+'/dbport',
 		type:'POST',
 		data: {
-			command:"returnrecords",
-			args: "",
+			command:"readrecords",
+			limit: "",
 			requestNumber: REQUEST_NUMBER,
-			consummerType: client?client.consummerType:1,
 			token : TOKEN,
 			clientReference: CLIENT_REFERENCE
 		},
@@ -1046,4 +1045,29 @@ function applyDiscount(){
 		});
 	}
 	
+}
+
+function filterData(data,keys,keep){
+	var result=[];
+	if(keep==true){
+		for(var i = 0; i < data.length; i++){
+			var object = {};
+			for(var j = 0; j < keys.length; j++){
+				object[keys[j]] = data[i][keys[j]];
+			}
+			result.push(object);
+		}
+		return result;
+	}
+	else {
+		for(var i = 0; i < data.length; i++){
+			var object ={};
+			for(var j = 0; j < keys.length; j++){
+				if(!data[i][keys[j]]) object[keys[j]] = data[i][keys[j]];
+			}
+			result.push(object);
+		}
+		return result;
+		
+	}
 }
