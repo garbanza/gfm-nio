@@ -32,6 +32,7 @@ public class Profact implements ElectronicInvoice {
 	    invoice64 = DatatypeConverter.printBase64Binary(cfd64);
 		this.invoice=invoice;
 	}
+
 	public Profact() {
 	}
 	public String getXml(){

@@ -3,6 +3,7 @@ package com.ferremundo;
 import java.net.UnknownHostException;
 
 import com.ferremundo.db.Mongoi;
+import com.ferremundo.stt.GSettings;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -25,13 +26,67 @@ public class FixDB {
 			new Mongoi().doUpdate(Mongoi.DB_FIXES, "{ \"id\" : 0 }", "{ \"fixed\" : true }");
 			return "ok";
 		}
-		else if(n>0)return "fix not yet implemented : "+n;
+		else if(n==1){
+			writeMostImportantToBlockchain();
+			return "ok";
+		}
+		else if(n>1)return "fix not yet implemented : "+n;
 		else if(n == -1){
 			fixRecordsCollectionNotAvailable();
 			return "ok";
 		}
 		
 		else return "fix not yet implemented : "+n;
+	}
+	
+	
+	private static void writeMostImportantToBlockchain(){
+		Log log = new Log();
+		Blockchain blockchain = Blockchain.instance();
+		DBCollection collection = new Mongoi().getCollection(Mongoi.AGENTS);
+		DBCursor cursor=collection.find();
+		/*while(cursor.hasNext()){
+			DBObject n=cursor.next();
+			String code=n.get("code").toString();
+			String query =
+					"{\"method\" : \"publish\","
+					+"\"params\" : [\""+GSettings.get("BLOCKCHAIN_STREAM_NAME")+
+					"\", [\""+code+"\"], {\"json\" : "+n.toString()+"}], \"id\" : \""+code+"\"}";
+			String result = blockchain.query(query);
+		}
+		collection = new Mongoi().getCollection(Mongoi.CLIENTS);
+		cursor=collection.find();
+		while(cursor.hasNext()){
+			DBObject n=cursor.next();
+			String code=n.get("code").toString();
+			String query =
+					"{\"method\" : \"publish\","
+					+"\"params\" : [\""+GSettings.get("BLOCKCHAIN_STREAM_NAME")+
+					"\", [\""+code+"\"], {\"json\" : "+n.toString()+"}], \"id\" : \""+code+"\"}";
+			String result = blockchain.query(query);
+		}*/
+		/*collection = new Mongoi().getCollection(Mongoi.INVOICES);
+		cursor=collection.find();
+		while(cursor.hasNext()){
+			DBObject n=cursor.next();
+			String code=n.get("reference").toString();
+			String query =
+					"{\"method\" : \"publish\","
+					+"\"params\" : [\""+GSettings.get("BLOCKCHAIN_STREAM_NAME")+
+					"\", [\""+code+"\"], {\"json\" : "+n.toString()+"}], \"id\" : \""+code+"\"}";
+			String result = blockchain.query(query);
+		}*/
+		collection = new Mongoi().getCollection(Mongoi.PRODUCTS);
+		cursor=collection.find();
+		while(cursor.hasNext()){
+			DBObject n=cursor.next();
+			String code=n.get("code").toString();
+			String query =
+					"{\"method\" : \"publish\","
+					+"\"params\" : [\""+GSettings.get("BLOCKCHAIN_STREAM_NAME")+
+					"\", [\""+code+"\"], {\"json\" : "+n.toString()+"}], \"id\" : \""+code+"\"}";
+			String result = blockchain.query(query);
+		}
 	}
 	
 	private static void fixProductHashToSimplyBeTheCode(){

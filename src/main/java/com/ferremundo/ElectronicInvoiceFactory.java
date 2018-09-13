@@ -72,7 +72,7 @@ public class ElectronicInvoiceFactory {
 	    Comprobante comp = of.createComprobante();
 	    log.object("comp is:",comp);
 	    comp.setVersion("3.2");
-	    comp.setFecha(new Date());
+	    //comp.setFecha(new Date());
 	    comp.setMetodoDePago(invoice.getPaymentMethod());
 	    comp.setFormaDePago(invoice.getPaymentWay());
 	    comp.setSerie(invoice.getSeries());
@@ -371,7 +371,7 @@ public class ElectronicInvoiceFactory {
 	    Comprobante comp = of.createComprobante();
 	    log.object("comp is:",comp);
 	    comp.setVersion("3.2");
-	    comp.setFecha(new Date());
+	    //comp.setFecha(new Date());
 	    comp.setMetodoDePago(invoice.getPaymentMethod());
 	    comp.setFormaDePago(invoice.getPaymentWay());
 	    comp.setSerie(g.getKey("INVOICE_SERIAL"));

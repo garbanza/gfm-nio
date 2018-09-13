@@ -26,6 +26,8 @@ repositories {
     jcenter()
     mavenCentral()
     maven { url "https://jitpack.io" }
+    //GitHub BitcoindClient4j Repository
+    //maven { url "https://s3.amazonaws.com/37mvnrepo/release" }
 }
 
 // Apply the java plugin to add support for Java
@@ -98,7 +100,9 @@ dependencies {
 	compile group: 'com.sun.xml.bind', name: 'jaxb-xjc', version: '2.1.12'
 	compile group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.1.12'
 	compile group: 'com.thaiopensource', name: 'jing', version: '20091111'
+	
 	compile group: 'do.ferremun', name: 'cfdi-base', version: '0.3.1'
+	//compile group: 'mx.grupocorasa.cfdi', name: 'cfdi-base', version: '3.3.2'
 	
 	compile group: 'org.apache.axis2', name: 'axis2', version: '1.7.3'
 	compile group: 'org.apache.axis2', name: 'axis2-jaxws', version: '1.7.3'
@@ -118,6 +122,9 @@ dependencies {
 	compile group: 'isorelax', name: 'isorelax', version: '20030108'
 	compile group: 'org.iso_relax.verifier.jaxp.validation', name: 'isorelax-jaxp-bridge', version: '1.0'
 	
+	compile group: 'wf.bitcoin', name: 'JavaBitcoindRpcClient', version: '0.9.13'
+	compile group : 'com.thetransactioncompany', name : 'jsonrpc2-base', version : '1.38'
+	compile group : 'com.thetransactioncompany', name : 'jsonrpc2-client', version : '1.15'
 	def tomcatVersion = '9.0.1'
     tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
            "org.apache.tomcat.embed:tomcat-embed-logging-juli:9.0.0.M6",//${tomcatVersion}",

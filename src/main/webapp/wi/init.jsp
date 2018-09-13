@@ -146,7 +146,7 @@
 ["@mp", "definir método de pago", "@mp PUE|PPD"],
 ["$oc", "pedido a cliente, imprimiendo en formato carta", "$oc [#_de_copias]"],
 ["@pcot", "cotizacion imprimiendo en formato carta", "@pcot [#_de_copias]"],
-["@print", "imprimir documento en formato carta", "@print #_de_referencia"],
+["@print", "imprimir documento en formato carta", "@print #_de_referencia #_de_copias"],
 ["@r", "agregar la lista del documento", "@r #_de_referencia"],
 ["@rl", "mostrar representacion del documento", "@rl #_de_referencia"],
 ["%rb", "borrar recordatorio", "%rb #_de_mensaje"],
@@ -155,7 +155,7 @@
 ["$tfc", "facturar a cliente, imprimiendo en formato ticket", "$tfc [#_de_copias]"],
 ["$toc", "pedido a cliente, imprimiendo en formato ticket", "$toc [#_de_copias]"],
 ["@tpcot", "cotizacion imprimiendo en formato ticket", "@tpcot [#_de_copias]"],
-["@tprint", "imprimir documento en formato ticket", "@tprint #_de_referencia"]
+["@tprint", "imprimir documento en formato ticket", "@tprint #_de_referencia #_de_copias"]
 ]
 	$.capsule([
 {
@@ -2087,6 +2087,9 @@
 							else if (commandline.kind == 'editclient' || commandline.kind == 'editagent') {
 								addConsummerIn2(commander);
 							}
+							else if (commandline.kind == 'invoicepayment') {
+								invoicePaymentForm(commander);
+							}
 							else if (commandline.kind == 'editproduct' || commandline.kind == 'editagent') {
 								editProduct(commander);
 							}
@@ -2482,6 +2485,36 @@
 								});
 									
 							}
+							else if (commandline.kind == 'fixdb'){
+								var kind = commandline.kind,
+									fixNumber = commandline.args[0];
+								commander.reset();
+								$.ajax({
+									url : CONTEXT_PATH+'/dbport',
+									type : 'POST',
+									data : {
+										command : kind,
+										fixNumber : fixNumber,//$("#absolutediscount").val(),
+										token : TOKEN,
+										clientReference : CLIENT_REFERENCE
+									},
+									success : function(data) {
+										alert(data.result);
+										console.log(data.result)
+									},
+									error : function(
+											jqXHR,
+											textStatus,
+											errorThrown) {
+										alert("el sistema dice: "
+												+ textStatus
+												+ " - "
+												+ errorThrown
+												+ " - "
+												+ jqXHR.responseText);
+									}
+								});
+							}
 						}
 						$('#commands2').css({"background-color" : "rgb(207,216,227)"}).focus().commandro({						
 							//input:$('#registerProduct').find('#code'),
@@ -2714,12 +2747,12 @@
 
 <title>Ferremundo - pedidos</title>
 </head>
-<body>
+<body class="ui-widget">
 	
 
 
-	<div class="ui-widget">
-		<input id="commands" style="width:80%" />
+	<div >
+		<!--input id="commands" style="width:80%" /-->
 		<input id='commands2' app-id="form-input form-goup-1" style="width:80%"><a id="shopmanSession"></a>
 		<div id="searchResultset"></div>
 		<script type="text/javascript">
@@ -2730,31 +2763,31 @@
 			};
 		</script>
 		<button type="button" id="lockbutton">lock</button>
-		<button type="button" onclick="new fillCommandLine('@pcot');">imprimir cotizacion</button>
+		
 		<!--button type="button" onclick="new fillCommandLine('@ia');">cotizar
 			a agente</button-->
-		<button type="button" onclick="new fillCommandLine('@ecot');">enviar cotizacion</button>
+
+		<button type="button" onclick="new fillCommandLine('@pcot');">cotizacion</button>
 		<!--button type="button" onclick="new fillCommandLine('@oa');">credito
 			a agente</button-->
-		<button type="button" onclick="new fillCommandLine('$oc');">pedido
-			a cliente+abono</button>
+		<button type="button" onclick="new fillCommandLine('$oc');">pedido</button>
 		<!--button type="button" onclick="new fillCommandLine('$oa');">pedido
 			a agente+abono</button-->
-		<button type="button" onclick="new fillCommandLine('$fc');">factura
-			a cliente+abono</button>
+		<button type="button" onclick="new fillCommandLine('$fc');">factura</button>
 		<button type="button" onclick="new fillCommandLine('$ef');">enviar factura</button>
+		<button type="button" onclick="new fillCommandLine('@ecot');">enviar cotizacion</button>
 		<!--button type="button" onclick="new fillCommandLine('$fa');">factura
 			a agente+abono</button-->
 		<!--Metodo de pago -->
 		
 		<select id="paymentMethod" style="width:10%">
-			<option ></option>
+			<option disabled selected value>Metodo de Pago</option>
 			<option value="PUE">PUE Pago en una sola exhibición</option>
 			<option value="PPD">PPD Pago parcialidades o diferido</option>
 		</select>
 		<!-- Forma de pago -->
-		<select id="paymentWay" style="width:10%">
-  			<option ></option>
+		<select id="paymentWay" style="width:10%" placeholder="Forma de Pago">
+  			<option disabled selected value>Forma de Pago</option>
   			<option value="01">01 Efectivo</option>
 			<option value="02">02 Cheque nominativo</option>
 			<option value="03">03 Transferencia electrónica de fondos</option>
@@ -2779,13 +2812,13 @@
 		</select>
 		<select id="documentType" style="width:10%">
 			<option value="I">I Ingreso</option>
-			<option value="E">E Egreso</option>
+			<!--option value="E">E Egreso</option>
 			<option value="T">T Traslado</option>
 			<option value="N">N Nomina</option>
-			<option value="P">P Pago</option>
+			<option value="P">P Pago</option-->
 		</select>
 		<select id="cfdiUse" style="width:10%">
-			<option ></option>
+			<option disabled selected value>Uso de CFDI</option>
 			<option value="G01">G01 Adquisición de mercancias</option>
 			<option value="G02">G02 Devoluciones, descuentos o
 				bonificaciones</option>
@@ -2819,8 +2852,8 @@
 				(colegiaturas)</option>
 			<option value="P01">P01 Por definir</option>
 		</select>
-		<input id="destiny" value="Mostrador" onfocus="(function(t){t.select()})(this)"/>
-		desc<input id="consummerDiscount" value="0" onfocus="(function(t){t.select()})(this)" onchange="(function(){applyDiscount(this)})()"/>
+		<input id="destiny" value="Mostrador" placeholder="Referencias/Destino" style="width:20%" onfocus="(function(t){t.select()})(this)"/>
+		desc<input id="consummerDiscount" type="number" step="0.01"style="width:80px" value="0" onfocus="(function(t){t.select()})(this)" onchange="(function(){applyDiscount(this)})()"/>
 		
 		<!--abs<input id="absoluteDiscount" value="0" onfocus="(function(t){t.select()})(this)" onchange="(function(){applyDiscount(this)})()"/>-->
 		<select id="coin" style="width:10%">

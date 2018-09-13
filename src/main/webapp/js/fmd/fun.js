@@ -1,5 +1,5 @@
 
-CLIENT_ID=function(){return "-|1806200006|sessionid:"+CLIENT_REFERENCE+"|-"};
+CLIENT_ID=function(){return "-|1809131714|sessionid:"+CLIENT_REFERENCE+"|-"};
 function Item(quantity,code,unit,mark,description,unitPrice,total){
 	this.quantity=quantity;
 	this.unit=unit;
@@ -269,16 +269,18 @@ invoiceInfoLog=function(invoice,node){
 			theLogs+="CERRADO "+log.login+" " +date+" | ";
 		}
 		else if(log.kind==="CREATED"){
-			closed=true;
 			theLogs+="CREADO "+log.login+" " +date+" | ";
 		}
 		else if(log.kind==="AGENT_INCREMENT_EARNINGS"){
-			closed=true;
 			theLogs+="MAS A AGENTE "+log.login+" $" +log.value+" "+date+" | ";
 		}
 		else if(log.kind==="PAYMENT"){
-			closed=true;
-			theLogs+="ENTRADA "+log.login+" $" +log.value+" "+date+" | ";
+			var thedate2 = new Date(log.value.date);
+			var mm = thedate2.getMonth() + 1;
+		    var dd = thedate2.getDate();
+		    var yyyy = thedate2.getFullYear();
+		    var date2 = yyyy+'.'+mm + '.' + dd;
+			theLogs+="PAGO "+log.login+" $" +log.value.amount+" ("+log.value.relatedDoc+","+date2+","+log.value.operationNumber+") "+date+" | ";
 		}
 	}
 	theLogs+="-";
@@ -290,21 +292,34 @@ invoiceInfoLog=function(invoice,node){
     var date = yyyy+'.'+mm + '.' + dd;
     */
 	//var pastDued=new Date().getTime()>=pastDue;
-	
-	var result="TIPO : "+(i.invoiceType==0?'FACTURA':(i.invoiceType==1?'PEDIDO':'COTIZACION'))+" | "+
+	var documentType, notes = false;
+	if(i.invoiceType==0)documentType="FACTURA";
+	else if(i.invoiceType==1)documentType="PEDIDO";
+	else if(i.invoiceType==2)documentType="COTIZACION";
+	else if(i.invoiceType==3){
+		documentType = "FACTURA PAGO";
+		notes ="("
+		for(var j = 0; j < i.relatedDocs.length; j++){
+			var jsonf = ($.toJSON(i.relatedDocs[j])+"").replace(/,/g," , ").replace(/\"/g,"").replace(/:/g," : ")
+			notes += jsonf+(j==(i.relatedDocs.length-1)?"":" | ");
+		}
+		notes += ")";
+	}
+	else if(i.invoiceType==4)documentType="CAJA PAGO";
+	var result="TIPO : "+documentType+" | "+
 		(canceled?"(CANCELADA)":"")+
 		(closed?"(CERRADA)":"")+
 		"referencia : "+i.reference+" | "+
-		"valor neto : "+i.totalValue+" | "+
 		"total : "+i.total+" | "+
 		//"agente : "+i.agent.consummer+" | "+
 		//"$agente : $"+i.agentPayment+""+(agentPayed?"(LIQUIDADO)":"(NO LIQUIDADO)")+" | "+
 		"cliente : "+i.client.consummer+" | "+
-		"facturado? : "+(factured?"SI":"NO")+" | "+
+		"facturado? : "+(i.hasElectronicVersion?"SI":"NO")+" | "+
 		//"adeudo : $"+i.debt+" | "+
 		//"vence : "+date+""+(pastDued?"(VENCIDO)":"")+" | "+
 		"atendio : "+i.shopman.login+" | "+
-		theLogs;
+		theLogs+
+		(notes?notes:"");
 	
 	var consummerObj={content:result};
 	var defaultNode='#logResultset';
@@ -649,7 +664,8 @@ function onLogChange(){
 	var q=[];
 	var up=[];
 	var i=0;
-	
+	var upNoTaxes = [];
+	var itemTotal = [];
 	$('.quantity').each(function(){
 		q[i]=parseFloat($(this).text());
 		i++;
@@ -657,15 +673,18 @@ function onLogChange(){
 	i=0;
 	$('.unitPrice').each(function(){
 		up[i]=parseFloat($(this).text());
+		upNoTaxes[i] = parseFloat((up[i]/(1+TAXES_VALUE)).toFixed(2));
+		itemTotal[i] = parseFloat((q[i]*upNoTaxes[i]*(1+TAXES_VALUE)).toFixed(2));
 		i++;
 	});
+	
 	i=0;
 	var total=0;
 	$('.total').each(function(){
 		//$(this).html((q[i]*up[i]).toFixed(2));
 		var thisTotal=parseFloat(((q[i]*up[i]/(1+TAXES_VALUE)).toFixed(2)*(1+TAXES_VALUE)).toFixed(2));
-		$(this).html(thisTotal);
-		total+=thisTotal;
+		$(this).html(itemTotal[i]);//thisTotal);
+		total+=itemTotal[i];//thisTotal;
 		i++;
 	});
 	i=0;
@@ -674,7 +693,7 @@ function onLogChange(){
 		i++;
 	});
 	
-	$('.g-total').html("$ "+total.toFixed(2));
+	$('.g-total').html("$ "+total);
 	$(".tableingrow").unbind('mousedown').mousedown(function(e){
 		var index=$('.tableingrow').index(this);
 		if(e.which==2){
@@ -734,9 +753,9 @@ function onLogChange(){
 	for(var i=0;i<productsLog.length;i++){
 		var thisTotal=parseFloat(((q[i]*up[i]/(1+TAXES_VALUE)).toFixed(2)*(1+TAXES_VALUE)).toFixed(2));
 		//total+=productsLog[i].disabled?0:parseFloat(productsLog[i].quantity)*parseFloat(productsLog[i].unitPrice);
-		total+=productsLog[i].disabled?0:thisTotal;
+		total+=productsLog[i].disabled?0:itemTotal[i];//thisTotal;
 	}
-	$('.g-total2').html("$ "+total.toFixed(2));
+	$('.g-total2').html("$ "+total);
 	var length_=$(".tableingrow").length;
 	$('.g-area-to-print').html(length_+" -> "+Math.ceil(length_/17)+" hojas");
 	
@@ -807,6 +826,8 @@ resetClient=function(){
 		animate : 100
 	});
 	$('#paymentMethod').val('');
+	$('#paymentWay').val('');
+	$('#cfdiUse').val('');
 	$('#accountPaymentNumber').val('N.A.');
 	onLogChange();
 	$("#commands").val('');

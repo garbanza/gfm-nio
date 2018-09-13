@@ -4,6 +4,8 @@ import java.util.Date;
 
 import com.google.gson.Gson;
 
+import mx.bigdata.sat.common.pagos.schema.Pagos.Pago.DoctoRelacionado;
+
 public class InvoiceLog {
 	
 	public static enum LogKind{
@@ -47,7 +49,22 @@ public class InvoiceLog {
 	public static void main(String[] args) {
 		InvoiceLog log=new InvoiceLog(LogKind.PAYMENT,12.04f,"login");
 		System.out.println(new Gson().toJson(log));
+		
 		//System.out.println(log.kind()+" : "+((Float)log.getValue())+" : "+log.getDate());
+	}
+	
+	public static class Payment{
+		public float amount;
+		public Long date;
+		public String operationNumber;
+		public String relatedDoc;
+		
+		public Payment(float amount, Long date, String operationNumber, String relatedDoc) {
+			this.amount = amount;
+			this.date = date;
+			this.operationNumber = operationNumber;
+			this.relatedDoc = relatedDoc;
+		}
 	}
 	
 }

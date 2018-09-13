@@ -31,6 +31,38 @@
 		"es":"la factura fué generada pero el archivo XML no fue encontrado"},
 	"CODE_2":{
 		"en":"no solution found at the moment, could not gererate your printing document ${0}",
-		"es":"no hubo solución implementada actualmente para generar el documento de impresión ${0}"}
+		"es":"no hubo solución implementada actualmente para generar el documento de impresión ${0}"},
+	"CODE_3" : {
+		"en":"The invoice ${0} has been payed before",
+		"es":"La farctura ${0} ya ha sido pagada con anterioridad"},
+	"CODE_4" : {
+		"en":"Operation not allowable. The amount excedes debt of documets ${0}. ${1} > ${2}",
+		"es":"Operacion no permitida. El monto exede la deuda de los documentos ${0}. ${1} > ${2}"},
+	"CODE_5" : {
+		"en":"Payment method not defined",
+		"es":"Métoda de pago no definido"},
+	"CODE_6" : {
+		"en":"Payment way not defined",
+		"es":"Forma de pago no definida"},
+	"CODE_7" : {
+		"en":"CFDI use not defined",
+		"es":"Uso de CFDI no definido"},
+	"CODE_8" : {
+		"en":"The document is not an invoice ${0}",
+		"es":"El documento no es factura ${0}"},
+	"CODE_9" : {
+		"en":"It seems that the document has not an electronic version CFDI ${0}",
+		"es":"Parece que el documento no tiene una version electronica CFDI ${0}"},
+	"CODE_10" : {
+		"en":"The fiscal code is different for the first document ${0} and the ${1}. ${2} does not match ${3}",
+		"es":"El RFC no es el mismo para el primer documesto ${0} y el ${1}. ${2} no es igual a ${3}"},
+	"CODE_11" : {
+		"en":"The number of documents referred must be equal to the number of amounts defined",
+		"es":"El número de documentos referidos debe ser igual al número de montos definidos"}
+		
+		
+		
+		
+		
 		
 }

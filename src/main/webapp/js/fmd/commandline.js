@@ -375,6 +375,9 @@
 			$(input).ShowBubblePopup( {innerHtml: 'absolutediscount'} );
 			this.kind="absolutediscount";
 		}
+		else if(this.command=='@pago'){
+			this.kind="invoicepayment";
+		}
 		else if(this.command=='%fixdb'){
 			if(this.args[0]){
 				if(isNumber(this.args[0])){

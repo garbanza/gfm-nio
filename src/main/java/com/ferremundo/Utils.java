@@ -23,9 +23,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -34,14 +36,21 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 
+import com.ferremundo.db.Mongoi;
 import com.ferremundo.stt.GSettings;
 import com.ferremundo.util.Util;
 import com.google.gson.Gson;
 import com.ibm.icu.text.DecimalFormat;
+import com.mongodb.DBObject;
 
 import mx.bigdata.sat.cfdi.CFDv33;
 import mx.bigdata.sat.cfdi.v33.schema.Comprobante;
 import mx.bigdata.sat.cfdi.v33.schema.ObjectFactory;
+import mx.bigdata.sat.common.pagos.schema.CMonedaPago;
+import mx.bigdata.sat.common.pagos.schema.Pagos;
+import mx.bigdata.sat.common.pagos.schema.Pagos.Pago;
+import mx.bigdata.sat.common.pagos.schema.Pagos.Pago.DoctoRelacionado;
+import mx.bigdata.sat.cfdi.v33.schema.Comprobante.Complemento;
 import mx.bigdata.sat.cfdi.v33.schema.Comprobante.Conceptos;
 import mx.bigdata.sat.cfdi.v33.schema.Comprobante.Emisor;
 import mx.bigdata.sat.cfdi.v33.schema.Comprobante.Receptor;
@@ -317,7 +326,7 @@ public class Utils {
 	    	c1.setUnidad(unit);
 		    c1.setImporte(Util.bigRound2(itemTotal));
 		    log.info("product total :"+itemTotal);
-		    c1.setCantidad(Util.bigRound2(quantity));
+		    c1.setCantidad(Util.bigRound6(quantity));
 		    log.info("product quantity :"+quantity);
 		    c1.setDescripcion(description);
 		    c1.setValorUnitario(Util.bigRound2(unitPrice));
@@ -452,7 +461,7 @@ public class Utils {
 		return ((DateFormat)(new SimpleDateFormat(format))).format(date);
 	}
 	
-	public static void main(String[] args) {
+	/*public static void main(String[] args) {
 		System.out.println("start");
 		
 		Invoice invoice = new InvoiceFM01(
@@ -517,7 +526,7 @@ public class Utils {
 				"paymentMethod",
 				"paymentWay",
 				"documentType",
-				"coin");
+				"coin", "PUE");
 		ObjectFactory of = new ObjectFactory();
 	    Comprobante comp = of.createComprobante();
 	    
@@ -525,9 +534,9 @@ public class Utils {
 	    Gson gson = new Gson();
 	    System.out.println(gson.toJson(comp));
 	    
-	}
+	}*/
 
-	public static String GEN_CFD_STRING_PAGO(InvoiceTypePayment invoice){
+	public static String GEN_CFD_TYPE_PAYMENT_STRING(InvoiceTypePayment invoice){
 		int clientReference=ClientReference.get();
 		
 		OnlineClient onlineClient=OnlineClients.instance().get(clientReference);
@@ -539,130 +548,84 @@ public class Utils {
 		ObjectFactory of = new ObjectFactory();
 	    Comprobante comp = of.createComprobante();
 	    log.object("comp is:",comp);
-	    comp.setVersion("3.3");
 	    GregorianCalendar gregorian = new GregorianCalendar();
 	    gregorian.setTime(new Date());
 	    XMLGregorianCalendar xmlGregorian=null;
+	    DateFormat format = null;
 		try {
-			DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+			format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 			xmlGregorian = DatatypeFactory.newInstance().newXMLGregorianCalendar(format.format(new Date()));
 		} catch (DatatypeConfigurationException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
+		comp.setVersion("3.3");
 	    comp.setFecha(xmlGregorian);
-	    if(invoice.getPaymentMethod()!=null&&invoice.getPaymentMethod()!="")comp.setMetodoPago(CMetodoPago.fromValue(invoice.getPaymentMethod()));
-	    if(invoice.getPaymentWay()!=null&&invoice.getPaymentWay()!="")comp.setFormaPago(invoice.getPaymentWay());
-	    comp.setSerie(invoice.getSeries());
-	    comp.setFolio(invoice.getReference());
+	    comp.setSerie(invoice.series);
+	    comp.setFolio(invoice.reference);
+	    comp.setSubTotal(Util.bigRound2(0));
+	    comp.setTotal(Util.bigRound2(0));
+	    comp.setTipoDeComprobante(CTipoDeComprobante.fromValue("P"));
+	    comp.setLugarExpedicion(g.getKey("INVOICE_SENDER_POSTAL_CODE"));
+	    comp.setMoneda(CMoneda.XXX);
+	    
 	    Conceptos cps = of.createComprobanteConceptos();
 	    List<Concepto> list = cps.getConcepto();
-	    float taxValue=new Float(GSettings.get("TAXES_VALUE"))*100;
-	    MathContext mt=new MathContext(20, RoundingMode.HALF_UP);
-	    MathContext mt2=new MathContext(6, RoundingMode.HALF_UP);
-	    DecimalFormat format6 = new DecimalFormat("0.000000");
-		DecimalFormat format2 = new DecimalFormat("0.00");
-	    //BigDecimal F = new BigDecimal(1+taxValue*1f/100f, mt);
-	    double F = 1+taxValue*1f/100f;
-	    //BigDecimal f = new BigDecimal(taxValue*1f/100f,mt);
-	    double f = taxValue*1f/100f;
-	    double subTotal = 0;//new BigDecimal(0,mt);
-	    //double total = 0;//new BigDecimal(0,mt);
-	    double totalTaxes = 0;
-	    for(InvoiceItem invoiceItems : invoice.getItems()){
-	    	//BigDecimal unitPricePlusTaxes = new BigDecimal(invoiceItems.getUnitPrice(),mt);
-	    	double unitPricePlusTaxes = invoiceItems.getUnitPrice();
-	    	//BigDecimal unitPrice = unitPricePlusTaxes.divide(F, mt);
-	    	double unitPrice = Util.round2(unitPricePlusTaxes/F);
-	    	//BigDecimal quantity = new BigDecimal(invoiceItems.getQuantity(), mt);
-	    	double quantity = invoiceItems.getQuantity();
-	    	//BigDecimal itemTotalPlusTaxes = quantity.multiply(unitPricePlusTaxes, mt);
-	    	double itemTotalPlusTaxes = quantity*unitPricePlusTaxes;
-	    	//BigDecimal itemTotal = quantity.multiply(unitPrice,mt);
-	    	double itemTotal = Util.round2(quantity*unitPrice);
-	    	//total = total.add(Util.round2(itemTotalPlusTaxes), mt);
-	    	//total = total + itemTotalPlusTaxes;
-	    	subTotal += itemTotal;
-	    	String unit=invoiceItems.getUnit();
-	    	String description=invoiceItems.getDescription();
-	    	String claveProdServ=invoiceItems.getProdservCode();
-	    	String claveUnidad=invoiceItems.getUnitCode();
-	    	Impuestos impuestos= new Impuestos();
-	    	Traslados traslados = new Traslados();
-	    	Traslado traslado = new Traslado();
-	    	traslado.setBase(Util.bigRound2(itemTotal));
-	    	traslado.setImpuesto(g.get("TAXES_NAME"));
-	    	traslado.setTipoFactor(CTipoFactor.fromValue(g.get("TAXES_FACTOR_TYPE")));
-	        traslado.setTasaOCuota(new BigDecimal(g.get("TAXES_VALUE"),mt));
-	        //BigDecimal taxes = itemTotalPlusTaxes.subtract(itemTotal,mt);
-	        double taxes = Util.round2(itemTotal*f);
-	        totalTaxes += taxes;
-	        traslado.setImporte(Util.bigRound2(taxes));
-	    	traslados.getTraslado().add(traslado);
-	    	impuestos.setTraslados(traslados);
-	    	Concepto c1 = of.createComprobanteConceptosConcepto();	
-	    	c1.setUnidad(unit);
-		    c1.setImporte(Util.bigRound2(itemTotal));
-		    log.info("product total :"+itemTotal);
-		    c1.setCantidad(Util.bigRound2(quantity));
-		    log.info("product quantity :"+quantity);
-		    c1.setDescripcion(description);
-		    c1.setValorUnitario(Util.bigRound2(unitPrice));
-		    c1.setClaveProdServ(claveProdServ);
-		    c1.setClaveUnidad(claveUnidad);
-		    c1.setImpuestos(impuestos);
-		    log.info("product unitPrice :"+unitPrice);
-		    list.add(c1);
-	    }
+	    Concepto c1 = of.createComprobanteConceptosConcepto();
+	    InvoiceItem item = invoice.items.get(0);
+	    c1.setImporte(Util.bigRound2(item.getTotal()));
+	    c1.setCantidad(Util.bigRound6(item.getQuantity()));
+	    //c1.setCantidad(Util.bigRound2(item.getQuantity()));
+	    c1.setDescripcion(item.getDescription());
+	    c1.setValorUnitario(Util.bigRound2(item.getUnitPrice()));
+	    c1.setClaveProdServ(item.getProdservCode());
+	    c1.setClaveUnidad(item.getUnitCode());
+	    list.add(c1);
 	    comp.setConceptos(cps);
-	    //subTotal = total.divide(F, mt);
-	    //subTotal = Util.round2(total/F);
-	    //BigDecimal taxes = total.subtract(subTotal, mt); //subTotal2.multiply(new BigDecimal(1+taxValue*1f/100),mt).subtract(subTotal2,mt2);
-	    double total = totalTaxes + subTotal;
-	    comp.setSubTotal(Util.bigRound2(subTotal));
-	    log.info("subtotal :"+subTotal);
+
+	    Emisor emiter = of.createComprobanteEmisor();
+	    emiter.setNombre(g.getKey("INVOICE_SENDER_NAME"));
+	    emiter.setRfc(g.getKey("INVOICE_SENDER_TAX_CODE"));
+	    emiter.setRegimenFiscal(g.getKey("INVOICE_SENDER_REGIME"));
+	    comp.setEmisor(emiter);
 	    
-	    log.info("total :"+total);
-	    comp.setTotal(Util.bigRound2(total));
-	    if(!(invoice.getDocumentType().equals("I")||invoice.getDocumentType().equals("E")||invoice.getDocumentType().equals("T")))
-	    	comp.setTipoDeComprobante(CTipoDeComprobante.fromValue("I"));
-	    else comp.setTipoDeComprobante(CTipoDeComprobante.fromValue(invoice.getDocumentType()));
-	    Emisor emisor = of.createComprobanteEmisor();
-	    emisor.setNombre(g.getKey("INVOICE_SENDER_NAME"));
-	    emisor.setRfc(g.getKey("INVOICE_SENDER_TAX_CODE"));
-	    emisor.setRegimenFiscal(g.getKey("INVOICE_SENDER_REGIME"));
-	    comp.setEmisor(emisor);
-	    Client c=invoice.getClient();
-	    Receptor receptor = of.createComprobanteReceptor();
-	    receptor.setNombre(c.getConsummer());
-	    receptor.setRfc(c.getRfc());
-	    // TODO fix residencia fiscal
-	    /* if(c.getCountry().equals("MEXICO")||c.getCountry()==null)receptor.setResidenciaFiscal(CPais.MEX);
-	    else receptor.setResidenciaFiscal(CPais.fromValue(c.getCountry()));
-	    */
-	    CUsoCFDI cCfdiUse = null;
-	    System.out.println("cfdiUse='"+c.getCfdiUse()+"'");
-	    if(c.getCfdiUse()!=""||c.getCfdiUse()!=null) cCfdiUse = CUsoCFDI.fromValue(c.getCfdiUse());
-	    receptor.setUsoCFDI(cCfdiUse);
-	    comp.setReceptor(receptor);
-	    mx.bigdata.sat.cfdi.v33.schema.Comprobante.Impuestos.Traslados.Traslado t2 = of.createComprobanteImpuestosTrasladosTraslado();
-	    t2.setImporte(Util.bigRound2(totalTaxes));
-	    t2.setImpuesto(g.getKey("TAXES_NAME"));
-	    t2.setTasaOCuota(new BigDecimal(g.getKey("TAXES_VALUE"),mt));
-	    t2.setTipoFactor(CTipoFactor.fromValue(g.getKey("TAXES_FACTOR_TYPE")));
-	    mx.bigdata.sat.cfdi.v33.schema.Comprobante.Impuestos.Traslados tr2 = new mx.bigdata.sat.cfdi.v33.schema.Comprobante.Impuestos.Traslados();
-	    tr2.getTraslado().add(t2);
-	    mx.bigdata.sat.cfdi.v33.schema.Comprobante.Impuestos imps = new mx.bigdata.sat.cfdi.v33.schema.Comprobante.Impuestos(); 
-	    imps.setTraslados(tr2);
-	    imps.setTotalImpuestosTrasladados(Util.bigRound2(totalTaxes));
-	    comp.setImpuestos(imps);
-	    comp.setLugarExpedicion(g.getKey("INVOICE_SENDER_POSTAL_CODE"));
-	    comp.setMoneda(CMoneda.MXN);
+	    Client c=invoice.client;
+	    Receptor receiver = of.createComprobanteReceptor();
+	    receiver.setNombre(c.getConsummer());
+	    receiver.setRfc(c.getRfc());
+	    CUsoCFDI cCfdiUse = CUsoCFDI.fromValue("P01");
+	    receiver.setUsoCFDI(cCfdiUse);
+	    comp.setReceptor(receiver);
+
+	    List<Complemento> complements = comp.getComplemento();
+	    Complemento complement = new Complemento();
+	    Pago payment = new Pagos.Pago();
+	    try { xmlGregorian = DatatypeFactory.newInstance().newXMLGregorianCalendar(format.format(new Date(invoice.dateTimePayment))); }
+	    catch (DatatypeConfigurationException e2) { e2.printStackTrace(); }
+	    payment.setFechaPago(xmlGregorian);
+	    payment.setMonto(Util.bigRound2(invoice.amount));
+    	payment.setMonedaP(CMonedaPago.MXN);
+    	if(invoice.operationNumber!=null && !invoice.operationNumber.equals(""))
+    		payment.setNumOperacion(invoice.operationNumber);
+    	payment.setFormaDePagoP(invoice.paymentWay);
+    	List<DoctoRelacionado> relatedDocs = payment.getDoctoRelacionado();
+    	Mongoi mongoi = new Mongoi();
+    	for(int i = 0; i < invoice.relatedDocs.length; i++){
+    		relatedDocs.add(invoice.relatedDocs[i]);
+    	}
+    	
+	    Pagos payments = new Pagos();
+	    
+	    payments.setVersion("1.0");
+	    payments.getPago().add(payment);
+	    complement.getAny().add(payments);
+	    complements.add(complement);
 	    log.object("comp is:",comp);
 	    CFDv33 cfd=null;
 	    
 		try {
-			cfd = new CFDv33(comp);
+			cfd = new CFDv33(comp,"mx.bigdata.sat.common.pagos.schema");
+			//cfd = new CFDv33(comp);
 			log.object("comp is:",comp);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

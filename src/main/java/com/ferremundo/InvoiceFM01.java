@@ -261,7 +261,11 @@ public class InvoiceFM01 implements Invoice{
 		this.total=new Float(total);
 		this.subTotal=new Float(subTotal);
 		this.taxes=new Float(taxes);
-		
+		if(paymentMethod.equals("PUE")){
+			this.debt=0;
+			this.logs.add(new InvoiceLog(LogKind.PAYMENT, this.total, shopman.getLogin()));
+		}
+		else if(paymentMethod.equals("PUE"))this.debt=this.total;
 		//System.out.println("LOGS:"+new Gson().toJson(logs));
 		//total=this.getTotal();
 		//System.out.println("TOTAL:"+total);
@@ -508,7 +512,7 @@ public class InvoiceFM01 implements Invoice{
 	
 	@Override
 	public int invoiceType(){
-		return metaData.getInvoiceType();
+		return invoiceType;
 	}
 
 	@Override

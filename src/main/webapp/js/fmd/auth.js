@@ -201,6 +201,56 @@ $.capsule([
 	       			};
 	       		}
 	    		   
+	       },
+	       {
+	    	   name:"invoicePaymentForm",
+	    	   defaults:{
+	       			id:function(){
+		       			return "invoicePaymentFormID"+$.capsule.randomString(1,15,'aA0');
+		       		},
+	       			blockdiv:"blockdiv",
+	       			message:"invoicePaymentForm"
+	       		},
+	    	   html:function(){
+	    		   return '<div id="$(id)" class="$(blockdiv)"> $(message)\
+	    		   <table><tr><td><input id="amount" placeholder="Cantidad Transferida" type="number" step="0.01"/></td><td>Monto</td></tr>\
+	    		   <tr><td><input id="datetime" value="'+new Date().format("yyyy-mm-ddFIXHH:MM:ss").replace("FIX","T")+'"/></td><td>Fecha(AAAA-MM-DDTHH:MM:SS)</td></tr>\
+	    		   <tr><td><select id="paymentWay">\
+	    		   <option disabled selected value>Forma de Pago</option>\
+	    		   <option value="01">01 Efectivo</option>\
+	    		   <option value="02">02 Cheque nominativo</option>\
+	    		   <option value="03">03 Transferencia electrónica de fondos</option>\
+	    		   <option value="04">04 Tarjeta de crédito</option>\
+	    		   <option value="05">05 Monedero electrónico</option>\
+	    		   <option value="06">06 Dinero electrónico</option>\
+	    		   <option value="08">08 Vales de despensa</option>\
+	    		   <option value="12">12 Dación en pago</option>\
+	    		   <option value="13">13 Pago por subrogación</option>\
+	    		   <option value="14">14 Pago por consignación</option>\
+	    		   <option value="15">15 Condonación</option>\
+	    		   <option value="17">17 Compensación</option>\
+	    		   <option value="23">23 Novación</option>\
+	    		   <option value="24">24 Confusión</option>\
+	    		   <option value="25">25 Remisión de deuda</option>\
+	    		   <option value="26">26 Prescripción o caducidad</option>\
+	    		   <option value="27">27 A satisfacción del acreedor</option>\
+	    		   <option value="28">28 Tarjeta de débito</option>\
+	    		   <option value="29">29 Tarjeta de servicios</option>\
+	    		   <option value="30">30 Aplicación de anticipos</option>\
+	    		   <td>FormaPago</td></tr>\
+	    		   <tr><td><input id="operationNumber" placeholder="Num Operación"/></td><td>(opcional) SPEI, Nº Cheque, Clave, Linea captura, Nº Referencia o identificación, etc...</td></tr>\
+	    		   </select></td></tr></table>\
+	    		   Refs:<div id="refs"><input name="ref" placeholder="Referencia"><input name="amount" placeholder="Monto a pagar" type="number" step="0.01"></div>\
+	    		   <input id="morerefs" type="button" value="+ agregar otra" /><br>\
+	    		   <input id="submit" type="button" value="Hacer Pago">\
+	    		   </div>';
+	    	   },
+	    	   css:function(){
+	       			return {
+	       				'.blockdiv' : { 'position': 'fixed', 'top': '0', 'left': '0', 'right': '0', 'bottom': '0', 'background-color': '#fff', 'opacity': '0.9' }
+	       			};
+	       		}
+	    		   
 	       }
 ]);
 authin=function(dats){
@@ -640,6 +690,109 @@ addConsummerIn2=function(commander){
 		
 	});
 };
+
+invoicePaymentForm=function(commander){
+
+	var addid='invoicePaymentFormID'+$.capsule.randomString(1,15,'aA0');
+	var $add=$('body').inInvoicePaymentForm({id:addid});
+	$add.find('#amount').focus();
+	$add.bind('keydown',function(event){
+		if(event.keyCode==27){
+			var stay=confirm("abandonar formulario?");
+			if(!stay){
+				return;
+			}
+			$add.remove();
+			$(commander.input).focus();
+			commander.reset();
+			return;
+		}
+	});
+	$add.find("#morerefs").click(function(event){
+		var id = "refID"+$.capsule.randomString(1,15,'aA0')
+		$add.find("#refs").append('<div id="'+id+'"><input id= "tofocus'+id+'"name="ref" placeholder="Referencia">\
+				<input name="amount" placeholder="Monto a pagar" type="number" step="0.01">\
+				<input id="delete'+id+'" type="button" value="- Quitar">\
+				</div>');
+		$("#delete"+id).click(function(){$("#"+id).remove()});
+		$("#tofocus"+id).focus();
+	});
+	$add.find('#submit').click(function(event){
+
+		var amount=$add.find('#amount').val(),
+			datetime=$add.find('#datetime').val(),
+			paymentWay=$add.find('#paymentWay').val(),
+			operationNumber = $add.find('#operationNumber').val(),
+			refs = [], amounts = [],
+			refsNodes = $add.find('[name="ref"]'),
+			amountsNodes = $add.find('[name="amount"]'),
+			amountsSum = 0;
+		for(var i = 0; i < refsNodes.length; i++){
+			refs[i] = refsNodes[i].value;
+			amounts[i] = amountsNodes[i].value*1;
+			amountsSum += amounts[i];
+			if(refs[i] == '' || amounts[i] == ''){
+				alert("Error: llenar referencias y montos");
+				return;
+			}
+		}
+		if(amountsSum != amount){
+			alert("Error: La suma de los Montos a pagar debe ser igual al Monto "+amount+'!='+amountsSum);
+			return;
+		}
+		if(amount == '' || amount <= 0 || datetime == '' || paymentWay == '' || refs.legth == 0){
+			alert("Error: llenar todo correctamente");
+			return;
+		}
+		if(!isNumber(amount)){alert("Error: Monto no numèrico"); return;}
+		if(!datetime.match("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$")){alert("Error: Fecha debe ser ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$"); return;}
+		
+		var block1=$.blockUI({
+			content : '<h1><img src="img/wait.gif" /> esperar...</h1>',
+			appendTo : "#"+addid
+			});
+		
+		$.ajax({
+			url: CONTEXT_PATH+"/dbport",
+			type:'POST',
+			data: {
+				command : commander.commandline.kind,
+				amount : amount,
+				paymentWay : paymentWay,
+				datetime : datetime,
+				operationNumber : operationNumber,
+				refs : refs.join(" "),
+				amounts : amounts.join(" "),
+				token : TOKEN,
+				clientReference: CLIENT_REFERENCE
+			},
+			success: function(data){
+				invoiceInfoLog(data.invoice);
+				console.log("SUCCESS");
+				console.log(data);
+				
+				$add.remove();
+				$(commander.input).focus();
+				commander.reset();
+				$.blockUI({
+					content : '<h1>'+data.successResponse+'</h1>',
+					unblockOnAnyKey:true
+				});
+			},
+			error: function(jqXHR, textStatus, errorThrown){
+				$.blockUI({
+					node:block1,
+					content : textStatus+" - "+errorThrown+" - "+ jqXHR.responseText,
+					changeContent:true,
+					unblockOnAnyKey:true
+				});
+			},
+			dataType:"json"
+		});
+		
+	});
+};
+
 confirmIn=function(dats){
 	var confid="confirmInID"+$.capsule.randomString(1,15,'aA0');
 	var confirm=$('body').inConfirmIn({content:dats.content, id:confid});

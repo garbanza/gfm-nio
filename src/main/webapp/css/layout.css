@@ -69,12 +69,13 @@
 	padding: 0px;
 	background-color: rgb(248,255,163);	
 }
-p, div input{
+/*p, div input{
 	margin: 1px;
 	border: 1px;
+	border-color: black;
 	padding: 1px;
-	background-color: transparent;
-}
+	background-color: rgb(231,241,255);
+}*/
 /*body{
 	background-image: url("http://images.layouts.fm/5/523/523911.jpeg");
 	background-repeat: no-repeat;

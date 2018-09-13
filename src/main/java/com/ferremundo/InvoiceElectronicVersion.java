@@ -1,5 +1,7 @@
 package com.ferremundo;
 
+import java.math.BigInteger;
+
 public class InvoiceElectronicVersion {
 	
 	private String xml;
@@ -85,7 +87,5 @@ public class InvoiceElectronicVersion {
 	public void setCancelXml(String cancelXml) {
 		this.cancelXml = cancelXml;
 	}
-	
-	
 
 }

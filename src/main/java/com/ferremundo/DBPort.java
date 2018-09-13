@@ -5,7 +5,13 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLDecoder;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -20,6 +26,7 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -32,6 +39,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.ferremundo.InvoiceLog.LogKind;
+import com.ferremundo.InvoiceLog.Payment;
 import com.ferremundo.db.FilterDBObject;
 import com.ferremundo.db.Inventory;
 import com.ferremundo.db.Mongoi;
@@ -40,11 +48,20 @@ import com.ferremundo.stt.GSettings;
 import com.ferremundo.util.Util;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.internal.LinkedTreeMap;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+
+import mx.bigdata.sat.common.pagos.schema.CMetodoPagoPago;
+import mx.bigdata.sat.common.pagos.schema.CMoneda;
+import mx.bigdata.sat.common.pagos.schema.CMonedaPago;
+import mx.bigdata.sat.common.pagos.schema.Pagos.Pago.DoctoRelacionado;
+import mx.timbracfdi33.ArrayOfAnyType;
+import wf.bitcoin.javabitcoindrpcclient.BitcoinJSONRPCClient;
+import wf.bitcoin.javabitcoindrpcclient.BitcoinUtil;
 
 import static com.ferremundo.AccessPermission.*;
 import static com.ferremundo.Commands.*;
@@ -287,6 +304,19 @@ public class DBPort extends HttpServlet{
 								"documentType",
 								"printCopies",
 								"coin"},
+						request, response, onlineClient);
+				return;
+			}
+			else if(dcMatch(dc,"INVOICE_PAYMENT")){
+				invoicePayment(
+						new AccessPermission[]{ADMIN,BASIC,EMIT_INVOICE},
+						new String[]{
+								"amount",
+								"datetime",
+								"paymentWay",
+								"operationNumber",
+								"refs",
+								"amounts"},
 						request, response, onlineClient);
 				return;
 			}
@@ -1060,6 +1090,345 @@ public class DBPort extends HttpServlet{
 		}
 	}
 	
+	private void invoicePayment(
+			AccessPermission[] permissions,
+			String[] parameters,
+			HttpServletRequest request,
+			HttpServletResponse response,
+			OnlineClient onlineClient){
+		doCommand(permissions,parameters,request,response, onlineClient, new Command(){
+			@Override
+			public void execute(Map<String,String> parametersMap,
+					HttpServletResponse response, OnlineClient onlineClient) {
+				Log log = new Log();
+				log.entry(parametersMap);
+				String amountStr=parametersMap.get("amount"),
+					datetime=parametersMap.get("datetime"),
+					paymentWay=parametersMap.get("paymentWay"),
+					refsParameter=parametersMap.get("refs"),
+					amountsParameter=parametersMap.get("amounts"),
+					operationNumber = parametersMap.get("operationNumber");
+				String[] refs=refsParameter.split(" "),
+						amountsS = amountsParameter.split(" ");
+				if(refs.length != amountsS.length){
+					try {
+						response.sendError(HttpServletResponse.SC_BAD_REQUEST,fromLang(onlineClient.getLocale(),"CODE_11"));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					return;
+				}
+				float amount = new Float(amountStr);
+
+				float[] docPayments = new float[amountsS.length];
+				float[] docDues = new float[refs.length];
+				float[] docInsoluteDues = new float[refs.length];
+				String[] docFiscalReferences = new String[refs.length];
+				String[] docSeries = new String[refs.length];
+				String[] docReferences = new String[refs.length];
+				int[] docPartialities = new int[refs.length];
+				Client[] clients = new Client[refs.length];
+				String[] emails={};
+				String fiscalCodeMatch = "";
+				DoctoRelacionado[] relatedDocs = new DoctoRelacionado[refs.length];
+				for(int i = 0; i < amountsS.length; i++){
+					docPayments[i] = new Float(amountsS[i]);
+					docPartialities[i] = 1;
+				}
+				DBObject[] dbInvoices = new DBObject[refs.length];
+				InvoiceFM01[] invoices = new InvoiceFM01[refs.length];
+				
+				float restTotal = 0;
+				Mongoi mongoi = new Mongoi();
+				for(int i = 0; i < refs.length; i++){
+					dbInvoices[i] = mongoi.doFindOne(Mongoi.INVOICES, "{\"reference\" : \""+refs[i]+"\"}");
+					if(dbInvoices[i] == null){
+						try {
+							response.sendError(HttpServletResponse.SC_NOT_FOUND,fromLang(onlineClient.getLocale(),"REQUESTED_DOCUMENT_NOT_FOUND", refs[i]));
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+						return;
+					}
+					log.object("Generating invoice "+i+" from DBObject", dbInvoices[i]);
+					
+					InvoiceFM01 invoice = new Gson().fromJson(dbInvoices[i].toString(), InvoiceFM01.class);
+					invoices[i] = invoice;
+					clients[i] = invoice.getClient();
+					log.info("invoice "+i+" from DBObject generated");
+					if(invoice.invoiceType()!=0){
+						try {
+							response.sendError(HttpServletResponse.SC_BAD_REQUEST,fromLang(onlineClient.getLocale(),"CODE_8", refs[i]));
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+						return;
+					}
+					log.info("STEP 1");
+					if(!invoice.hasElectronicVersion()){
+						try {
+							response.sendError(HttpServletResponse.SC_BAD_REQUEST,fromLang(onlineClient.getLocale(),"CODE_9", refs[i]));
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+						return;
+					}
+					log.info("STEP 2");
+					Client client = invoice.getClient();
+					Client agent = invoice.getAgent();
+					String fiscalCode = client.getRfc();
+					if(i!=0){
+						if(!fiscalCode.equals(fiscalCodeMatch)){
+							try {
+								response.sendError(HttpServletResponse.SC_BAD_REQUEST,fromLang(onlineClient.getLocale(),"CODE_10", refs[i], fiscalCode, fiscalCodeMatch));
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+							return;
+						}
+					}
+					else fiscalCodeMatch = fiscalCode;
+					log.info("STEP 3");
+					String[] emails1 = invoice.getClient().getEmail().split(" ");
+					String[] emails2 = invoice.getAgent().getEmail().split(" ");
+					if(i == 0)emails = invoice.getClient().getEmail().split(" ");
+					log.info("STEP 3.1. emails.length="+emails.length+" emails1.length="+emails1.length+" emails2.length="+emails2.length);
+					for(int j = 0; j < emails.length; j++){
+						for(int k = 0; k < emails1.length; k++){
+							if(! emails[j].equals(emails1[k])) emails = (String[])ArrayUtils.add(emails,emails1[k]);
+						}
+						for(int k = 0; k < emails2.length; k++){
+							if(! emails[j].equals(emails2[k])) emails = (String[])ArrayUtils.add(emails,emails2[k]);
+						}
+					}
+					log.info("STEP 4");
+					List<InvoiceLog> logs = invoice.getLogs();
+					docDues[i] = invoice.getTotal();
+					log.info("looping through logs, size="+logs.size());
+					for(int j = 0; j < logs.size(); j++){
+						if(logs.get(j).kind().equals(LogKind.PAYMENT)){
+							Payment payment =  new Gson().fromJson(new Gson().toJson(logs.get(j).getValue()),Payment.class);
+							docDues[i] -= payment.amount;
+							if(docDues[i] <= 0 ){
+								try {
+									response.sendError(HttpServletResponse.SC_BAD_REQUEST,fromLang(onlineClient.getLocale(),"CODE_3", refs[i]));
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+								return;
+							}
+							docPartialities[i] += 1;
+						}
+					}
+					if(docPayments[i] > docDues[i]){
+						try {
+							response.sendError(HttpServletResponse.SC_BAD_REQUEST,fromLang(onlineClient.getLocale(),"CODE_4", docPayments[i]+"", docDues[i]+""));
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+						return;
+					}
+					docInsoluteDues[i] = docDues[i]-docPayments[i];
+					String xmlEscapedInvoice = invoice.getElectronicVersion().getXml();
+					String xmlInvoice = StringEscapeUtils.unescapeXml(xmlEscapedInvoice);
+					org.jsoup.nodes.Document document = Jsoup.parse(xmlInvoice);
+					Element tfd = document.select("cfdi|Comprobante > cfdi|Complemento > tfd|TimbreFiscalDigital").get(0);
+					Element cfd = document.select("cfdi|Comprobante").get(0);
+					docFiscalReferences[i] = tfd.attr("UUID");
+					docSeries[i] = cfd.attr("Serie");
+					docReferences[i] = cfd.attr("Folio");
+					restTotal += docDues[i];
+					relatedDocs[i] = new mx.bigdata.sat.common.pagos.schema.Pagos.Pago.DoctoRelacionado();
+					relatedDocs[i].setIdDocumento(docFiscalReferences[i]);
+					relatedDocs[i].setFolio(docReferences[i]);
+					relatedDocs[i].setSerie(docSeries[i]);
+					relatedDocs[i].setMonedaDR(CMonedaPago.MXN);
+					relatedDocs[i].setMetodoDePagoDR(CMetodoPagoPago.fromValue(cfd.attr("MetodoPago")));
+					relatedDocs[i].setImpSaldoAnt(Util.bigRound2(docDues[i]));
+					relatedDocs[i].setImpPagado(Util.bigRound2(docPayments[i]));
+					relatedDocs[i].setImpSaldoInsoluto(Util.bigRound2(docInsoluteDues[i]));
+					relatedDocs[i].setNumParcialidad(new BigInteger(docPartialities[i]+""));
+					log.object("relatedDocs["+i+"]",relatedDocs[i]);
+				}
+				if(restTotal < amount){
+					try {
+						response.sendError(HttpServletResponse.SC_BAD_REQUEST,fromLang(onlineClient.getLocale(),"CODE_4", refsParameter, amount+"",restTotal+""));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					return;
+				}
+				Shopman shopman = onlineClient.getShopman();
+				List<InvoiceItem> items = new LinkedList<InvoiceItem>();
+				items.add(new InvoiceItem(1, "SAT-PAGO", 0, "PAGO", "SAT", "Pago", 0, 0, 0, "84111506", "ACT"));
+				
+				Long dateTimePayment = null;
+				DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+				try {
+					dateTimePayment = format.parse(datetime).getTime();
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
+				String series = GSettings.get("INVOICE_SERIAL");
+				int count=mongoi.doIncrement(Mongoi.REFERENCE, "{ \"reference\" : \"unique\" }", "count");
+				String reference = count+"";
+				log.info("Trying to construct InvoiceTypePayment");
+				InvoiceTypePayment invoice = new InvoiceTypePayment(clients[0], shopman, reference, series, amount, dateTimePayment, paymentWay, operationNumber, relatedDocs, items, "XXX", emails);
+				Boolean production = ! new Boolean(GSettings.get("TEST")); 
+				invoice.persist();
+				log.info("Trying to construct GEN_CFD_TYPE_PAYMENT_STRING");
+				String out = Utils.GEN_CFD_TYPE_PAYMENT_STRING(invoice);
+				byte[] cfd64=out.getBytes();
+				log.object("cfd is:",out);
+				String invoice64 = DatatypeConverter.printBase64Binary(cfd64);
+				
+				GSettings g = GSettings.instance();
+				Object objects=null;
+				List l = null;
+				log.info("going to send invoice to PAC. production="+production);
+				try {
+					if(production){
+						objects = new mx.timbracfdi33.Timbrado(new URL(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE")))
+								.getTimbradoSoap()
+								.timbraCFDI(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_USER"), invoice64, invoice.reference);
+						l = ((ArrayOfAnyType)objects).getAnyType();
+					}
+					else{
+						objects = new mx.buzoncfdi.cfdi33_pruebas.Timbrado(new URL(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE")))
+								.getTimbradoSoap()
+								.timbraCFDI(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_USER"), invoice64, invoice.reference);
+						l = ((mx.buzoncfdi.cfdi33_pruebas.ArrayOfAnyType)objects).getAnyType();
+					}
+				} catch (MalformedURLException e) {
+					e.printStackTrace();
+				}
+				log.object("PAC raw response",objects);
+				PACResponse pacResponse = null;
+				if(l.get(1).equals("0")){
+					String xml=StringEscapeUtils.unescapeJava((String)l.get(3));
+					log.object("xml cfdi is",xml);
+					String message=(String)l.get(2);
+					String code="0";
+					boolean success=true;
+					pacResponse = new PACResponse(success, message, xml, code);
+				}
+				else{
+					String xml="<null></null>";
+					String message=(String)l.get(2);
+					String code=l.get(1)+"";
+					boolean success=false;
+					pacResponse = new PACResponse(success, message, xml, code);
+				}
+				
+				if (pacResponse.isSuccess()) {
+					mongoi.doUpdate(Mongoi.INVOICES,
+							"{ \"reference\" : \"" + reference + "\" }",
+							"{ \"hasElectronicVersion\" : true }");
+					
+					InvoiceLog facture = new InvoiceLog(LogKind.FACTURE, true,
+							onlineClient.getShopman().getLogin());
+					mongoi.doPush(Mongoi.INVOICES,
+							"{ \"reference\" : \"" + reference + "\"}",
+							"{\"logs\" : " + new Gson().toJson(facture) + " }");
+					for(int i = 0; i < invoices.length; i++){
+						InvoiceLog ilog = new InvoiceLog(
+								LogKind.PAYMENT,
+								new Payment(docPayments[i], dateTimePayment, operationNumber, reference),
+								shopman.getLogin());
+						mongoi.doPush(Mongoi.INVOICES, "{\"reference\" : \""+refs[i]+"\"}",
+								"{\"logs\" : "+new Gson().toJson(ilog)+" }");
+					}
+					
+					String xml = pacResponse.getContent();
+					String xmlEscaped=StringEscapeUtils.escapeXml(xml);
+					
+					String pathToWrite = GSettings.getPathToDirectory(GSettings.get("INVOICES_TYPE_PAYMENT_FOLDER")+"-"+Utils.getDateString("yyyy-MM"));
+					String pdf = pathToWrite + reference + ".pdf";
+					String 	id=invoice.reference,
+							xsltPath=GSettings.getPathTo("XSLT_INVOICE_TYPE_PAYMENT_TICKET"),
+							xmlPath=pathToWrite+id+".xml",
+							htmlPath=pathToWrite+id+".html",
+							pdfPath=pathToWrite+id+".pdf",
+							additionalData=GSettings.get("INVOICE_SENDER_ADDITIONAL_DATA");
+					log.object("xmlEscaped is : ",xmlEscaped);
+					//String reference=invoice.getReference();
+					//ElectronicInvoiceFactory.saveCFDI(xml, reference, pathToWrite);
+					Utils.saveStringToFile(xml, xmlPath);
+					ElectronicInvoiceFactory.genQRCode(reference, pathToWrite);
+					
+					Utils.XML_TO_HTML(xmlPath, xsltPath, htmlPath, additionalData,"");
+					//Utils.HTML_TO_PDF(htmlPath, pdfPath, "Cotizacion "+id+" - pagina [page]/[topage]", "");
+					
+					//Utils.XML_TO_HTML(xmlPath, xsltTicketPath, htmlTicketPath, additionalData,destiny.getAddress());
+					Utils.HTML_TO_PDF_TICKET(htmlPath, pdfPath);
+					
+					
+					mongoi.doUpdate(Mongoi.INVOICES,
+							"{ \"reference\" : \"" + reference + "\" }",
+							"{ \"electronicVersion\" : {\"xml\" : \"" + xmlEscaped + "\"} }");
+					
+					String printer = GSettings.get("INVOICE_PRINTER_TICKET");
+					String printerOptions = GSettings.get("INVOICE_PRINTER_TICKET_OPTIONS");
+
+					new PrinterFM01(new File(pdfPath), printer)
+					.print(printerOptions+" -# 2");		
+					// TODO has parse de mails please
+					String[] recipients=emails;//new String[]{};
+					if (recipients.length>0) {
+						new Hotmail().send(
+								"Factura/Pago "+ GSettings.get("INVOICE_SERIAL") + " " + reference
+										+ " $" + invoice.amount,
+								GSettings.get("EMAIL_BODY"), recipients,
+								new String[] { 
+										pathToWrite + reference + ".xml",
+										pathToWrite + reference + ".pdf" },
+								new String[] {
+										reference + ".xml",
+										reference + ".pdf" });
+					}
+					try {
+						DBObject dbObject = mongoi.doFindOne(Mongoi.INVOICES, "{ \"reference\" : \"" + invoice.reference + "\"}");
+						String resp = "{ \"invoice\" : " + dbObject.toString()
+						+ ", \"successResponse\" : \"facturado/pago "+reference+" por "+invoice.amount+"\"}";
+						log.exit("response",resp);
+						response.getWriter().print(resp);
+					} catch (IOException e) {
+						log.trace("", e);
+					}
+					return;
+				} else {
+					// TODO has que esta piñates te diga el mensage
+					String serverMessage = "ERROR - El servidor de facturacion dijo: codigo "
+							+ pacResponse.getResponseCode() + " - mensaje "
+							+ pacResponse.getMessage()
+							+ new Gson().toJson(objects);
+					System.out.println(serverMessage);
+					try {
+						response.sendError(response.SC_SERVICE_UNAVAILABLE, serverMessage);
+					} catch (IOException e) {
+						log.trace("", e);
+					}
+					try {
+						response.getWriter().print("{\"failed\":\"true\", \"message\": \"" + serverMessage + "\"}");
+					} catch (IOException e) {
+						log.trace("", e);
+					}
+					/*InvoiceLog cancelLog = new InvoiceLog(LogKind.CANCEL, true,
+							onlineClient.getShopman().getLogin());
+					mongo.doPush(Mongoi.INVOICES,
+							"{ \"reference\" : \"" + invoice.getReference() + "\"}",
+							"{\"logs\" : " + new Gson().toJson(cancelLog) + " }");
+					*/
+					
+					return;
+				}
+				
+			}
+		});
+		
+	}
+	
+
 	private void searchProducts(
 			AccessPermission[] permissions,
 			String[] parameters,
@@ -1464,13 +1833,30 @@ public class DBPort extends HttpServlet{
 				}
 				String coin = parametersMap.get("coin");
 				String series = GSettings.get("INVOICE_SERIAL");
+				
+				if(paymentMethod==null || paymentMethod.equals("")){
+					try {
+						response.sendError(response.SC_NOT_ACCEPTABLE, fromLang(onlineClient.getLocale(),"CODE_5"));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					return;
+				}
+				if(paymentWay==null || paymentWay.equals("")){
+					try {
+						response.sendError(response.SC_NOT_ACCEPTABLE, fromLang(onlineClient.getLocale(),"CODE_6"));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					return;
+				}
 				if(cfdiUse!=null&&!cfdiUse.equals("")){
 					mongo.doUpdate(Mongoi.CLIENTS, "{ \"code\" : \""+client.getCode()+"\"}", "{\"cfdiUse\" : \""+cfdiUse+"\" }"+"}");
 					client.setCfdiUse(cfdiUse);
 				}
 				else {
 					try {
-						response.sendError(response.SC_NOT_ACCEPTABLE, "uso cfdi no definido");
+						response.sendError(response.SC_NOT_ACCEPTABLE, fromLang(onlineClient.getLocale(),"CODE_7"));
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -1490,6 +1876,12 @@ public class DBPort extends HttpServlet{
 					mongo.doUpdate(Mongoi.INVOICES,
 							"{ \"reference\" : \"" + reference + "\" }",
 							"{ \"hasElectronicVersion\" : true }");
+					
+					InvoiceLog facture = new InvoiceLog(LogKind.FACTURE, true,
+							onlineClient.getShopman().getLogin());
+					mongo.doPush(Mongoi.INVOICES,
+							"{ \"reference\" : \"" + reference + "\"}",
+							"{\"logs\" : " + new Gson().toJson(facture) + " }");
 					
 					String xml = pacResponse.getContent();
 					String xmlEscaped=StringEscapeUtils.escapeXml(xml);
@@ -2521,18 +2913,35 @@ public class DBPort extends HttpServlet{
 				}
 				String coin = parametersMap.get("coin");
 				String series = GSettings.get("INVOICE_SERIAL");
+				if(paymentMethod==null || paymentMethod.equals("")){
+					try {
+						response.sendError(response.SC_NOT_ACCEPTABLE, fromLang(onlineClient.getLocale(),"CODE_5"));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					return;
+				}
+				if(paymentWay==null || paymentWay.equals("")){
+					try {
+						response.sendError(response.SC_NOT_ACCEPTABLE, fromLang(onlineClient.getLocale(),"CODE_6"));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					return;
+				}
 				if(cfdiUse!=null&&!cfdiUse.equals("")){
 					mongo.doUpdate(Mongoi.CLIENTS, "{ \"code\" : \""+client.getCode()+"\"}", "{\"cfdiUse\" : \""+cfdiUse+"\" }"+"}");
 					client.setCfdiUse(cfdiUse);
 				}
 				else {
 					try {
-						response.sendError(response.SC_NOT_ACCEPTABLE, "uso cfdi no definido");
+						response.sendError(response.SC_NOT_ACCEPTABLE, fromLang(onlineClient.getLocale(),"CODE_7"));
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
 					return;
 				}
+				
 				int count=mongo.doIncrement(Mongoi.REFERENCE, "{ \"reference\" : \"unique\" }", "count");
 				String reference = count+"";
 				Invoice invoice = new InvoiceFM01(
@@ -2547,6 +2956,11 @@ public class DBPort extends HttpServlet{
 					mongo.doUpdate(Mongoi.INVOICES,
 							"{ \"reference\" : \"" + reference + "\" }",
 							"{ \"hasElectronicVersion\" : true }");
+					InvoiceLog facture = new InvoiceLog(LogKind.FACTURE, true,
+							onlineClient.getShopman().getLogin());
+					mongo.doPush(Mongoi.INVOICES,
+							"{ \"reference\" : \"" + reference + "\"}",
+							"{\"logs\" : " + new Gson().toJson(facture) + " }");
 					
 					String xml = pacResponse.getContent();
 					String xmlEscaped=StringEscapeUtils.escapeXml(xml);
@@ -3278,6 +3692,7 @@ public class DBPort extends HttpServlet{
 				JSONObject jAgent = null;
 				Client client = null;
 				Client agent = null;
+				GSettings setts = GSettings.instance();
 				try {
 					jClient = new JSONObject(parametersMap.get("client"));
 					jAgent = new JSONObject(parametersMap.get("agent"));
@@ -3316,7 +3731,7 @@ public class DBPort extends HttpServlet{
 					printCopies = new Integer(parametersMap.get("printCopies"));
 				}
 				String coin = parametersMap.get("coin");
-				String series = GSettings.get("INVOICE_SERIAL");
+				String series = setts.get("INVOICE_SERIAL");
 				if(cfdiUse!=null&&!cfdiUse.equals("")){
 					mongo.doUpdate(Mongoi.CLIENTS, "{ \"code\" : \""+client.getCode()+"\"}", "{\"cfdiUse\" : \""+cfdiUse+"\" }"+"}");
 					client.setCfdiUse(cfdiUse);
@@ -3343,14 +3758,14 @@ public class DBPort extends HttpServlet{
 				
 				String xml=Utils.GEN_CFD_STRING(invoice);
 				String 	id=invoice.getReference(),
-						xsltPath=GSettings.getPathTo("XSLT_SAMPLE"),
+						xsltPath=setts.getPathTo("XSLT_SAMPLE"),
 						xmlPath=pathToWrite+id+".xml",
 						htmlPath=pathToWrite+id+".html",
 						pdfPath=pathToWrite+id+".pdf",
-								xsltTicketPath=GSettings.getPathTo("XSLT_SAMPLE_TICKET"),
+								xsltTicketPath=setts.getPathTo("XSLT_SAMPLE_TICKET"),
 								htmlTicketPath=pathToWrite+id+".ticket.html",
 								pdfTicketPath=pathToWrite+id+".ticket.pdf",
-						additionalData=GSettings.get("INVOICE_SENDER_ADDITIONAL_DATA");
+						additionalData=setts.get("INVOICE_SENDER_ADDITIONAL_DATA");
 				Utils.saveStringToFile(xml, xmlPath);						
 				Utils.XML_TO_HTML(xmlPath, xsltPath, htmlPath, additionalData,destiny.getAddress());
 				Utils.HTML_TO_PDF(htmlPath, pdfPath, "Cotizacion "+id+" - pagina [page]/[topage]", "");
@@ -3365,6 +3780,17 @@ public class DBPort extends HttpServlet{
 				String total=document.select("cfdi|Comprobante").get(0).attr("Total");
 				String subTotal=document.select("cfdi|Comprobante").get(0).attr("SubTotal");
 				String taxes=document.select("cfdi|Comprobante > cfdi|Impuestos").get(0).attr("TotalImpuestosTrasladados");
+				
+				
+				/*if(new Boolean(setts.get("BLOCKCHAIN_ENABLED"))){
+					DBObject dbObject = mongo.doFindOne(Mongoi.INVOICES, "{\"reference\" : \""+reference+"\"}");
+					Blockchain blockchain = Blockchain.instance();
+					String query =
+							"{\"method\" : \"publish\","
+							+"\"params\" : [\""+GSettings.get("BLOCKCHAIN_STREAM_NAME")+
+							"\", [\""+reference+"\"], {\"json\" : "+dbObject.toString()+"}], \"id\" : "+id+"}";
+					String result = blockchain.query(query);
+				}*/
 				FileWriter fstream;
 				try {
 					fstream = new FileWriter(csv);
