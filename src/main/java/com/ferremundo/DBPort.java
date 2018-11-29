@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Type;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -46,6 +47,7 @@ import com.ferremundo.db.Mongoi;
 import com.ferremundo.mailing.Hotmail;
 import com.ferremundo.stt.GSettings;
 import com.ferremundo.util.Util;
+import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
@@ -59,7 +61,6 @@ import mx.bigdata.sat.common.pagos.schema.CMetodoPagoPago;
 import mx.bigdata.sat.common.pagos.schema.CMoneda;
 import mx.bigdata.sat.common.pagos.schema.CMonedaPago;
 import mx.bigdata.sat.common.pagos.schema.Pagos.Pago.DoctoRelacionado;
-import mx.timbracfdi33.ArrayOfAnyType;
 import wf.bitcoin.javabitcoindrpcclient.BitcoinJSONRPCClient;
 import wf.bitcoin.javabitcoindrpcclient.BitcoinUtil;
 
@@ -307,6 +308,22 @@ public class DBPort extends HttpServlet{
 						request, response, onlineClient);
 				return;
 			}
+			else if(dcMatch(dc,"EMIT_EGRESS")){
+				emitEgress(
+						new AccessPermission[]{ADMIN,BASIC,EMIT_SAMPLE},
+						new String[]{
+								"client",
+								"list",
+								"shopman",
+								"agent",
+								"destiny",
+								"clientReference",
+								"documentType",
+								"printCopies",
+								"coin"},
+						request, response, onlineClient);
+				return;
+			}
 			else if(dcMatch(dc,"INVOICE_PAYMENT")){
 				invoicePayment(
 						new AccessPermission[]{ADMIN,BASIC,EMIT_INVOICE},
@@ -359,6 +376,46 @@ public class DBPort extends HttpServlet{
 						new String[]{
 								"clientReference",
 								"reference",
+								},
+						request, response, onlineClient);
+				return;
+			}
+			else if(dcMatch(dc,"GET_SESSION_LIST")){
+				getSessionList(
+						new AccessPermission[]{ADMIN,BASIC,GET_SESSION_LIST},
+						new String[]{
+								"clientReference",
+								"sessionId"
+								},
+						request, response, onlineClient);
+				return;
+			}
+			else if(dcMatch(dc,"SET_SESSION_LIST")){
+				setSessionList(
+						new AccessPermission[]{ADMIN,BASIC,SET_SESSION_LIST},
+						new String[]{
+								"clientReference",
+								"list"
+								},
+						request, response, onlineClient);
+				return;
+			}
+			else if(dcMatch(dc,"GET_CACHE_SESSION_LIST")){
+				getCacheSessionList(
+						new AccessPermission[]{ADMIN,BASIC,GET_CACHE_SESSION_LIST},
+						new String[]{
+								"clientReference",
+								"shortId"
+								},
+						request, response, onlineClient);
+				return;
+			}
+			else if(dcMatch(dc,"SEARCH_CACHE_SESSION")){
+				searchCacheSession(
+						new AccessPermission[]{ADMIN,BASIC,SEARCH_CACHE_SESSION},
+						new String[]{
+								"clientReference",
+								"patterns"
 								},
 						request, response, onlineClient);
 				return;
@@ -624,6 +681,182 @@ public class DBPort extends HttpServlet{
 						e.printStackTrace();
 					}
 					return;
+				}
+			}
+		});
+		
+	}
+	
+	private void getSessionList(
+			AccessPermission[] permissions,
+			String[] parameters,
+			HttpServletRequest request,
+			HttpServletResponse response,
+			OnlineClient onlineClient){
+		doCommand(permissions,parameters,request,response, onlineClient, new Command(){
+			@Override
+			public void execute(Map<String,String> parametersMap,
+					HttpServletResponse response, OnlineClient onlineClient) {
+				Log log = new Log();
+				String sessionId=request.getParameter("sessionId");
+				log.object("sessionId",sessionId);
+				OnlineClient onlineClient2 = OnlineClients.instance().get(new Integer(sessionId));
+				String json = new Gson().toJson(onlineClient2.getProductsLog());
+				log.object("productsLog",json);
+				try {
+					response.getWriter().write("{\"list\" : "+json+" }");
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		
+	}
+	
+	private void getCacheSessionList(
+			AccessPermission[] permissions,
+			String[] parameters,
+			HttpServletRequest request,
+			HttpServletResponse response,
+			OnlineClient onlineClient){
+		doCommand(permissions,parameters,request,response, onlineClient, new Command(){
+			@Override
+			public void execute(Map<String,String> parametersMap,
+					HttpServletResponse response, OnlineClient onlineClient) {
+				Log log = new Log();
+				String shortId=request.getParameter("shortId");
+				log.object("shortId",shortId);
+				Mongoi mongoi = new Mongoi();
+				DBObject dbObject = mongoi.doFindOne(CACHE_SESSION, "{\"id\":\""+shortId+"\"}");
+				log.object("found cache",dbObject);
+				if(dbObject!=null){
+					try {
+						response.getWriter().write("{\"response\" : "+dbObject.toString()+" }");
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+		
+	}
+	
+	/*private void searchCacheList(
+			AccessPermission[] permissions,
+			String[] parameters,
+			HttpServletRequest request,
+			HttpServletResponse response,
+			OnlineClient onlineClient){
+		doCommand(permissions,parameters,request,response, onlineClient, new Command(){
+			@Override
+			public void execute(Map<String,String> parametersMap,
+					HttpServletResponse response, OnlineClient onlineClient) {
+				Log log = new Log();
+				String sessionId=request.getParameter("sessionId");
+				log.object("sessionId",sessionId);
+				OnlineClient onlineClient2 = OnlineClients.instance().get(new Integer(sessionId));
+				String json = new Gson().toJson(onlineClient2.getProductsLog());
+				log.object("productsLog",json);
+				try {
+					response.getWriter().write("{\"list\" : "+json+" }");
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		
+	}*/
+	
+	private void setSessionList(
+			AccessPermission[] permissions,
+			String[] parameters,
+			HttpServletRequest request,
+			HttpServletResponse response,
+			OnlineClient onlineClient){
+		doCommand(permissions,parameters,request,response, onlineClient, new Command(){
+			@Override
+			public void execute(Map<String,String> parametersMap,
+					HttpServletResponse response, OnlineClient onlineClient) {
+				Log log = new Log();
+				String list=request.getParameter("list");
+				log.object("list",list);
+				Type listType = new TypeToken<List<InvoiceItem>>() {}.getType();
+				List<InvoiceItem> items = new Gson().fromJson(list, listType);
+				onlineClient.setProductsLog(items);
+				Mongoi mongoi = new Mongoi();
+				String shortId = onlineClient.getShortId();
+				DBObject dbObject = mongoi.doFindOne(CACHE_SESSION, "{\"id\" : \""+shortId+"\"}");
+				String json = "";
+				if(dbObject==null){
+					json += "{ \"id\" : \"" + shortId +"\", \"items\" : " + list + "}";
+					mongoi.doInsert(CACHE_SESSION, json);
+				}
+				else{
+					json += "{\"items\" : " + list + "}";
+					mongoi.doUpdate(CACHE_SESSION, "{ \"id\" : \"" + shortId +"\"}", json);
+				}
+				
+				try {
+					response.getWriter().write("{\"listed\" : "+true+" }");
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		
+	}
+	
+	private void searchCacheSession(
+			AccessPermission[] permissions,
+			String[] parameters,
+			HttpServletRequest request,
+			HttpServletResponse response,
+			OnlineClient onlineClient){
+		doCommand(permissions,parameters,request,response, onlineClient, new Command(){
+			@Override
+			public void execute(Map<String,String> parametersMap,
+					HttpServletResponse response, OnlineClient onlineClient) {
+				Log log = new Log();
+				String patts=request.getParameter("patterns");
+				log.object("patterns",patts);
+				
+				List<String> matchList = new ArrayList<String>();
+				Pattern regex = Pattern.compile("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'");
+				Matcher regexMatcher = regex.matcher(patts);
+				while (regexMatcher.find()) {
+				    if (regexMatcher.group(1) != null) {
+				        // Add double-quoted string without the quotes
+				        matchList.add(regexMatcher.group(1));
+				    } else if (regexMatcher.group(2) != null) {
+				        // Add single-quoted string without the quotes
+				        matchList.add(regexMatcher.group(2));
+				    } else {
+				        // Add unquoted word
+				        matchList.add(regexMatcher.group());
+				    }
+				}
+				String[] patterns=matchList.toArray(new String[1]);
+				
+				
+				DBCursor cursor=new Mongoi().doFindCacheSession(patterns);
+				String json="{ \"cachedSessions\" : [";
+				
+				int i=0;
+				while(cursor.hasNext()){
+					/**TODO fix this constant, 200 is a limit*/
+					if(i<200){
+						json+=(i!=0?",":"")+cursor.next().toString();
+					}
+					else break;
+					i++;
+					//System.out.println(cursor.next());
+				}
+				json+="] } ";
+				try {
+					log.object("cachedSessions", json);
+					response.getWriter().write(json);
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
 			}
 		});
@@ -1288,16 +1521,16 @@ public class DBPort extends HttpServlet{
 				log.info("going to send invoice to PAC. production="+production);
 				try {
 					if(production){
-						objects = new mx.timbracfdi33.Timbrado(new URL(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE")))
+						objects = new pac1.prod.Timbrado(new URL(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE")))
 								.getTimbradoSoap()
 								.timbraCFDI(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_USER"), invoice64, invoice.reference);
-						l = ((ArrayOfAnyType)objects).getAnyType();
+						l = ((pac1.prod.ArrayOfAnyType)objects).getAnyType();
 					}
 					else{
-						objects = new mx.buzoncfdi.cfdi33_pruebas.Timbrado(new URL(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE")))
+						objects = new pac1.test.Timbrado(new URL(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE")))
 								.getTimbradoSoap()
 								.timbraCFDI(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_USER"), invoice64, invoice.reference);
-						l = ((mx.buzoncfdi.cfdi33_pruebas.ArrayOfAnyType)objects).getAnyType();
+						l = ((pac1.test.ArrayOfAnyType)objects).getAnyType();
 					}
 				} catch (MalformedURLException e) {
 					e.printStackTrace();
@@ -1547,7 +1780,7 @@ public class DBPort extends HttpServlet{
 				invoice=new Gson().fromJson(oInvoice.toString(), InvoiceFM01.class);
 				if(invoice.attemptToLog(LogKind.CANCEL).isAllowed()){
 					if(invoice.hasElectronicVersion()){
-						ElectronicInvoice ei=new Profact();
+						ElectronicInvoice ei=new Pac();
 						PACResponse pacResponse=ei.cancel(invoice,!new Boolean(GSettings.get("TEST")));
 						if(pacResponse.isSuccess()){
 							String xml=pacResponse.getContent();//document.getElementsByTagName("xmlretorno").item(0).getTextContent();
@@ -1777,6 +2010,234 @@ public class DBPort extends HttpServlet{
 		
 	}
 	
+	private void emitEgress(
+			AccessPermission[] permissions,
+			String[] parameters,
+			HttpServletRequest request,
+			HttpServletResponse response,
+			OnlineClient onlineClient){
+		doCommand(permissions,parameters,request,response, onlineClient, new Command(){
+			@Override
+			public void execute(Map<String,String> parametersMap,
+					HttpServletResponse response, OnlineClient onlineClient) {
+				Log log = new Log();
+				Gson gson = new Gson();
+				Mongoi mongo = new Mongoi();
+				JSONObject jClient = null;
+				JSONObject jAgent = null;
+				Client client = null;
+				Client agent = null;
+				try {
+					jClient = new JSONObject(parametersMap.get("client"));
+					jAgent = new JSONObject(parametersMap.get("agent"));
+					client = ClientFactory.create(jClient);
+					agent = ClientFactory.create(jAgent);
+				} catch (JSONException e1) {
+					log.trace(e1);
+				}
+				JSONArray jList = null;
+				try {
+					jList = new JSONArray(parametersMap.get("list"));
+				} catch (JSONException e) {
+					log.trace(e);
+				} 
+				List<InvoiceItem> list = new LinkedList<InvoiceItem>();
+				for (int i = jList.length() - 1; i >= 0; i--) {
+					InvoiceItem item = null;
+					try {
+						log.object("parsing item",jList.getJSONObject(i).toString());
+						item = gson.fromJson(jList.getJSONObject(i).toString(), InvoiceItem.class);
+					} catch (JsonSyntaxException | JSONException e) {
+						log.trace(e);
+					}
+					list.add(item);
+				}
+				Shopman shopman = OnlineClients.instance().get(new Integer(parametersMap.get("clientReference"))).getShopman();
+				Destiny destiny = gson.fromJson(parametersMap.get("destiny"), Destiny.class);
+				String clientReference = parametersMap.get("clientReference");
+				String cfdiUse = parametersMap.get("cfdiUse");
+				String paymentMethod = parametersMap.get("paymentMethod");
+				String paymentWay = parametersMap.get("paymentWay");
+				String documentType = parametersMap.get("documentType");
+				int printCopies = -1;
+				if(!(parametersMap.get("printCopies")==null||parametersMap.get("printCopies").equals(""))){
+					printCopies = new Integer(parametersMap.get("printCopies"));
+				}
+				String coin = parametersMap.get("coin");
+				String series = GSettings.get("INVOICE_SERIAL");
+				if(paymentMethod==null || paymentMethod.equals("")){
+					try {
+						response.sendError(response.SC_NOT_ACCEPTABLE, fromLang(onlineClient.getLocale(),"CODE_5"));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					return;
+				}
+				if(paymentWay==null || paymentWay.equals("")){
+					try {
+						response.sendError(response.SC_NOT_ACCEPTABLE, fromLang(onlineClient.getLocale(),"CODE_6"));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					return;
+				}
+				if(cfdiUse!=null&&!cfdiUse.equals("")){
+					mongo.doUpdate(Mongoi.CLIENTS, "{ \"code\" : \""+client.getCode()+"\"}", "{\"cfdiUse\" : \""+cfdiUse+"\" }"+"}");
+					client.setCfdiUse(cfdiUse);
+				}
+				else {
+					try {
+						response.sendError(response.SC_NOT_ACCEPTABLE, fromLang(onlineClient.getLocale(),"CODE_7"));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					return;
+				}
+				int count=mongo.doIncrement(Mongoi.REFERENCE, "{ \"reference\" : \"unique\" }", "count");
+				String reference = count+"";
+				Invoice invoice = new InvoiceFM01(
+						client, shopman, list, reference, series, destiny,
+						agent, paymentMethod, paymentWay, documentType, coin);
+				invoice.persist();
+				ElectronicInvoice electronicInvoice=new Pac(invoice);
+				boolean production=!new Boolean(GSettings.get("TEST"));
+				PACResponse pacResponse=electronicInvoice.submit(production);
+				if (pacResponse.isSuccess()) {
+					mongo.doUpdate(Mongoi.INVOICES,
+							"{ \"reference\" : \"" + reference + "\" }",
+							"{ \"hasElectronicVersion\" : true }");
+					InvoiceLog facture = new InvoiceLog(LogKind.FACTURE, true,
+							onlineClient.getShopman().getLogin());
+					mongo.doPush(Mongoi.INVOICES,
+							"{ \"reference\" : \"" + reference + "\"}",
+							"{\"logs\" : " + new Gson().toJson(facture) + " }");
+					String xml = pacResponse.getContent();
+					String xmlEscaped=StringEscapeUtils.escapeXml(xml);
+					
+					String pathToWrite = GSettings.getPathToDirectory(GSettings.get("INVOICES_FOLDER")+"-"+Utils.getDateString("yyyy-MM"));
+					String pdf = pathToWrite + reference + ".pdf";
+					String 	id=invoice.getReference(),
+							xsltPath=GSettings.getPathTo("XSLT_INVOICE"),
+							xmlPath=pathToWrite+id+".xml",
+							htmlPath=pathToWrite+id+".html",
+							pdfPath=pathToWrite+id+".pdf",
+							additionalData=GSettings.get("INVOICE_SENDER_ADDITIONAL_DATA");
+					log.object("xmlEscaped is : ",xmlEscaped);
+					Utils.saveStringToFile(xml, xmlPath);
+					ElectronicInvoiceFactory.genQRCode(reference, pathToWrite);
+					Utils.XML_TO_HTML(xmlPath, xsltPath, htmlPath, additionalData,destiny.getAddress());
+					Utils.HTML_TO_PDF(htmlPath, pdfPath, "Factura "+GSettings.get("INVOICE_SERIAL")+" "+id+" - pagina [page]/[topage]", "");
+					org.jsoup.nodes.Document document=null;
+					document = Jsoup.parse(xml);
+					String total=document.select("cfdi|Comprobante").get(0).attr("Total");
+					String subTotal=document.select("cfdi|Comprobante").get(0).attr("SubTotal");
+					String taxes=document.select("cfdi|Comprobante > cfdi|Impuestos").get(0).attr("TotalImpuestosTrasladados");
+					mongo.doUpdate(Mongoi.INVOICES,
+							"{ \"reference\" : \"" + reference + "\" }",
+							"{ \"electronicVersion\" : {\"xml\" : \"" + xmlEscaped + "\"} }");
+					String csv = pathToWrite + invoice.getReference() +".csv";
+					FileWriter fstream;
+					try {
+						fstream = new FileWriter(csv);
+						BufferedWriter out = new BufferedWriter(fstream);
+						Elements elements = document.select("cfdi|Comprobante > cfdi|Conceptos > cfdi|Concepto");
+						for(int i = 0 ; i < elements.size(); i ++){
+							Element element = elements.get(i);
+							String prodservCode = element.attr("ClaveProdServ");
+							String quantity = element.attr("Cantidad");
+							String unitCode = element.attr("ClaveUnidad");
+							String unit = element.attr("Unidad");
+							String description = element.attr("Descripcion");
+							String unitPrice = element.attr("ValorUnitario");
+							String itotal = element.attr("Importe");
+							out.write(
+									quantity + "\t" +
+											prodservCode + "\t" +
+											unitCode + "\t" +
+											unit + "\t" +
+											description + "\t" +
+											unitPrice + "\t" +
+											itotal + "\n"
+									);
+							
+						}
+						out.write("subtotal\t" + subTotal);
+						out.write("\niva\t" + taxes);
+						out.write("\ntotal\t" + total);
+						out.close();
+						Process p = Runtime.getRuntime().exec(new String[]{"bash","-c","chmod 444 "+csv});
+					} catch (IOException e1) {
+						log.trace(e1);
+					}
+					
+					
+					if (printCopies == -1) {
+						new PrinterFM01(new File(pdf), GSettings.get("PRINTER_TWO")).print(new Integer(GSettings.get("PRINTER_TWO_COPIES")));
+					}
+					else if(printCopies > 0){
+						new PrinterFM01(new File(pdf), GSettings.get("PRINTER_TWO")).print(printCopies);
+					}
+					// TODO has parse de mails please
+					String[] recipients={};//new String[]{};
+					
+					if (!invoice.getClient().getEmail().equals("")) {
+						recipients=(String[])ArrayUtils.addAll(recipients, invoice.getClient().getEmail().split(" "));
+					}
+					if (!invoice.getAgent().getEmail().equals("")) {
+						recipients=(String[])ArrayUtils.addAll(recipients, invoice.getAgent().getEmail().split(" "));
+					}
+					if (recipients.length>0) {
+						new Hotmail().send(
+								"factura "+ GSettings.get("INVOICE_SERIAL") + " " + reference
+										+ " $" + total,
+								GSettings.get("EMAIL_BODY"), recipients,
+								new String[] { 
+										pathToWrite + reference + ".csv",
+										pathToWrite + reference + ".xml",
+										pathToWrite + reference + ".pdf" },
+								new String[] {
+										reference + ".csv",
+										reference + ".xml",
+										reference + ".pdf" });
+					}
+					List<InvoiceItem> invoiceItems = invoice.getItems();
+					for (int i = 0; i < invoiceItems.size(); i++) {
+						InvoiceItem item = invoiceItems.get(i);
+						if (Inventory.exists(item) && !item.isDisabled())
+							Inventory.decrementStored(item);
+					}
+					try {
+						DBObject dbObject = mongo.doFindOne(Mongoi.INVOICES, "{ \"reference\" : \"" + invoice.getReference() + "\"}");
+						String resp = "{ \"invoice\" : " + dbObject.toString()
+						+ ", \"successResponse\" : \"facturado "+reference+" por "+total+"\"}";
+						log.exit("response",resp);
+						response.getWriter().print(resp);
+					} catch (IOException e) {
+						log.trace("", e);
+					}
+					return;
+				} else {
+					String serverMessage = "ERROR - El servidor de facturacion dijo: codigo "
+							+ pacResponse.getResponseCode() + " - mensaje "
+							+ pacResponse.getMessage();
+					System.out.println(serverMessage);
+					try {
+						response.sendError(response.SC_SERVICE_UNAVAILABLE, serverMessage);
+					} catch (IOException e) {
+						log.trace("", e);
+					}
+					try {
+						response.getWriter().print("{\"failed\":\"true\", \"message\": \"" + serverMessage + "\"}");
+					} catch (IOException e) {
+						log.trace("", e);
+					}
+					return;
+				}
+			}
+		});
+		
+	}
+	
 	private void emitInvoice(
 			AccessPermission[] permissions,
 			String[] parameters,
@@ -1868,7 +2329,8 @@ public class DBPort extends HttpServlet{
 						client, shopman, list, reference, series, destiny,
 						agent, paymentMethod, paymentWay, documentType, coin);
 				invoice.persist();
-				ElectronicInvoice electronicInvoice=new Profact(invoice);
+				ElectronicInvoice electronicInvoice=new Pac(invoice);
+				log.info("Invoice ready to be submited to PAC");
 				boolean production=!new Boolean(GSettings.get("TEST"));
 				PACResponse pacResponse=electronicInvoice.submit(production);
 				
@@ -2257,6 +2719,10 @@ public class DBPort extends HttpServlet{
 					InvoiceItem item = invoiceItems.get(i);
 					if (Inventory.exists(item) && !item.isDisabled())
 						Inventory.decrementStored(item);
+					else{
+						Product product = (Product)item;
+						
+					}
 				}
 				try {
 					DBObject dbObject = mongo.doFindOne(Mongoi.INVOICES, "{ \"reference\" : \"" + invoice.getReference() + "\"}");
@@ -2948,7 +3414,7 @@ public class DBPort extends HttpServlet{
 						client, shopman, list, reference, series, destiny,
 						agent, paymentMethod, paymentWay, documentType, coin);
 				invoice.persist();
-				ElectronicInvoice electronicInvoice=new Profact(invoice);
+				ElectronicInvoice electronicInvoice=new Pac(invoice);
 				boolean production=!new Boolean(GSettings.get("TEST"));
 				PACResponse pacResponse=electronicInvoice.submit(production);
 				

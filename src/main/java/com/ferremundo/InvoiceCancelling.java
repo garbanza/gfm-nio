@@ -74,7 +74,7 @@ public class InvoiceCancelling extends HttpServlet{
 					if(invoice.attemptToLog(LogKind.CANCEL).isAllowed()){
 						
 						if(invoice.hasElectronicVersion()){
-							ElectronicInvoice ei=new Profact();
+							ElectronicInvoice ei=new Pac();
 							PACResponse pacResponse=ei.cancel(invoice,!new Boolean(GSettings.get("TEST")));
 							/*DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();  
 						    DocumentBuilder builder=null;

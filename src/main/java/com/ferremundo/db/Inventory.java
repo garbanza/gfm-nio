@@ -1,5 +1,7 @@
 package com.ferremundo.db;
 
+import java.util.List;
+
 import com.ferremundo.InvoiceItem;
 import com.ferremundo.Product;
 import com.mongodb.DBObject;
@@ -24,6 +26,14 @@ public abstract class Inventory {
 		incrementStored(item.getCode(),item.getQuantity());
 	}
 	
+	public static void decrementStored(List<InvoiceItem> items){
+		for (int i = 0; i < items.size(); i++) {
+			InvoiceItem item = items.get(i);
+			if (Inventory.exists(item) && !item.isDisabled())
+				decrementStored(item);
+		}
+	}
+	
 	public static void decrementStored(InvoiceItem item){
 		decrementStored(item.getCode(),item.getQuantity());
 	}
@@ -41,8 +51,8 @@ public abstract class Inventory {
 	}
 	
 	public static boolean exists(InvoiceItem item){
-		if(exists(item.getId()))return true;
-		else if(exists(item.getCode().replace("\\.", "")))return true;
+		if(exists(item.getCode().replace("\\.", "")))return true;
+		else if(exists(item.getId()))return true;
 		return false;
 	}
 	

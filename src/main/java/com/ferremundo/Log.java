@@ -38,9 +38,7 @@ public class Log {
 	}
 	
 	public Log(){
-		System.out.println("start Log");
 		Integer clientReference=ClientReference.get();
-		System.out.println("after getting clientReference: "+clientReference);
 		if(clientReference!=null){
 			OnlineClient ol=OnlineClients.instance().get(clientReference);
 			if(ol!=null&&ol.getShopman()!=null){
@@ -56,9 +54,7 @@ public class Log {
 		className=traceElement.getClassName();
 		methodName=traceElement.getMethodName();
 		lineNumber=traceElement.getLineNumber();
-		System.out.println("Log after initLogger");
 		initLogger();
-		System.out.println("Log before initLogger");
 		logger = LogManager.getLogger(className);
 	}
 	
@@ -85,9 +81,7 @@ public class Log {
 	}
 	
 	private void initLogger(){
-		System.out.println("Log before setting property: log4j.configuration=FUCK");
 		System.setProperty("log4j.configuration", GSettings.getPathTo("LOGGER_CONTEXT"));
-		System.out.println(System.getProperty("log4j.configuration"));
 		if (loggerContext==null) {
 			ThreadContext.put("log-path", GSettings.getPathTo("LOGGING_PATH"));
 			LoggerContext loggerContext = (org.apache.logging.log4j.core.LoggerContext) LogManager.getContext(false);

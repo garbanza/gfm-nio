@@ -16,9 +16,7 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 
 import com.ferremundo.stt.GSettings;
-import com.profact.Timbrado;
-import com.profact.ArrayOfAnyType;
-import com.profact.CancelaCFDIAck;
+
 
 public class ElectronicInvoiceGenericSample implements ElectronicInvoice {
 
@@ -56,9 +54,9 @@ public class ElectronicInvoiceGenericSample implements ElectronicInvoice {
 
 	public PACResponse submitTest1() {
 		GSettings g = GSettings.instance();
-		com.profact.test.ArrayOfAnyType objects = null;
+		pac1.test.ArrayOfAnyType objects = null;
 		try {
-			objects = new com.profact.test.Timbrado(new URL(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE")))
+			objects = new pac1.test.Timbrado(new URL(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE")))
 					.getTimbradoSoap()
 					.timbraCFDI(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_USER"), invoiceXML, invoice.getReference());
 		} catch (MalformedURLException e) {
@@ -109,9 +107,9 @@ public class ElectronicInvoiceGenericSample implements ElectronicInvoice {
 		Element e = (Element) node;
 		String uuid = e.getAttribute("UUID");
 		GSettings g = GSettings.instance();
-		com.profact.test.ArrayOfAnyType objects = null;
+		pac1.test.ArrayOfAnyType objects = null;
 		try {
-			objects = new com.profact.test.Timbrado(new URL(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE")))
+			objects = new pac1.test.Timbrado(new URL(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE")))
 					.getTimbradoSoap().cancelaCFDIAck(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_USER"),
 							g.getKey("INVOICE_SENDER_TAX_CODE"), uuid);
 		} catch (MalformedURLException e1) {
@@ -151,9 +149,9 @@ public class ElectronicInvoiceGenericSample implements ElectronicInvoice {
 		Element e = (Element) node;
 		String uuid = e.getAttribute("UUID");
 		GSettings g = GSettings.instance();
-		ArrayOfAnyType objects = null;
+		pac1.prod.ArrayOfAnyType objects = null;
 		try {
-			objects = new Timbrado(new URL(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE"))).getTimbradoSoap()
+			objects = new pac1.prod.Timbrado(new URL(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE"))).getTimbradoSoap()
 					.cancelaCFDIAck(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_USER"), g.getKey("INVOICE_SENDER_TAX_CODE"),
 							uuid);
 		} catch (MalformedURLException e1) {

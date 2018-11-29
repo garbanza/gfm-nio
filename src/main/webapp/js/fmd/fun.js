@@ -1,5 +1,5 @@
 
-CLIENT_ID=function(){return "-|1809131714|sessionid:"+CLIENT_REFERENCE+"|-"};
+CLIENT_ID=function(){return "-|1811140947|sessionid:"+CLIENT_REFERENCE+"|cachesession:"+CACHE_SESSION+"|-"};
 function Item(quantity,code,unit,mark,description,unitPrice,total){
 	this.quantity=quantity;
 	this.unit=unit;
@@ -68,7 +68,7 @@ Client_=function(code, consummer, consummerType,
 	$('#client-tel').html(this.tel);
 	$('#client-email').html(this.email);
 	$('#client-country').html(this.country);
-	document.title=SHOPMAN.login+"-"+this.consummer;
+	document.title=SHOPMAN.login+"["+CLIENT_REFERENCE+"] "+this.consummer;
 	$("#cfdiUse").val(cfdiUse);
 };
 Agent_=function(code, consummer, consummerType,
@@ -667,11 +667,11 @@ function onLogChange(){
 	var upNoTaxes = [];
 	var itemTotal = [];
 	$('.quantity').each(function(){
-		q[i]=parseFloat($(this).text());
+		q[i]=parseFloat(parseFloat($(this).text()).toFixed(6));
 		i++;
 	});
 	i=0;
-	$('.unitPrice').each(function(){
+	$('#log').find('.unitPrice').each(function(){
 		up[i]=parseFloat($(this).text());
 		upNoTaxes[i] = parseFloat((up[i]/(1+TAXES_VALUE)).toFixed(2));
 		itemTotal[i] = parseFloat((q[i]*upNoTaxes[i]*(1+TAXES_VALUE)).toFixed(2));
@@ -679,23 +679,25 @@ function onLogChange(){
 	});
 	
 	i=0;
-	var total=0;
-	$('.total').each(function(){
+	var total = 0, total2 = 0;
+	$('#log').find('.total').each(function(){
 		//$(this).html((q[i]*up[i]).toFixed(2));
 		var thisTotal=parseFloat(((q[i]*up[i]/(1+TAXES_VALUE)).toFixed(2)*(1+TAXES_VALUE)).toFixed(2));
 		$(this).html(itemTotal[i]);//thisTotal);
 		total+=itemTotal[i];//thisTotal;
+		total2+=productsLog[i].disabled?0:itemTotal[i];//thisTotal;
 		i++;
 	});
 	i=0;
-	$('.itemNumber').each(function(){
+	$('#log').find('.itemNumber').each(function(){
 		$(this).html(i);
 		i++;
 	});
 	
-	$('.g-total').html("$ "+total);
-	$(".tableingrow").unbind('mousedown').mousedown(function(e){
-		var index=$('.tableingrow').index(this);
+	$('.g-total').html("$ "+total.toFixed(2));
+	$('.g-total2').html("$ "+total2.toFixed(2));
+	$('#log').find(".tableingrow").unbind('mousedown').mousedown(function(e){
+		var index=$('#log').find('.tableingrow').index(this);
 		if(e.which==2){
 			productsLog.splice(index,1);
 			$('#log').sexytable({'removeRow':true,'index':this});
@@ -714,15 +716,15 @@ function onLogChange(){
 		}
 	});
 
-	$(".tableingrow").unbind('DOMSubtreeModified').bind('DOMSubtreeModified',function(e){
+	$('#log').find(".tableingrow").unbind('DOMSubtreeModified').bind('DOMSubtreeModified',function(e){
 		//alert("clicked "+ event.target);
-		var index=$('.tableingrow').index(this);
+		var index=$('#log').find('.tableingrow').index(this);
 		if($('.unitPrice, .description, .unit, .code, .mark, .prodservCode, .unitCode',this).is(e.target)){
 			productsLog[index].id=-1;
 			productsLog[index].unitPrice=$($('.unitPrice',this).get(0)).html();
 			productsLog[index].description=$($('.description',this).get(0)).html();
 			productsLog[index].unit=$($('.unit',this).get(0)).html();
-			productsLog[index].code=$($('.code',this).get(0)).html().replace(".","")+".";
+			productsLog[index].code=$($('.code',this).get(0)).html();//.replace(".","")+".";
 			productsLog[index].mark=$($('.mark',this).get(0)).html();
 			productsLog[index].prodservCode=$($('.prodservCode',this).get(0)).html();
 			productsLog[index].unitCode=$($('.unitCode',this).get(0)).html();
@@ -740,25 +742,31 @@ function onLogChange(){
 			//alert("quantity "+e.target.nodeName+"\n"+$($('.quantity',this).get(0)).html());
 		}
 		//onLogChange();
-		
+
 	});
 	var i=0;
-	$(".tableingrow").each(function(){
+	$('#log').find(".tableingrow").each(function(){
 		$(this).removeClass("odd2 even2");
 		if(i%2==0)$(this).addClass("even2");
 		else $(this).addClass("odd1");
 		i++;
 	});
-	total=0;
-	for(var i=0;i<productsLog.length;i++){
-		var thisTotal=parseFloat(((q[i]*up[i]/(1+TAXES_VALUE)).toFixed(2)*(1+TAXES_VALUE)).toFixed(2));
-		//total+=productsLog[i].disabled?0:parseFloat(productsLog[i].quantity)*parseFloat(productsLog[i].unitPrice);
-		total+=productsLog[i].disabled?0:itemTotal[i];//thisTotal;
-	}
-	$('.g-total2').html("$ "+total);
-	var length_=$(".tableingrow").length;
+	var length_=$('#log').find(".tableingrow").length;
 	$('.g-area-to-print').html(length_+" -> "+Math.ceil(length_/17)+" hojas");
 	
+	$.ajax({
+		url: CONTEXT_PATH+'/dbport',
+		type:'POST',
+		data: {
+			command:"setsessionlist",
+			list: $.toJSON(productsLog),
+			token : TOKEN,
+			clientReference: CLIENT_REFERENCE
+		},
+		success: function(data){
+			
+		}
+	});
 	
 };
 logToJson=function(){

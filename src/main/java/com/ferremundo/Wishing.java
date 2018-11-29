@@ -453,7 +453,7 @@ public class Wishing extends HttpServlet {
 						// ElectronicInvoiceGenerator(fm01);
 						// Rhino rhino=test.inflateRhino(fm01);
 						//String signed=ElectronicInvoiceFactory.gen(invoice);
-						ElectronicInvoice electronicInvoice=new Profact(invoice);
+						ElectronicInvoice electronicInvoice=new Pac(invoice);
 						boolean production=!new Boolean(GSettings.get("TEST"));
 						PACResponse pacResponse=electronicInvoice.submit(production);
 						

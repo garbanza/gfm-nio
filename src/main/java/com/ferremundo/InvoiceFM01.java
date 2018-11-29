@@ -248,7 +248,7 @@ public class InvoiceFM01 implements Invoice{
 				new InvoiceLog(InvoiceLog.LogKind.CREATED,true,shopman.getLogin())
 		));
 		//** TODO make this more efficient please, setting total, subtotal & taxex*/
-		Profact electronicInvoice=new Profact(this);
+		Pac electronicInvoice=new Pac(this);
 		String xml=electronicInvoice.xml;
 		org.jsoup.nodes.Document document=null;
 		document = Jsoup.parse(xml);

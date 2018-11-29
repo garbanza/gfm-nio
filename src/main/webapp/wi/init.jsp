@@ -33,7 +33,7 @@
 <script type="text/javascript" src="js/fmd/util.js"></script>
 <script type="text/javascript" src="js/fmd/commandline.js"></script>
 <script type="text/javascript" src="js/fmd/autocomplete.js"></script>
-<script type="text/javascript" src="${pageContext.request.contextPath}/js/fmd/jquery.commandro.js"></script>
+<script type="text/javascript" src="js/fmd/jquery.commandro.js"></script>
 <script type="text/javascript" src="js/fmd/fun.js"></script>
 <script type="text/javascript" src="js/fmd/auth.js"></script>
 
@@ -59,6 +59,7 @@
 	var TOKEN = "${token}";
 	var CLIENT_REFERENCE = "${clientReference}";
 	var SHOPMAN = ${shopman};
+	var CACHE_SESSION = "${cacheSession}";
 	var CONTEXT_PATH = "${pageContext.request.contextPath}";
 	var AUTHORIZED = true;
 	var TAXES_VALUE = ${GSettings.get("TAXES_VALUE")} * 1;
@@ -70,6 +71,7 @@
 	var clients;
 	var CLIENT = null;
 	var AGENT = null;
+	var RESPONSE;
 	//var shopman=new setShopman("unauthorized");
 	var metadata = new setMetadata(1);// INVOICE_TYPE_ORDER
 	var requester = new setRequester(-1, "publico", "publico");
@@ -142,6 +144,7 @@
 ["@h", "esta ayuda", "@h"],
 ["ha", "buscar historial de agente", "ha palabra_clave_1 palabra_clave_2 ..."],
 ["hc", "buscar historial de cliente", "hc palabra_clave_1 palabra_clave_2 ..."],
+["@l", "traer lista de otra sesion", "@l #_de_sesion"],
 ["@mail", "reenviar email del documento", "@mail #_de_referencia [mail1] [mail2] ..."],
 ["@mp", "definir método de pago", "@mp PUE|PPD"],
 ["$oc", "pedido a cliente, imprimiendo en formato carta", "$oc [#_de_copias]"],
@@ -2343,6 +2346,128 @@
 									});
 								}
 							}
+							else if (commandline.kind == 'getsessionlist') {
+								if (commandline.args.length >= 1) {
+									var block3=$.blockUI({
+												content : '<h1><img src="img/wait.gif" /></h1>'
+											});
+									$.ajax({
+										url : CONTEXT_PATH+'/dbport',
+										type : 'POST',
+										data : {
+											command : commandline.kind,
+											sessionId : commandline.sessionId,
+											token : TOKEN,
+											clientReference : CLIENT_REFERENCE
+										},
+										success : function(data) {
+											$.unblockUI(block3);
+											var itms = data.list;
+											for (var i = itms.length - 1; i >= 0; i--) {
+												dolog(
+														parseFloat(itms[i].quantity),
+														itms[i].unit,
+														itms[i].description,
+														itms[i].code,
+														itms[i].mark,
+														parseFloat(itms[i].unitPrice),
+														itms[i].prodservCode,
+														itms[i].unitCode);
+												itms[i].quantity = parseFloat(itms[i].quantity);
+												itms[i].unitPrice = parseFloat(itms[i].unitPrice);
+												productsLog.unshift(itms[i]);
+												productsLog[0].disabled = itms[i].disabled;
+												if (itms[i].id == -1) {
+													$('#log').sexytable({
+														'editedRow' : true,
+														'index' : 0
+													});
+												}
+												if (itms[i].disabled) {
+													$('#log').sexytable({
+														'disabledRow' : true,
+														'index' : 0
+													});
+												}
+											}
+											onLogChange();
+											commander.reset();
+											
+										},
+										error : function(jqXHR, textStatus, errorThrown) {
+											commander.reset();
+											$.blockUI({
+												node:block3,
+												content : jqXHR.responseText,
+												changeContent:true,
+												unblockOnAnyKey:true,
+											})},
+										dataType : "json"
+
+									});
+								}
+							}
+							else if (commandline.kind == 'getcachesessionlist') {
+								if (commandline.args.length >= 1) {
+									var block3=$.blockUI({
+												content : '<h1><img src="img/wait.gif" /></h1>'
+											});
+									$.ajax({
+										url : CONTEXT_PATH+'/dbport',
+										type : 'POST',
+										data : {
+											command : commandline.kind,
+											shortId : commandline.shortId,
+											token : TOKEN,
+											clientReference : CLIENT_REFERENCE
+										},
+										success : function(data) {
+											$.unblockUI(block3);
+											var itms = data.response.items;
+											for (var i = itms.length - 1; i >= 0; i--) {
+												dolog(
+														parseFloat(itms[i].quantity),
+														itms[i].unit,
+														itms[i].description,
+														itms[i].code,
+														itms[i].mark,
+														parseFloat(itms[i].unitPrice),
+														itms[i].prodservCode,
+														itms[i].unitCode);
+												itms[i].quantity = parseFloat(itms[i].quantity);
+												itms[i].unitPrice = parseFloat(itms[i].unitPrice);
+												productsLog.unshift(itms[i]);
+												productsLog[0].disabled = itms[i].disabled;
+												if (itms[i].id == -1) {
+													$('#log').sexytable({
+														'editedRow' : true,
+														'index' : 0
+													});
+												}
+												if (itms[i].disabled) {
+													$('#log').sexytable({
+														'disabledRow' : true,
+														'index' : 0
+													});
+												}
+											}
+											onLogChange();
+											commander.reset();
+											
+										},
+										error : function(jqXHR, textStatus, errorThrown) {
+											commander.reset();
+											$.blockUI({
+												node:block3,
+												content : jqXHR.responseText,
+												changeContent:true,
+												unblockOnAnyKey:true,
+											})},
+										dataType : "json"
+
+									});
+								}
+							}
 							else if (commandline.kind == 'searchinvoices') {
 								//console.log('going search: '+commandline.args.join(" "));
 								if (commandline.args.length >= 1) {
@@ -2458,6 +2583,88 @@
 									});
 								}
 							}
+							else if (commandline.kind == 'searchcachesession') {
+								//console.log('going search: '+commandline.args.join(" "));
+								if (commandline.args.length >= 1) {
+									commandline.args[commandline.args.length - 1] = commandline.args[commandline.args.length - 1].replace(/\./g, '');
+									$("#resultset").prepend("<img src=img/wait.gif width=70px height=70px/>");
+									$.ajax({
+										url : CONTEXT_PATH+'/dbport',
+										type : 'POST',
+										data : {
+											command : commandline.kind,
+											patterns : commandline.patterns,
+											token : TOKEN,
+											clientReference : CLIENT_REFERENCE
+										},
+										success : function(data) {
+											$('#resultset').empty();
+											console.log(data);
+											for (var i = 0; i < data.cachedSessions.length; i++) {
+												if(data.cachedSessions[i].items.length > 0){
+													var gtotal = 0;
+													for (var j = 0; j < data.cachedSessions[i].items.length; j++) {
+														var item = data.cachedSessions[i].items[j];
+														var quantity = item.quantity;
+														var unitPrice = item.unitPrice;
+														data.cachedSessions[i].items[j].total = Math.round(quantity * unitPrice * 100) / 100;
+														gtotal += quantity * unitPrice;
+														for ( var field in item) {
+															for (var k = 0; k < commandline.args.length; k++) {
+																if (typeOf(item[field]) == "string") {
+																	item[field] = item[field].replace(commandline.args[k].toUpperCase().replace(
+																		/\"/g,""),
+																		"<i style='background-color:#fbff8d'><b>"
+																		+ commandline.args[k].toUpperCase().replace(
+																		/\"/g,"") + "</b></i>");
+																			//if(item[field].indexOf(commandline.args[k].toUpperCase())!=-1)contains=true;	
+																}
+															}
+														}
+													}
+													
+													var cachedSessions = data.cachedSessions;
+													var consummerContent = "<b>id:</b>" + cachedSessions[i].id + "<br>"
+													/*for (var k = 0; k < commandline.args.length; k++) {
+														if (!isNumber(consummer[field])) {
+															consummerContent = consummerContent
+																			.replace(
+																					commandline.args[k]
+																							.toUpperCase()
+																							.replace(
+																									/\"/g,
+																									""),
+																					"<i style='background-color:#fbff8d'><b>"
+																							+ commandline.args[k]
+																									.toUpperCase()
+																									.replace(
+																											/\"/g,
+																											"")
+																							+ "</b></i>");
+									
+														}
+													}*/
+													var consummerObj = { content : consummerContent };
+													$('#resultset').inComFerremundoCpsGenericDiv({
+														dclass : 'box fleft',
+														width : '100%',
+														content : ''
+													})
+													.comFerremundoCpsTB(cachedSessions[i].items)
+													.addClass( i % 2 != 0 ? 'odd' : 'even')
+													.preComFerremundoCpsGenericDiv(consummerObj);
+												}
+											}
+											
+											$("#resultset").append("-- FIN DE BUSQUEDA --");
+										},
+										dataType : "json",
+										error : function() {
+											$('#resultset').empty();
+										}
+									});
+								}
+							}
 							else if (commandline.kind == 'makerecord') {
 								$.ajax({
 									url : CONTEXT_PATH+'/dbport',
@@ -2514,6 +2721,64 @@
 												+ jqXHR.responseText);
 									}
 								});
+							}
+							else if (commandline.kind == 'updateproducts') {
+								var block3=$.blockUI({
+									content : '<h1><img src="img/wait.gif" /></h1>'
+								});
+								$.ajax({
+									url : CONTEXT_PATH+'/dbport',
+									type : 'POST',
+									data : {
+										command : commandline.kind,
+										token : TOKEN,
+										clientReference : CLIENT_REFERENCE
+									},
+									success : function(data) {
+										commander.reset();
+										
+										var r = data.response;
+										for(var i = 0; (i < r.length && i < 100); i++){
+											$("#resultset").empty().sexytable({
+												row:[
+														{content: "<div class='unit-'>"+r[i].unit+"</div>", width:8},
+														{content: "<div class='description-'>"+r[i].description+"</div>", width:33},
+														{content: "<div class='code-'>"+r[i].code+"</div>", width:8},
+														{content: "<div class='mark-'>"+r[i].mark+"</div>", width:8},
+														{content: "<div class='unitPrice-'>"+r[i].unitPrice+"</div>", width:8},
+														{content: "<div class='prodservCode-'>"+r[i].prodservCode+"</div>", width:8},
+														{content: "<div class='unitCode-'>"+r[i].unitCode+"</div>", width:8}
+														],
+												animate:0,
+												class_:"tableingrow"
+											});
+										}
+										if(r.length>100){
+											$("#resultset").append("(... and "+(r.length-100)+" more.)")
+										}
+										$.unblockUI(block3);
+									},
+									error : function(jqXHR, textStatus, errorThrown) {
+										commander.reset();
+										$.unblockUI(block3);
+										console.error("el sistema dice: "
+																+ textStatus
+																+ " - "
+																+ errorThrown
+																+ " - "
+																+ jqXHR.responseText);
+										$("#resultset").empty().append(
+																"el sistema dice: "
+																		+ textStatus
+																		+ " - "
+																		+ errorThrown
+																		+ " - "
+																		+ jqXHR.responseText);
+									}
+								});
+							}
+							else if (commandline.kind == 'updateshopman') {
+								updateShopmanForm(commander);
 							}
 						}
 						$('#commands2').css({"background-color" : "rgb(207,216,227)"}).focus().commandro({						
@@ -2762,20 +3027,7 @@
 				//console.log(commandline);
 			};
 		</script>
-		<button type="button" id="lockbutton">lock</button>
 		
-		<!--button type="button" onclick="new fillCommandLine('@ia');">cotizar
-			a agente</button-->
-
-		<button type="button" onclick="new fillCommandLine('@pcot');">cotizacion</button>
-		<!--button type="button" onclick="new fillCommandLine('@oa');">credito
-			a agente</button-->
-		<button type="button" onclick="new fillCommandLine('$oc');">pedido</button>
-		<!--button type="button" onclick="new fillCommandLine('$oa');">pedido
-			a agente+abono</button-->
-		<button type="button" onclick="new fillCommandLine('$fc');">factura</button>
-		<button type="button" onclick="new fillCommandLine('$ef');">enviar factura</button>
-		<button type="button" onclick="new fillCommandLine('@ecot');">enviar cotizacion</button>
 		<!--button type="button" onclick="new fillCommandLine('$fa');">factura
 			a agente+abono</button-->
 		<!--Metodo de pago -->
@@ -2859,12 +3111,22 @@
 		<select id="coin" style="width:10%">
 			<option value = "MXN">MXN</option>
 		</select>
-		<br><a class="g-total2">$0</a> [ <a class="g-area-to-print">0 - 0 hojas</a> ]
-		<div id="editproduct">
-			<input id="editproduct-1" /> <input id="editproduct-2" /> <input
-				id="editproduct-3" /> <input id="editproduct-4"/> <input
-				id="editproduct-5" /> <input id="editproduct-6"/>
-		</div>
+		
+		
+		<!--button type="button" onclick="new fillCommandLine('@ia');">cotizar
+			a agente</button-->
+
+		<button type="button" onclick="new fillCommandLine('@pcot');">cotizacion</button>
+		<!--button type="button" onclick="new fillCommandLine('@oa');">credito
+			a agente</button-->
+		<button type="button" onclick="new fillCommandLine('$oc');">pedido</button>
+		<!--button type="button" onclick="new fillCommandLine('$oa');">pedido
+			a agente+abono</button-->
+		<button type="button" onclick="new fillCommandLine('$fc');">factura</button>
+		<button type="button" onclick="new fillCommandLine('$ef');">enviar factura</button>
+		<button type="button" onclick="new fillCommandLine('@ecot');">enviar cotizacion</button>
+		<button type="button" id="lockbutton">lock</button>
+		<a class="g-total2">$0</a> [ <a class="g-area-to-print">0 - 0 hojas</a> ]
 
 	</div>
     <table><tr><td>
@@ -2906,9 +3168,10 @@
 		<div id="log" style="height: 500px; width: 100%; overflow: auto;"
 			class="ui-widget-content"></div>
 	</div>
-
-	<div id="resultset" style="width: 100%;" class=""></div>
-	<div id="logResultset" style="width: 100%;" class=""></div>
+	<div style="position: relative; width: 100%">
+		<div id="resultset" style="width: 100%;"></div>
+	</div>
+	<div id="logResultset" style="width: 100%;"></div>
 	<div id='records'>records</div>
 	<h6 id="clientReference"></h6>
 </body>

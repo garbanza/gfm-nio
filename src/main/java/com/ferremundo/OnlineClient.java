@@ -1,6 +1,8 @@
 package com.ferremundo;
 
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
@@ -9,6 +11,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.google.gson.JsonElement;
 
 public class OnlineClient {
 
@@ -22,7 +26,18 @@ public class OnlineClient {
 	private String sessionId;
 	private boolean isEaten=false;
 	private String locale;
+	private List<InvoiceItem> productsLog;
+	private String shortId = "";//startedTime();
 	
+	public static String shortId(String nameId){
+		Calendar calendar = Calendar.getInstance();
+		String result = 
+				String.format("%02d", calendar.get(Calendar.HOUR_OF_DAY)) +
+				String.format("%02d", (int)calendar.get(Calendar.MINUTE)) +				
+				String.format("%02d", calendar.get(Calendar.SECOND)) +
+				nameId;
+		return result;
+	}
 	public OnlineClient(int clientReference, String ipAddress, String sessionId) {
 		this.clientReference = clientReference;
 		this.ipAddress = ipAddress;
@@ -148,4 +163,18 @@ public class OnlineClient {
 	public void setLocale(String locale) {
 		this.locale = locale;
 	}
+
+	public List<InvoiceItem> getProductsLog() {
+		return productsLog;
+	}
+	public void setProductsLog(List<InvoiceItem> productsLog) {
+		this.productsLog = productsLog;
+	}
+	public String getShortId() {
+		return shortId;
+	}
+	public void setShortId(String shortId){
+		this.shortId = shortId;
+	}
+
 }

@@ -223,6 +223,33 @@
 				this.kind="undefinedcommand"
 			}
 		}
+		else if(this.command=='@l'){
+			if(this.args[0]){
+				this.sessionId = this.args[0];
+				this.kind = "getsessionlist";
+			}
+			else {
+				this.kind="undefinedcommand"
+			}
+		}
+		else if(this.command=='@lc'){
+			if(this.args[0]){
+				this.shortId = this.args[0];
+				this.kind = "getcachesessionlist";
+			}
+			else {
+				this.kind="undefinedcommand"
+			}
+		}
+		else if(this.command=='@lcs'){
+			if(this.args[0]){
+				this.patterns = this.args.join(" ");
+				this.kind = "searchcachesession";
+			}
+			else {
+				this.kind="undefinedcommand"
+			}
+		}
 		else if(this.command=='@mail'){
 			if(this.args[0]){
 				if(isNumber(this.args[0])){

@@ -54,7 +54,12 @@ public enum AccessPermission {
 	
 	MAKE_RECORD,
 	DEACTIVATE_RECORD,
-	READ_RECORDS;
+	READ_RECORDS,
+	
+	GET_SESSION_LIST,
+	SET_SESSION_LIST,
+	GET_CACHE_SESSION_LIST,
+	SEARCH_CACHE_SESSION;
 	
 	public static List<AccessPermission> admin(){
 		return new ArrayList<AccessPermission>(Arrays.asList(

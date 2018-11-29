@@ -88,8 +88,8 @@ $.capsule([
 	    		   "<br>descripcion:		<input id='description' value='articulo'/>"+
 	    		   "<br>codigo:		<input id='code' value='art-gen'/>"+
 	    		   "<br>marca:		<input id='mark' value='generica'/>"+
-	    		   "<br>clave sat:		<input id='unitCode' value='h87'/>"+
-	    		   "<br>unidad sat:		<input id='prodservCode' value='01010101'/>"+
+	    		   "<br>unidad sat:		<input id='unitCode' value='h87'/>"+
+	    		   "<br>clave sat:		<input id='prodservCode' value='01010101'/>"+
 	    		   "<br>$ unitario:		<input id='unitPrice' value='0'/>"+
 			        "</div>";
 	    	   },

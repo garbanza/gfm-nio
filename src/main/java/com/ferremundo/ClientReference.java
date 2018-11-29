@@ -13,7 +13,6 @@ public class ClientReference {
 	}
 
 	public static Integer get() {
-		System.out.println("clientReference get");
 		return tl.get();
 	}
 	

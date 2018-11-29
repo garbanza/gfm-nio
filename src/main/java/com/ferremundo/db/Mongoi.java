@@ -77,6 +77,8 @@ public class Mongoi {
 	
 	public static final String DB_FIXES="dbFixes";
 	
+	public static final String CACHE_SESSION="cachesession";
+	
 	public static final int STARTS=0;
 	public static final int CONTAINS=1;
 	public static final int MATCHES=2;
@@ -208,6 +210,22 @@ public class Mongoi {
 		DBObject query=new BasicDBObject("$and",and);
 		DBCollection collection=db.getCollection(where);
 		DBCursor cursor=collection.find(query).limit(limit);
+		return cursor;
+	}
+	
+	public DBCursor doFindLikeV2(String where, String[] fields, String[] patterns, String sort, int limit){
+		ArrayList and=new ArrayList();
+		for(int i=0;i<patterns.length;i++){
+			ArrayList or=new ArrayList();
+			for(int j=0;j<fields.length;j++){
+				or.add(new BasicDBObject(fields[j],Pattern.compile(patterns[i])));
+			}
+			and.add(new BasicDBObject("$or",or));
+		}
+		DBObject query=new BasicDBObject("$and",and);
+		DBObject sorting = (DBObject)JSON.parse(sort);
+		DBCollection collection=db.getCollection(where);
+		DBCursor cursor=collection.find(query).sort(sorting).limit(limit);
 		return cursor;
 	}
 	
@@ -547,6 +565,20 @@ public class Mongoi {
 		}
 		DBCursor cursor=doFindLike(INVOICES, new String[]{"reference","client.consummer","agent.consummer","client.address","agent.address","client.rfc","agent.rfc","items.code","items.mark","items.description"}, strl,50).sort(new BasicDBObject("$natural",-1));
 		System.out.println(cursor.count()+" hallados");
+		return cursor;
+	}
+	
+	public DBCursor doFindCacheSession(String[] paths){
+		
+		List<String> list=new LinkedList<String>();
+		for(String str:paths){
+			if(str!=null)if(!str.equals(""))list.add(str);
+		}
+		String[] strl=new String[list.size()];
+		for(int i=0;i<list.size();i++){
+			strl[i]=list.get(i);
+		}
+		DBCursor cursor=doFindLikeV2(CACHE_SESSION, new String[]{"id","items.code","items.mark","items.description"}, strl,"{\"$natural\" : -1}",200);
 		return cursor;
 	}
 	

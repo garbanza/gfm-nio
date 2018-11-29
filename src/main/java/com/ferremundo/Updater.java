@@ -84,7 +84,7 @@ public class Updater extends HttpServlet{
 		OnlineClient onlineClient=OnlineClients.instance().get(clientReference);
 		Log log= new Log(onlineClient);
 		log.entry();
-		String response="";
+		String response="{\"response\" : [ ";
 		
 		
 		File file = new File(GSettings.getPathTo("SPREADSHEET_DB_FILE"));
@@ -105,6 +105,7 @@ public class Updater extends HttpServlet{
 		new Mongoi().getCollection(Mongoi.PRODUCTS_COUNTER).ensureIndex(new BasicDBObject("unique", 1), new BasicDBObject("unique", true));
 		new Mongoi().doInsert(Mongoi.PRODUCTS_COUNTER, "{ \"unique\" : \"unique\" , \"id\" : 0}");
 		*/
+		int count = 0;
 		while(cont){
 			String str=sheet.getCellAt("B"+i).getTextValue();
 			if(str.equals(""))cont=false;
@@ -125,35 +126,13 @@ public class Updater extends HttpServlet{
 				//String hash=product.getHash();//MD5.get(pstr);
 				//product.setHash(hash);
 				DBObject obj=new Mongoi().doFindOne(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}");
-
+				response+= (count>0?",":"");
 				if(obj==null){
 					//DBObject objByCode=new Mongoi().doFindOne(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}");
 					//if(objByCode==null){
 						product.setId(new Long(new Mongoi().doIncrement(Mongoi.PRODUCTS_COUNTER, "{ \"unique\" : \"unique\" }","id")));
 						new Mongoi().doInsert(Mongoi.PRODUCTS, new Gson().toJson(product));
-						response+="inserting new product -> "+new Gson().toJson(product)+"\n";
-					
 						log.info("inserting new product -> "+new Gson().toJson(product));
-					//}
-					/*else{
-						String updtn="updating '"+new Mongoi().doFindOne(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}")+"'";
-						log.info(updtn);
-						new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"hash\" : \""+hash+"\" }");
-						new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"mark\" : \""+mark+"\" }");
-						new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"description\" : \""+description+"\" }");
-						new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"unit\" : \""+unit+"\" }");
-						new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"providerPrice\" : "+providerPrice+" }");
-						float oldPrice_=new Float(objByCode.get("unitPrice").toString());
-						if(oldPrice_!=unitPrice){
-							new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"unitPrice\" : "+unitPrice+" }");
-							new Mongoi().doPush(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"priceHistory\" : {\"unitPrice\" : "+oldPrice_+", \"deprecatedDate\" : "+new Date().getTime()+", \"updater\" : \""+onlineClient.getShopman().getLogin()+"\" }}");
-							//response+="updating price("+unitPrice+") for -> "+obj+"\n";
-						}
-						updtn+= "\n\tto '"+new Mongoi().doFindOne(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}")+"'";
-						response+=updtn+"\n";
-						log.info(" to '"+new Mongoi().doFindOne(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}")+"'");
-						//System.out.println("\tto '"+new Mongoi().doFindOne(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}")+"'");
-					}*/
 				}
 				else {
 					log.object("product of code exists "+code,obj);
@@ -169,19 +148,19 @@ public class Updater extends HttpServlet{
 					if(oldPrice!=unitPrice){
 						new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"unitPrice\" : "+unitPrice+" }");
 						new Mongoi().doPush(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"priceHistory\" : {\"unitPrice\" : "+oldPrice+", \"deprecatedDate\" : "+new Date().getTime()+", \"updater\" : \""+onlineClient.getShopman().getLogin()+"\" }}");
-						response+="updating unitPrice("+unitPrice+") for -> "+obj+"\n";
+						//response+="updating unitPrice("+unitPrice+") for -> "+obj+"\n";
 						log.info("updating unitPrice("+unitPrice+") for -> "+obj);
 					}
 					if(oldProviderPrice!=providerPrice){
 						new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"providerPrice\" : "+providerPrice+" }");
 						new Mongoi().doPush(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"priceHistory\" : {\"providerPrice\" : "+oldProviderPrice+", \"deprecatedDate\" : "+new Date().getTime()+", \"updater\" : \""+onlineClient.getShopman().getLogin()+"\" }}");
-						response+="updating providerPrice("+providerPrice+") for -> "+obj+"\n";
+						//response+="updating providerPrice("+providerPrice+") for -> "+obj+"\n";
 						log.info("updating providerPrice("+providerPrice+") for -> "+obj);
 					}
 					if(oldProviderOffer!=providerOffer){
 						new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"providerOffer\" : "+providerOffer+" }");
 						new Mongoi().doPush(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"priceHistory\" : {\"providerOffer\" : "+oldProviderOffer+", \"deprecatedDate\" : "+new Date().getTime()+", \"updater\" : \""+onlineClient.getShopman().getLogin()+"\" }}");
-						response+="updating providerPrice("+providerOffer+") for -> "+obj+"\n";
+						//response+="updating providerPrice("+providerOffer+") for -> "+obj+"\n";
 						log.info("updating providerPrice("+providerOffer+") for -> "+obj);
 					}
 					if(!oldProdservCode.equals(prodservCode)){
@@ -196,15 +175,17 @@ public class Updater extends HttpServlet{
 						new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"description\" : \""+description+"\" }");
 						log.info("updating description("+oldDescription+") for -> "+description);
 					}
-					//System.out.println("coincidence -> "+new Gson().toJson(product));
 				}
+				obj=new Mongoi().doFindOne(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}");
+				response += obj.toString();
 				
 			}
 			//System.out.println(i+" -> "+str);
 			i++;
 			
 		}
-		response+="total products checked -> "+(i-2)+"\n";
+		response += "]}";
+		//response+="total products checked -> "+(i-2)+"\n";
 		return response;
 		/*EntityManager em=EMF.get(EMF.UNIT_PRODUCT).createEntityManager();
 		em.getTransaction().begin();

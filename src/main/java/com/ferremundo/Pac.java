@@ -18,12 +18,13 @@ import org.xml.sax.InputSource;
 
 import com.ferremundo.stt.GSettings;
 
-public class Profact implements ElectronicInvoice {
+
+public class Pac implements ElectronicInvoice {
 
 	String invoice64;
 	Invoice invoice;
 	String xml;
-	public Profact(Invoice invoice) {
+	public Pac(Invoice invoice) {
 		Log log = new Log();
 		String out = Utils.GEN_CFD_STRING(invoice);
 		byte[] cfd64=out.toString().getBytes();
@@ -33,31 +34,33 @@ public class Profact implements ElectronicInvoice {
 		this.invoice=invoice;
 	}
 
-	public Profact() {
+	public Pac() {
 	}
 	public String getXml(){
 		return xml;
 	}
 	@Override
 	public PACResponse submit(boolean production) {
+		Log log = new Log();
+		log.info("Submitting?: "+production);
 		if(production)return submitProduction();
 		return submitTest();
 	}
 	public PACResponse submitProduction() {
 		GSettings g = GSettings.instance();
 		Log log = new Log();
-		mx.timbracfdi33.ArrayOfAnyType objects=null;
+		log.info("Submitting...");
+		pac1.prod.ArrayOfAnyType objects=null;
 		try {
-			objects = new mx.timbracfdi33.Timbrado(new URL(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE")))
+			objects = new pac1.prod.Timbrado(new URL(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE")))
 					.getTimbradoSoap()
 					.timbraCFDI(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_USER"), invoice64, invoice.getReference());
 		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		log.object("PAC raw response",objects);
 		//log.object("PAC raw response list",objects.getAnyType());
-		List l = objects.getAnyType();
+		List<Object> l = objects.getAnyType();
 		if(l.get(1).equals("0")){
 			String xml=StringEscapeUtils.unescapeJava((String)l.get(3));
 			log.object("xml cfdi is",xml);
@@ -82,18 +85,19 @@ public class Profact implements ElectronicInvoice {
 	public PACResponse submitTest() {
 		GSettings g = GSettings.instance();
 		Log log = new Log();
-		mx.buzoncfdi.cfdi33_pruebas.ArrayOfAnyType objects=null;
+		log.info("Submitting...");
+		pac1.test.ArrayOfAnyType objects=null;
 		try {
-			objects = new mx.buzoncfdi.cfdi33_pruebas.Timbrado(new URL(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE")))
+			objects = new  pac1.test.Timbrado(new URL(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE")))
 					.getTimbradoSoap()
 					.timbraCFDI(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_USER"), invoice64, invoice.getReference());
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
+		} catch (Exception e) {
+			log.trace(e);
 			e.printStackTrace();
 		}
 		log.object("PAC raw response",objects);
 		//log.object("PAC raw response list",objects.getAnyType());
-		List l = objects.getAnyType();
+		List<Object> l = objects.getAnyType();
 		if(l.get(1).equals("0")){
 			String xml=StringEscapeUtils.unescapeJava((String)l.get(3));
 			log.object("xml cfdi is",xml);
@@ -139,9 +143,9 @@ public class Profact implements ElectronicInvoice {
 	    Element e=(Element)node;
 	    String uuid=e.getAttribute("UUID");
 	    GSettings g = GSettings.instance();
-	    mx.buzoncfdi.cfdi33_pruebas.ArrayOfAnyType objects=null;
+	    pac1.test.ArrayOfAnyType objects=null;
 		try {
-			objects = new mx.buzoncfdi.cfdi33_pruebas.Timbrado(new URL(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE")))
+			objects = new pac1.test.Timbrado(new URL(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE")))
 							.getTimbradoSoap()
 							.cancelaCFDIAck(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_USER"), g.getKey("INVOICE_SENDER_TAX_CODE"), uuid);
 		} catch (MalformedURLException e1) {
@@ -149,7 +153,7 @@ public class Profact implements ElectronicInvoice {
 		}
 		log.object("PAC raw response",objects);
 		List<Object> l= objects.getAnyType();
-		if(l.get(1).equals("0")){
+		if(new String(""+l.get(1)).equals("0")){
 			String content=StringEscapeUtils.unescapeJava((String)l.get(3));
 			String message=(String)l.get(2);
 			String code=(int)l.get(1)+"";
@@ -190,10 +194,10 @@ public class Profact implements ElectronicInvoice {
 	    Element e=(Element)node;
 	    String uuid=e.getAttribute("UUID");
 	    GSettings g = GSettings.instance();
-	    mx.timbracfdi33.ArrayOfAnyType objects=null;
+	    pac1.prod.ArrayOfAnyType objects=null;
 	    log.object("cancelling invoice with uuid '"+uuid+"' via " +g.getKey("INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE"));
 		try {
-			objects = new mx.timbracfdi33.Timbrado(new URL(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE")))
+			objects = new pac1.prod.Timbrado(new URL(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_WEB_SERVICE")))
 							.getTimbradoSoap()
 							.cancelaCFDIAck(g.getKey("INVOICE_CERTIFICATE_AUTHORITY_USER"), g.getKey("INVOICE_SENDER_TAX_CODE"), uuid);
 		} catch (MalformedURLException e1) {
@@ -203,11 +207,11 @@ public class Profact implements ElectronicInvoice {
 		log.object("PAC raw response",objects);
 		List<Object> l= objects.getAnyType();
 		
-		if(((String)l.get(1)).equals("0")){
-			log.object("PAC response success 0="+l.get(1));
+		if(new String(""+l.get(1)).equals("0")){
+			log.object("PAC response success");
 			String content=StringEscapeUtils.unescapeJava((String)l.get(3));
 			String message=(String)l.get(2);
-			String code=l.get(1)+"";
+			String code="0";
 			boolean success=true;
 			return new PACResponse(success, message, content, code);
 		}
