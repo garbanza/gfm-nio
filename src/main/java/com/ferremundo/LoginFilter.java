@@ -86,7 +86,7 @@ public class LoginFilter implements Filter {
         					//System.out.println("token passes");
         					Shopman shopman=(Shopman)new Gson().fromJson(dbshopman.toString(), Shopman.class);
         					onlineClient.setShopman(shopman);
-        					String shortId = OnlineClient.shortId(shopman.getLogin());
+        					String shortId = OnlineClient.shortId(shopman.getLogin().toUpperCase());
         					onlineClient.setShortId(shortId);
         					request.setAttribute("cacheSession",shortId);
         					onlineClient.setLogged(true);

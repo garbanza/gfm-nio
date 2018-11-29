@@ -214,6 +214,7 @@ public class Mongoi {
 	}
 	
 	public DBCursor doFindLikeV2(String where, String[] fields, String[] patterns, String sort, int limit){
+		Log log = new Log();
 		ArrayList and=new ArrayList();
 		for(int i=0;i<patterns.length;i++){
 			ArrayList or=new ArrayList();
@@ -225,6 +226,7 @@ public class Mongoi {
 		DBObject query=new BasicDBObject("$and",and);
 		DBObject sorting = (DBObject)JSON.parse(sort);
 		DBCollection collection=db.getCollection(where);
+		log.object("query",query.toString());
 		DBCursor cursor=collection.find(query).sort(sorting).limit(limit);
 		return cursor;
 	}

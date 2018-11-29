@@ -817,7 +817,7 @@ public class DBPort extends HttpServlet{
 			public void execute(Map<String,String> parametersMap,
 					HttpServletResponse response, OnlineClient onlineClient) {
 				Log log = new Log();
-				String patts=request.getParameter("patterns");
+				String patts=request.getParameter("patterns").toUpperCase();
 				log.object("patterns",patts);
 				
 				List<String> matchList = new ArrayList<String>();
@@ -836,7 +836,7 @@ public class DBPort extends HttpServlet{
 				    }
 				}
 				String[] patterns=matchList.toArray(new String[1]);
-				
+				log.object("patterns",patterns);
 				
 				DBCursor cursor=new Mongoi().doFindCacheSession(patterns);
 				String json="{ \"cachedSessions\" : [";

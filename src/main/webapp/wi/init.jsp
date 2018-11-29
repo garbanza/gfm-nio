@@ -2417,7 +2417,7 @@
 										type : 'POST',
 										data : {
 											command : commandline.kind,
-											shortId : commandline.shortId,
+											shortId : commandline.shortId.toUpperCase(),
 											token : TOKEN,
 											clientReference : CLIENT_REFERENCE
 										},
