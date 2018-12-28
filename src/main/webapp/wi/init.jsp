@@ -145,6 +145,8 @@
 ["ha", "buscar historial de agente", "ha palabra_clave_1 palabra_clave_2 ..."],
 ["hc", "buscar historial de cliente", "hc palabra_clave_1 palabra_clave_2 ..."],
 ["@l", "traer lista de otra sesion", "@l #_de_sesion"],
+["@lc", "traer lista de otra sesion en caché", "@lc #_de_sesion_en_caché"],
+["@lcs", "buscar sesion en caché", "@lcs palabra_clave_1 palabra_clave_2 ..."],
 ["@mail", "reenviar email del documento", "@mail #_de_referencia [mail1] [mail2] ..."],
 ["@mp", "definir método de pago", "@mp PUE|PPD"],
 ["$oc", "pedido a cliente, imprimiendo en formato carta", "$oc [#_de_copias]"],
@@ -3018,8 +3020,9 @@
 
 	<div >
 		<!--input id="commands" style="width:80%" /-->
-		<input id='commands2' app-id="form-input form-goup-1" style="width:80%"><a id="shopmanSession"></a>
+		<input id='commands2' app-id="form-input form-goup-1" style="width:70%"><a id="shopmanSession"></a>
 		<div id="searchResultset"></div>
+
 		<script type="text/javascript">
 			fillCommandLine = function(text) {
 				$('#commands2').val(text).focus().click();

@@ -141,6 +141,10 @@ public class LoginFilter implements Filter {
         	req.setAttribute("token",onlineClient.getToken());
         	req.setAttribute("clientReference",onlineClient.getClientReference());
         	req.setAttribute("shopman","{ name:'"+onlineClient.getShopman().getName()+"',login:'"+onlineClient.getShopman().getLogin()+"'}");
+        	String shortId = OnlineClient.shortId(onlineClient.getShopman().getLogin().toUpperCase());
+			onlineClient.setShortId(shortId);
+			req.setAttribute("cacheSession",shortId);
+        	
         	request.getSession().setMaxInactiveInterval(60*60*8);
         	onlineClient.setEaten(true);
             chain.doFilter(request, response); // Logged-in user found, so just continue request.
