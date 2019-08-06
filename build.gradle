@@ -53,6 +53,11 @@ task integrationTomcatStop(type: com.bmuschko.gradle.tomcat.tasks.TomcatStop) {
     stopKey = tomcatStopKey
 }
 
+configurations.all {
+    resolutionStrategy {
+        force 'xml-apis:xml-apis:1.4.01'
+    }
+}
 
 // In this section you declare the dependencies for your production and test code
 dependencies {

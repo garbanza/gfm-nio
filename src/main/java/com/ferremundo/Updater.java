@@ -136,6 +136,9 @@ public class Updater extends HttpServlet{
 				}
 				else {
 					log.object("product of code exists "+code,obj);
+					String oldMark=obj.get("mark")==null?"":obj.get("mark").toString();
+					//String oldCode=obj.get("code")==null?"":obj.get("code").toString();
+					String oldUnit=obj.get("unit")==null?"":obj.get("unit").toString();
 					float oldPrice=new Float(obj.get("unitPrice").toString());
 					Object providerPriceO=obj.get("providerPrice");
 					float oldProviderPrice= providerPriceO==null?-1:new Float(providerPriceO.toString());
@@ -162,6 +165,14 @@ public class Updater extends HttpServlet{
 						new Mongoi().doPush(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"priceHistory\" : {\"providerOffer\" : "+oldProviderOffer+", \"deprecatedDate\" : "+new Date().getTime()+", \"updater\" : \""+onlineClient.getShopman().getLogin()+"\" }}");
 						//response+="updating providerPrice("+providerOffer+") for -> "+obj+"\n";
 						log.info("updating providerPrice("+providerOffer+") for -> "+obj);
+					}
+					if(!oldMark.equals(mark)){
+						new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"mark\" : \""+mark+"\" }");
+						log.info("updating prodservCode("+oldMark+") for -> "+mark);
+					}
+					if(!oldUnit.equals(unit)){
+						new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"unit\" : \""+unit+"\" }");
+						log.info("updating prodservCode("+oldUnit+") for -> "+unit);
 					}
 					if(!oldProdservCode.equals(prodservCode)){
 						new Mongoi().doUpdate(Mongoi.PRODUCTS, "{ \"code\" : \""+code+"\"}", "{\"prodservCode\" : \""+prodservCode+"\" }");

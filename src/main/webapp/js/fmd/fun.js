@@ -1,5 +1,5 @@
 
-CLIENT_ID=function(){return "-|1812281755|sessionid:"+CLIENT_REFERENCE+"|cachesession:"+CACHE_SESSION+"|-"};
+CLIENT_ID=function(){return "-|1906181852|sessionid:"+CLIENT_REFERENCE+"|cachesession:"+CACHE_SESSION+"|-"};
 function Item(quantity,code,unit,mark,description,unitPrice,total){
 	this.quantity=quantity;
 	this.unit=unit;

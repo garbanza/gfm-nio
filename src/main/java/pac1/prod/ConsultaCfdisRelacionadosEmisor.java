@@ -1,5 +1,5 @@
 
-package pac1.test;
+package pac1.prod;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -18,8 +18,8 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
  *       &lt;sequence&gt;
  *         &lt;element name="usuarioIntegrador" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
- *         &lt;element name="rfcEmisor" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
  *         &lt;element name="folioUUID" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
+ *         &lt;element name="rfcEmisor" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
  *       &lt;/sequence&gt;
  *     &lt;/restriction&gt;
  *   &lt;/complexContent&gt;
@@ -31,15 +31,15 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
     "usuarioIntegrador",
-    "rfcEmisor",
-    "folioUUID"
+    "folioUUID",
+    "rfcEmisor"
 })
-@XmlRootElement(name = "CancelaCFDIAck")
-public class CancelaCFDIAck {
+@XmlRootElement(name = "ConsultaCfdisRelacionadosEmisor")
+public class ConsultaCfdisRelacionadosEmisor {
 
     protected String usuarioIntegrador;
-    protected String rfcEmisor;
     protected String folioUUID;
+    protected String rfcEmisor;
 
     /**
      * Gets the value of the usuarioIntegrador property.
@@ -66,30 +66,6 @@ public class CancelaCFDIAck {
     }
 
     /**
-     * Gets the value of the rfcEmisor property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getRfcEmisor() {
-        return rfcEmisor;
-    }
-
-    /**
-     * Sets the value of the rfcEmisor property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setRfcEmisor(String value) {
-        this.rfcEmisor = value;
-    }
-
-    /**
      * Gets the value of the folioUUID property.
      * 
      * @return
@@ -111,6 +87,30 @@ public class CancelaCFDIAck {
      */
     public void setFolioUUID(String value) {
         this.folioUUID = value;
+    }
+
+    /**
+     * Gets the value of the rfcEmisor property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getRfcEmisor() {
+        return rfcEmisor;
+    }
+
+    /**
+     * Sets the value of the rfcEmisor property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setRfcEmisor(String value) {
+        this.rfcEmisor = value;
     }
 
 }

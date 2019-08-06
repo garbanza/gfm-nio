@@ -30,35 +30,19 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link ConsultaEstatusSat }
+     * Create an instance of {@link AceptaRechazaCFDI }
      * 
      */
-    public ConsultaEstatusSat createConsultaEstatusSat() {
-        return new ConsultaEstatusSat();
+    public AceptaRechazaCFDI createAceptaRechazaCFDI() {
+        return new AceptaRechazaCFDI();
     }
 
     /**
-     * Create an instance of {@link ObtieneRetencion }
+     * Create an instance of {@link AceptaRechazaCFDIResponse }
      * 
      */
-    public ObtieneRetencion createObtieneRetencion() {
-        return new ObtieneRetencion();
-    }
-
-    /**
-     * Create an instance of {@link CancelaCFDIAckExterno }
-     * 
-     */
-    public CancelaCFDIAckExterno createCancelaCFDIAckExterno() {
-        return new CancelaCFDIAckExterno();
-    }
-
-    /**
-     * Create an instance of {@link TimbraCFDIResponse }
-     * 
-     */
-    public TimbraCFDIResponse createTimbraCFDIResponse() {
-        return new TimbraCFDIResponse();
+    public AceptaRechazaCFDIResponse createAceptaRechazaCFDIResponse() {
+        return new AceptaRechazaCFDIResponse();
     }
 
     /**
@@ -70,19 +54,59 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link ObtieneTimbresDisponiblesResponse }
+     * Create an instance of {@link CancelaCFDIAckExterno }
      * 
      */
-    public ObtieneTimbresDisponiblesResponse createObtieneTimbresDisponiblesResponse() {
-        return new ObtieneTimbresDisponiblesResponse();
+    public CancelaCFDIAckExterno createCancelaCFDIAckExterno() {
+        return new CancelaCFDIAckExterno();
     }
 
     /**
-     * Create an instance of {@link TimbraRetencionResponse }
+     * Create an instance of {@link CancelaCFDIAckExternoResponse }
      * 
      */
-    public TimbraRetencionResponse createTimbraRetencionResponse() {
-        return new TimbraRetencionResponse();
+    public CancelaCFDIAckExternoResponse createCancelaCFDIAckExternoResponse() {
+        return new CancelaCFDIAckExternoResponse();
+    }
+
+    /**
+     * Create an instance of {@link ConsultaCfdisRelacionados }
+     * 
+     */
+    public ConsultaCfdisRelacionados createConsultaCfdisRelacionados() {
+        return new ConsultaCfdisRelacionados();
+    }
+
+    /**
+     * Create an instance of {@link ConsultaCfdisRelacionadosResponse }
+     * 
+     */
+    public ConsultaCfdisRelacionadosResponse createConsultaCfdisRelacionadosResponse() {
+        return new ConsultaCfdisRelacionadosResponse();
+    }
+
+    /**
+     * Create an instance of {@link ConsultaCfdisRelacionadosEmisor }
+     * 
+     */
+    public ConsultaCfdisRelacionadosEmisor createConsultaCfdisRelacionadosEmisor() {
+        return new ConsultaCfdisRelacionadosEmisor();
+    }
+
+    /**
+     * Create an instance of {@link ConsultaCfdisRelacionadosEmisorResponse }
+     * 
+     */
+    public ConsultaCfdisRelacionadosEmisorResponse createConsultaCfdisRelacionadosEmisorResponse() {
+        return new ConsultaCfdisRelacionadosEmisorResponse();
+    }
+
+    /**
+     * Create an instance of {@link ConsultaEstatusSat }
+     * 
+     */
+    public ConsultaEstatusSat createConsultaEstatusSat() {
+        return new ConsultaEstatusSat();
     }
 
     /**
@@ -94,6 +118,46 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link ConsultaEstatusSatExterno }
+     * 
+     */
+    public ConsultaEstatusSatExterno createConsultaEstatusSatExterno() {
+        return new ConsultaEstatusSatExterno();
+    }
+
+    /**
+     * Create an instance of {@link ConsultaEstatusSatExternoResponse }
+     * 
+     */
+    public ConsultaEstatusSatExternoResponse createConsultaEstatusSatExternoResponse() {
+        return new ConsultaEstatusSatExternoResponse();
+    }
+
+    /**
+     * Create an instance of {@link ConsultaPeticionesPendientesCFDI }
+     * 
+     */
+    public ConsultaPeticionesPendientesCFDI createConsultaPeticionesPendientesCFDI() {
+        return new ConsultaPeticionesPendientesCFDI();
+    }
+
+    /**
+     * Create an instance of {@link ConsultaPeticionesPendientesCFDIResponse }
+     * 
+     */
+    public ConsultaPeticionesPendientesCFDIResponse createConsultaPeticionesPendientesCFDIResponse() {
+        return new ConsultaPeticionesPendientesCFDIResponse();
+    }
+
+    /**
+     * Create an instance of {@link AsignaTimbresEmisor }
+     * 
+     */
+    public AsignaTimbresEmisor createAsignaTimbresEmisor() {
+        return new AsignaTimbresEmisor();
+    }
+
+    /**
      * Create an instance of {@link AsignaTimbresEmisorResponse }
      * 
      */
@@ -102,11 +166,51 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link CancelaCFDI }
+     * 
+     */
+    public CancelaCFDI createCancelaCFDI() {
+        return new CancelaCFDI();
+    }
+
+    /**
+     * Create an instance of {@link CancelaCFDIResponse }
+     * 
+     */
+    public CancelaCFDIResponse createCancelaCFDIResponse() {
+        return new CancelaCFDIResponse();
+    }
+
+    /**
+     * Create an instance of {@link CancelaCFDIAck }
+     * 
+     */
+    public CancelaCFDIAck createCancelaCFDIAck() {
+        return new CancelaCFDIAck();
+    }
+
+    /**
+     * Create an instance of {@link CancelaCFDIAckResponse }
+     * 
+     */
+    public CancelaCFDIAckResponse createCancelaCFDIAckResponse() {
+        return new CancelaCFDIAckResponse();
+    }
+
+    /**
      * Create an instance of {@link CancelaRetencion }
      * 
      */
     public CancelaRetencion createCancelaRetencion() {
         return new CancelaRetencion();
+    }
+
+    /**
+     * Create an instance of {@link CancelaRetencionResponse }
+     * 
+     */
+    public CancelaRetencionResponse createCancelaRetencionResponse() {
+        return new CancelaRetencionResponse();
     }
 
     /**
@@ -126,27 +230,19 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link ConsultaPeticionesPendientesCFDIResponse }
+     * Create an instance of {@link ObtieneRetencion }
      * 
      */
-    public ConsultaPeticionesPendientesCFDIResponse createConsultaPeticionesPendientesCFDIResponse() {
-        return new ConsultaPeticionesPendientesCFDIResponse();
+    public ObtieneRetencion createObtieneRetencion() {
+        return new ObtieneRetencion();
     }
 
     /**
-     * Create an instance of {@link ConsultaPeticionesPendientesCFDI }
+     * Create an instance of {@link ObtieneRetencionResponse }
      * 
      */
-    public ConsultaPeticionesPendientesCFDI createConsultaPeticionesPendientesCFDI() {
-        return new ConsultaPeticionesPendientesCFDI();
-    }
-
-    /**
-     * Create an instance of {@link ConsultaCfdisRelacionados }
-     * 
-     */
-    public ConsultaCfdisRelacionados createConsultaCfdisRelacionados() {
-        return new ConsultaCfdisRelacionados();
+    public ObtieneRetencionResponse createObtieneRetencionResponse() {
+        return new ObtieneRetencionResponse();
     }
 
     /**
@@ -158,43 +254,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link CancelaCFDIAck }
+     * Create an instance of {@link ObtieneTimbresDisponiblesResponse }
      * 
      */
-    public CancelaCFDIAck createCancelaCFDIAck() {
-        return new CancelaCFDIAck();
-    }
-
-    /**
-     * Create an instance of {@link TimbraCFDI }
-     * 
-     */
-    public TimbraCFDI createTimbraCFDI() {
-        return new TimbraCFDI();
-    }
-
-    /**
-     * Create an instance of {@link ConsultaEstatusSatExternoResponse }
-     * 
-     */
-    public ConsultaEstatusSatExternoResponse createConsultaEstatusSatExternoResponse() {
-        return new ConsultaEstatusSatExternoResponse();
-    }
-
-    /**
-     * Create an instance of {@link CancelaCFDI }
-     * 
-     */
-    public CancelaCFDI createCancelaCFDI() {
-        return new CancelaCFDI();
-    }
-
-    /**
-     * Create an instance of {@link TimbraRetencion }
-     * 
-     */
-    public TimbraRetencion createTimbraRetencion() {
-        return new TimbraRetencion();
+    public ObtieneTimbresDisponiblesResponse createObtieneTimbresDisponiblesResponse() {
+        return new ObtieneTimbresDisponiblesResponse();
     }
 
     /**
@@ -214,83 +278,35 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link CancelaCFDIAckResponse }
+     * Create an instance of {@link TimbraCFDI }
      * 
      */
-    public CancelaCFDIAckResponse createCancelaCFDIAckResponse() {
-        return new CancelaCFDIAckResponse();
+    public TimbraCFDI createTimbraCFDI() {
+        return new TimbraCFDI();
     }
 
     /**
-     * Create an instance of {@link ConsultaEstatusSatExterno }
+     * Create an instance of {@link TimbraCFDIResponse }
      * 
      */
-    public ConsultaEstatusSatExterno createConsultaEstatusSatExterno() {
-        return new ConsultaEstatusSatExterno();
+    public TimbraCFDIResponse createTimbraCFDIResponse() {
+        return new TimbraCFDIResponse();
     }
 
     /**
-     * Create an instance of {@link AsignaTimbresEmisor }
+     * Create an instance of {@link TimbraRetencion }
      * 
      */
-    public AsignaTimbresEmisor createAsignaTimbresEmisor() {
-        return new AsignaTimbresEmisor();
+    public TimbraRetencion createTimbraRetencion() {
+        return new TimbraRetencion();
     }
 
     /**
-     * Create an instance of {@link ObtieneRetencionResponse }
+     * Create an instance of {@link TimbraRetencionResponse }
      * 
      */
-    public ObtieneRetencionResponse createObtieneRetencionResponse() {
-        return new ObtieneRetencionResponse();
-    }
-
-    /**
-     * Create an instance of {@link CancelaCFDIResponse }
-     * 
-     */
-    public CancelaCFDIResponse createCancelaCFDIResponse() {
-        return new CancelaCFDIResponse();
-    }
-
-    /**
-     * Create an instance of {@link CancelaRetencionResponse }
-     * 
-     */
-    public CancelaRetencionResponse createCancelaRetencionResponse() {
-        return new CancelaRetencionResponse();
-    }
-
-    /**
-     * Create an instance of {@link CancelaCFDIAckExternoResponse }
-     * 
-     */
-    public CancelaCFDIAckExternoResponse createCancelaCFDIAckExternoResponse() {
-        return new CancelaCFDIAckExternoResponse();
-    }
-
-    /**
-     * Create an instance of {@link AceptaRechazaCFDI }
-     * 
-     */
-    public AceptaRechazaCFDI createAceptaRechazaCFDI() {
-        return new AceptaRechazaCFDI();
-    }
-
-    /**
-     * Create an instance of {@link ConsultaCfdisRelacionadosResponse }
-     * 
-     */
-    public ConsultaCfdisRelacionadosResponse createConsultaCfdisRelacionadosResponse() {
-        return new ConsultaCfdisRelacionadosResponse();
-    }
-
-    /**
-     * Create an instance of {@link AceptaRechazaCFDIResponse }
-     * 
-     */
-    public AceptaRechazaCFDIResponse createAceptaRechazaCFDIResponse() {
-        return new AceptaRechazaCFDIResponse();
+    public TimbraRetencionResponse createTimbraRetencionResponse() {
+        return new TimbraRetencionResponse();
     }
 
 }
